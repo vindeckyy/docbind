@@ -18,3 +18,11 @@ Call `viper.WrapInstance(c, 1)` through an instance-method wrapper.
 v := viper.New()
 v.Get("key")
 ```
+
+```go
+var r *Viper
+r.Reload("key")
+var s *Viper
+s = viper.New()
+s.Swap("key")
+```

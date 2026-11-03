@@ -18,6 +18,13 @@ const PY_KEYWORDS = new Set([
   "in", "is", "lambda", "None", "nonlocal", "not", "or", "pass", "raise", "return",
   "True", "try", "while", "with", "yield", "self", "cls",
 ]);
+const GO_KEYWORDS = new Set([
+  "break", "case", "chan", "const", "continue", "default", "defer", "else",
+  "fallthrough", "for", "func", "go", "goto", "if", "import", "interface",
+  "map", "package", "range", "return", "select", "struct", "switch", "type",
+  "var", "nil", "true", "false",
+]);
+
 const TS_KEYWORDS = new Set([
   "abstract", "any", "as", "async", "await", "boolean", "break", "case", "catch", "class",
   "const", "constructor", "continue", "debugger", "declare", "default", "delete", "do",
@@ -388,6 +395,11 @@ function inferGoExpression(expression: string, hints: GoTypeHints): string | und
   return undefined;
 }
 
+function goAnnotationType(annotation: string): string | undefined {
+  const names = annotation.replace(/[\[\]]/gu, " ").match(/[A-Za-z_]\w*/gu) ?? [];
+  return names[names.length - 1];
+}
+
 function lexFenceAnchors(
   node: Code,
   docPath: string,
@@ -421,14 +433,37 @@ function lexFenceAnchors(
     }
   }
   const localTypes = new Map<string, string>();
+  const setGoType = (name: string, type: string | undefined): void => {
+    if (type) localTypes.set(name, type);
+    else localTypes.delete(name);
+  };
   if (language === "go" && goHints) {
     for (const line of value.split("\n")) {
-      const declaration = /^\s*var\s+([A-Za-z_]\w*)\s*(?:[^=]*?)?=\s*(.+)$/u.exec(line) ??
-        /^\s*([A-Za-z_]\w*)\s*:=\s*(.+)$/u.exec(line) ??
-        /^\s*([A-Za-z_]\w*)\s*=\s*(.+)$/u.exec(line);
-      if (!declaration?.[1] || !declaration[2]) continue;
-      const type = inferGoExpression(declaration[2], goHints);
-      if (type) localTypes.set(declaration[1], type);
+      const declaration = /^\s*var\s+([A-Za-z_]\w*)\s*(.*)$/u.exec(line);
+      if (declaration?.[1]) {
+        const rest = declaration[2] as string;
+        const equal = rest.indexOf("=");
+        if (equal >= 0) {
+          const annotation = rest.slice(0, equal).trim();
+          const expression = rest.slice(equal + 1).trim();
+          setGoType(
+            declaration[1],
+            goAnnotationType(annotation) ?? inferGoExpression(expression, goHints),
+          );
+        } else {
+          setGoType(declaration[1], goAnnotationType(rest));
+        }
+        continue;
+      }
+      const short = /^\s*([A-Za-z_]\w*)\s*:=\s*(.+)$/u.exec(line);
+      if (short?.[1]) {
+        setGoType(short[1], inferGoExpression(short[2] as string, goHints));
+        continue;
+      }
+      const assignment = /^\s*([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/u.exec(line);
+      if (assignment?.[1]) {
+        setGoType(assignment[1], inferGoExpression(assignment[2] as string, goHints));
+      }
     }
   }
   const signature = language === "rust" ? snippetSignatureRust(value) : snippetSignatureGo(value);
@@ -461,6 +496,7 @@ function lexFenceAnchors(
   for (let index = 0; index < lexed.tokens.length; index += 1) {
     const token = lexed.tokens[index];
     if (!/^[A-Za-z_]/u.test(token.value)) continue;
+    if (language === "go" && GO_KEYWORDS.has(token.value)) continue;
     if (token.value.length < 2 && !localTypes.has(token.value)) continue;
     let chain = token.value;
     let chainEnd = index;

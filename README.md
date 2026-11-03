@@ -207,7 +207,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and four local fixtures produce zero baseline findings, zero doc-edit findings, and 41 of 41 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and four local fixtures produce zero baseline findings, zero doc-edit findings, and 43 of 43 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
 
 ## Development
 
@@ -233,14 +233,14 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.24 tree:
+Measured on the 0.1.25 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 289 passing |
+| Tests | 290 passing |
 | Statements | 98.66% |
-| Branches | 95.10% |
-| Functions | 99.51% |
+| Branches | 95.12% |
+| Functions | 99.52% |
 | Lines | 99.34% |
 | Changed-line coverage, feature diff | 99.88% |
 | Structure gate | 73 of 73 checks |

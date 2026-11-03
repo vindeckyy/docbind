@@ -118,7 +118,7 @@ func Demo(value User) u.Option { return u.Option{} }
 
   it("marks malformed rust and go fences as fragments", () => {
     expect(fenceAnchors(code('let x = "open', "rust"), "docs/api.md", "Rust").anchors[0].fragment).toBe(true);
-    expect(fenceAnchors(code("func F( {", "go"), "docs/api.md", "Go").anchors.length).toBeGreaterThan(0);
+    expect(fenceAnchors(code("Foo( {", "go"), "docs/api.md", "Go").anchors.length).toBeGreaterThan(0);
   });
 
   it("supports only known languages", () => {

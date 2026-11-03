@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.25] - 2026-11-03
+
+### Added
+
+- Go fence locals infer types from annotated declarations such as `var v *Viper` and from reassignments.
+- Unknown reassignments clear the inferred type, preventing stale method binds.
+- Go keyword tokens such as `var` are filtered from fence anchors.
+
+### Improved
+
+- Go fixture grew from 12 to 17 bound anchors and from 12 to 14 detected mutations.
+- Corpus now detects 43 of 43 seeded mutations with zero collateral findings.
+- Viper anchors fell from 267 to 196 through keyword and local-attribute filtering, while keeping 94 bound symbols.
+- Branch coverage rose from 95.10% to 95.12%.
+
+### Limits
+
+- Go fence inference is assignment-local. Aliased or externally supplied locals are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.24] - 2026-11-03
 
 ### Added
@@ -464,3 +484,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.22]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.22
 [0.1.23]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.23
 [0.1.24]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.24
+[0.1.25]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.25

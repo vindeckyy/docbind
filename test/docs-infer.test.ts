@@ -148,7 +148,29 @@ describe("Go fence inference", () => {
     const hints = buildGoTypeHints([viper, get, make]);
     expect(hints.returns.get("viper.New")).toBe("Viper");
     const result = fenceAnchors(
-      { ...code("v := viper.New()\nv.Get(\"key\")\nw := Viper{}\nw.Get(\"other\")\nx := 1\n"), lang: "go" } as unknown as Code,
+      {
+        ...code([
+          "v := viper.New()",
+          "v.Get(\"key\")",
+          "w := Viper{}",
+          "w.Get(\"other\")",
+          "var annotated *Viper",
+          "annotated.Get(\"typed\")",
+          "var changed *Viper",
+          "changed = load()",
+          "changed.Get(\"stale\")",
+          "var assigned *Viper",
+          "assigned = viper.New()",
+          "assigned.Get(\"assigned\")",
+          "var initialized *Viper = viper.New()",
+          "initialized.Get(\"initialized\")",
+          "var inferred = viper.New()",
+          "inferred.Get(\"inferred\")",
+          "x := 1",
+          "",
+        ].join("\n")),
+        lang: "go",
+      } as unknown as Code,
       "docs/quickstart.md",
       "Quickstart",
       undefined,
@@ -156,7 +178,7 @@ describe("Go fence inference", () => {
     );
     const tokens = result.anchors.map((anchor) => anchor.token);
     expect(tokens).toContain("viper.New");
-    expect(tokens.filter((token) => token === "Viper.Get").length).toBeGreaterThanOrEqual(2);
+    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(6);
   });
 
   it("drops conflicting Go constructor return types", () => {
