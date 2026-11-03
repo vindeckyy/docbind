@@ -2,7 +2,7 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
-## [Unreleased]
+## [0.1.6] - 2026-11-03
 
 ### Added
 
@@ -121,3 +121,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.3]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.3
 [0.1.4]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.4
 [0.1.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.5
+[0.1.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.6
