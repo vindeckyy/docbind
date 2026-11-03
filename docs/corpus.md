@@ -51,7 +51,7 @@ httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclare
 
 ## Javadoc
 
-Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 20 of 20 anchors with 20 of 20 mutations. Java enums keep constant constructor arguments and members declared in constant bodies.
+Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 20 of 20 anchors with 20 of 20 mutations. Java enums keep constant constructor arguments, typed constant argument values, and members declared in constant bodies.
 
 ## AsciiDoc
 

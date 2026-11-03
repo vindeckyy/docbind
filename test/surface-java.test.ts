@@ -277,6 +277,12 @@ describe("Java surface", () => {
       },
     ]);
     const routes = result.symbols.find((symbol) => symbol.name === "routes");
+    const fixtureColor = result.symbols.find((symbol) => symbol.name === "Color");
+    expect(fixtureColor?.shape.enumMembers?.find((member) => member.name === "RED")?.argValues).toEqual([
+      { value: '"red"', kind: "string", literal: "red" },
+    ]);
+    const red = result.symbols.find((symbol) => symbol.name === "RED");
+    expect(red?.shape.kind).toBe("enumMember");
     expect(routes?.shape.annotations).toEqual([
       {
         name: "Routes",
@@ -339,7 +345,7 @@ describe("Java surface", () => {
         "public enum Color {",
         "    @Deprecated",
         "    @Marker(\"x\")",
-        "    RED,",
+        "    RED(\"red\", 2, true),",
         "    GREEN(),",
         "    BLUE {",
         "        public String label() { return \"b\"; }",
@@ -361,7 +367,12 @@ describe("Java surface", () => {
     const label = result.symbols.find((symbol) => symbol.name === "label");
     expect(label?.parentId).toBe(blue?.id);
     expect(label?.aliases).toEqual(expect.arrayContaining(["Color.BLUE.label", "Color.BLUE#label"]));
-    expect(color?.shape.enumMembers?.map((member) => member.args)).toEqual([undefined, undefined, undefined]);
+    expect(color?.shape.enumMembers?.map((member) => member.args)).toEqual(['"red", 2, true', undefined, undefined]);
+    expect(color?.shape.enumMembers?.find((member) => member.name === "RED")?.argValues).toEqual([
+      { value: '"red"', kind: "string", literal: "red" },
+      { value: "2", kind: "number", literal: 2 },
+      { value: "true", kind: "boolean", literal: true },
+    ]);
   });
 
   it("survives malformed files", () => {

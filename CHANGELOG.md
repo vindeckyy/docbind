@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.62] - 2026-11-03
+
+### Added
+
+- Java enum constant constructor arguments are typed with the annotation literal classifier.
+- `enumMembers[].argValues` holds each positional argument as `{ value, kind, literal, items }`.
+- Unit and fixture assertions cover string, number, and boolean constant arguments.
+
+### Limits
+
+- Argument values keep their source text alongside the typed literal.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.61] - 2026-11-03
 
 ### Added
@@ -1108,3 +1121,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.59]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.59
 [0.1.60]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.60
 [0.1.61]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.61
+[0.1.62]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.62

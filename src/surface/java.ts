@@ -450,7 +450,11 @@ class JavaParser {
             }
             cursor = close < 0 ? segmentEnd : close + 1;
           }
-          members.push({ name: value, value: args ?? "", ...(args ? { args } : {}) });
+          members.push({
+            name: value,
+            value: args ?? "",
+            ...(args ? { args, argValues: annotationArguments(args) } : {}),
+          });
           return;
         }
         cursor += 1;
