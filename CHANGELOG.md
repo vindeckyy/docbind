@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.5] - 2026-11-03
+
+### Added
+
+- Standard Rust derive synthesis for `Clone`, `Default`, `Debug`, `PartialEq`, `PartialOrd`, `Ord`, and `Hash`.
+- `#[proc_macro_derive(Name)]` recognition in Rust extractors.
+- Real thiserror proc-macro corpus case.
+- Derive attributes in fenced docs now provide structural binding evidence.
+
+### Limits
+
+- General proc-macro output, derive bodies, and nested repetition are not expanded.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.4] - 2026-11-03
 
 ### Added
@@ -89,3 +103,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.2]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.2
 [0.1.3]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.3
 [0.1.4]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.4
+[0.1.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.5

@@ -143,6 +143,7 @@ function makeAnchor(
   fragment: boolean,
   fenceLang: string | undefined,
   signatureShape?: Shape,
+  hints?: string[],
 ): DocAnchor {
   return {
     docPath,
@@ -158,6 +159,7 @@ function makeAnchor(
     localDecls,
     fragment,
     ...(signatureShape ? { signatureShape } : {}),
+    ...(hints?.length ? { hints } : {}),
   };
 }
 
@@ -389,6 +391,8 @@ function lexFenceAnchors(
         [...locals],
         lexed.error || /\.\.\./u.test(value),
         node.lang ?? undefined,
+        undefined,
+        language === "rust" && /derive\s*\(/u.test(contextLine(value, position)) ? ["derive"] : undefined,
       ),
     );
     index = chainEnd;

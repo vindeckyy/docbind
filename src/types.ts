@@ -104,6 +104,7 @@ export interface DocAnchor {
   contextFp: string;
   importTable: Record<string, ImportRef>;
   localDecls: string[];
+  hints?: string[];
   fragment: boolean;
   signatureShape?: Shape;
 }

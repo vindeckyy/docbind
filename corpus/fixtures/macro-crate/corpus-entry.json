@@ -6,5 +6,5 @@
   "docs": ["docs/**/*.md"],
   "exclude": ["target/**"],
   "languages": { "typescript": false, "python": false, "rust": true, "go": false },
-  "mutations": 2
+  "mutations": 4
 }

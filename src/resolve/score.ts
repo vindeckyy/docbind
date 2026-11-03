@@ -238,6 +238,10 @@ export function scoreCandidates(
       candidate.score += 0.1;
       candidate.evidence.push("repeated mention");
     }
+    if (anchor.hints?.includes("derive")) {
+      candidate.score += 0.3;
+      candidate.evidence.push("derive context");
+    }
     if (anchor.localDecls.includes(base)) {
       candidate.score -= 0.6;
       candidate.evidence.push("shadowed");

@@ -67,6 +67,105 @@ function contractFlags(attributes: string[]): ContractFlag[] {
   return text.includes("deprecated") ? ["deprecated"] : [];
 }
 
+function procMacroDeriveNames(attributes: string[]): string[] {
+  const names: string[] = [];
+  for (const attribute of attributes) {
+    const match = /proc_macro_derive\s*\(\s*([A-Za-z_]\w*)/u.exec(attribute);
+    if (match?.[1]) names.push(match[1]);
+  }
+  return names;
+}
+
+function derivedTraits(attributes: string[]): Set<string> {
+  const traits = new Set<string>();
+  for (const attribute of attributes) {
+    const match = /derive\s*\(([^)]+)\)/u.exec(attribute);
+    if (!match?.[1]) continue;
+    for (const name of match[1].split(",")) {
+      /* v8 ignore next */
+      const cleaned = name.trim().split("::").pop() ?? "";
+      if (cleaned) traits.add(cleaned);
+    }
+  }
+  return traits;
+}
+
+interface DerivedMethod {
+  name: string;
+  params: ParamShape[];
+  returnType: string;
+}
+
+function derivedMethods(attributes: string[]): DerivedMethod[] {
+  const traits = derivedTraits(attributes);
+  const methods: DerivedMethod[] = [];
+  const receiver = (type = "&self"): ParamShape => ({
+    name: "self",
+    type,
+    optional: false,
+    rest: false,
+    hasDefault: false,
+    kind: "receiver",
+  });
+  const other = { name: "other", type: "&Self", optional: false, rest: false, hasDefault: false };
+  if (traits.has("Clone")) {
+    methods.push({ name: "clone", params: [receiver()], returnType: "Self" });
+    methods.push({ name: "clone_from", params: [receiver("&mut self"), { ...other, name: "source" }], returnType: "()" });
+  }
+  if (traits.has("Default")) methods.push({ name: "default", params: [], returnType: "Self" });
+  if (traits.has("Debug")) {
+    methods.push({ name: "fmt", params: [receiver(), { ...other, name: "formatter", type: "&mut Formatter" }], returnType: "Result" });
+  }
+  if (traits.has("PartialEq")) {
+    methods.push({ name: "eq", params: [receiver(), other], returnType: "bool" });
+    methods.push({ name: "ne", params: [receiver(), other], returnType: "bool" });
+  }
+  if (traits.has("PartialOrd")) {
+    methods.push({ name: "partial_cmp", params: [receiver(), other], returnType: "Option<Ordering>" });
+    for (const name of ["lt", "le", "gt", "ge"]) {
+      methods.push({ name, params: [receiver(), other], returnType: "bool" });
+    }
+  }
+  if (traits.has("Ord")) methods.push({ name: "cmp", params: [receiver(), other], returnType: "Ordering" });
+  if (traits.has("Hash")) {
+    methods.push({ name: "hash", params: [receiver(), { ...other, name: "state", type: "&mut H" }], returnType: "()" });
+  }
+  return methods;
+}
+
+function addDerivedMethods(
+  context: ParserContext,
+  name: string,
+  start: number,
+  namespace: string,
+  exported: boolean,
+  attributes: string[],
+): void {
+  if (!exported) return;
+  for (const method of derivedMethods(attributes)) {
+    context.drafts.push({
+      name: method.name,
+      kind: "method",
+      shape: {
+        kind: "method",
+        async: false,
+        generator: false,
+        params: method.params,
+        returnType: method.returnType,
+        visibility: "public",
+        flags: [],
+      },
+      start,
+      body: `derive:${method.name}`,
+      namespace,
+      parentName: name,
+      aliases: [],
+      enabled: true,
+      exported: true,
+    });
+  }
+}
+
 function isHidden(attributes: string[]): boolean {
   const text = attributes.join(" ");
   return text.includes("doc(hidden)") || text.includes("cfg(test)");
@@ -577,7 +676,7 @@ class RustParser {
       body,
       namespace,
       parentName,
-      aliases: [],
+      aliases: procMacroDeriveNames(attributes),
       enabled: exported,
       exported,
     });
@@ -626,6 +725,7 @@ class RustParser {
       enabled: exported,
       exported,
     });
+    addDerivedMethods(this.context, nameToken.value, nameToken.start, namespace, exported, attributes);
     return cursor;
   }
 
@@ -697,6 +797,7 @@ class RustParser {
       enabled: exported,
       exported,
     });
+    addDerivedMethods(this.context, nameToken.value, nameToken.start, namespace, exported, attributes);
     return cursor;
   }
 
@@ -945,6 +1046,7 @@ function buildRustTopSymbols(context: ParserContext): Symbol[] {
         `${context.modulePath.replace(/\//gu, ".")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`,
         `${context.packageName.replace(/-/gu, "_")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`,
         `${context.packageName.replace(/-/gu, "_")}.${draft.name}`,
+        ...draft.aliases,
       ],
       shape: draft.shape,
       shapeText,
@@ -1084,6 +1186,7 @@ export interface RustSignatureSnippet {
 }
 
 export function snippetSignatureRust(code: string): RustSignatureSnippet | undefined {
+  if (/derive\s*\(/u.test(code)) return undefined;
   const lexed = lex(code, "rust");
   const context: ParserContext = {
     source: code,

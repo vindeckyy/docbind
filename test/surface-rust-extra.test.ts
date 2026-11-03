@@ -88,6 +88,15 @@ struct Hidden;
 impl Hidden { pub fn lost(&self) {} }
 pub use crate::x::Y as A;
 pub use crate::x::Y as A;
+
+#[derive(Clone, Default, PartialEq, PartialOrd, Ord, Debug, Hash)]
+pub struct Settings;
+
+#[derive(Clone)]
+pub enum Mode { A, B }
+
+#[proc_macro_derive(MyDerive, attributes(helper))]
+pub fn derive_my(input: TokenStream) -> TokenStream { input }
 `,
     "src/empty.rs": "",
     "src/bad.rs": "pub struct Broken {",
@@ -161,6 +170,12 @@ describe("Rust surface edge cases", () => {
     expect(result.symbols.find((symbol) => symbol.name === "empty_generic")?.shape.typeParams).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "generated")?.shape.returnType).toBe("u8");
     expect(result.symbols.find((symbol) => symbol.name === "generated_public")?.shape.returnType).toBe("u8");
+    expect(result.symbols.map((symbol) => symbol.name)).toEqual(expect.arrayContaining([
+      "clone", "default", "eq", "partial_cmp", "cmp", "fmt", "hash",
+    ]));
+    expect(result.symbols.find((symbol) => symbol.name === "default")?.parentId).toContain("Settings");
+    expect(result.symbols.find((symbol) => symbol.name === "clone")?.parentId).toBeDefined();
+    expect(result.symbols.find((symbol) => symbol.name === "derive_my")?.aliases).toContain("MyDerive");
     expect(result.symbols.find((symbol) => symbol.name === "const_fn")?.shape.async).toBe(false);
     expect(result.symbols.find((symbol) => symbol.name === "lost")).toBeUndefined();
   });

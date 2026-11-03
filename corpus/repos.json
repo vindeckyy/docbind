@@ -96,6 +96,25 @@
       "rust": true,
       "go": false
     },
+    "mutations": 4
+  },
+  {
+    "name": "thiserror",
+    "repo": "dtolnay/thiserror",
+    "commit": "3b29f0107e7900860c7a061c069958569eb458e7",
+    "docs": [
+      "README.md"
+    ],
+    "exclude": [
+      "target/**",
+      "tests/**"
+    ],
+    "languages": {
+      "typescript": false,
+      "python": false,
+      "rust": true,
+      "go": false
+    },
     "mutations": 2
   }
 ]

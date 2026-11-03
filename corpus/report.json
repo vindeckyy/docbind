@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T17:04:39.256Z",
+  "generatedAt": "2026-11-03T17:13:38.468Z",
   "report": [
     {
       "name": "slugify",
@@ -47,8 +47,8 @@
       "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
       "docs": 1,
       "anchors": 79,
-      "bound": 4,
-      "bindRate": 0.05063291139240506,
+      "bound": 5,
+      "bindRate": 0.06329113924050633,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -69,7 +69,7 @@
           "symbol": "Error",
           "rule": "L4-renamed",
           "hit": true,
-          "findings": 1,
+          "findings": 2,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -190,8 +190,8 @@
       "repo": "local/macro-crate",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 2,
-      "bound": 2,
+      "anchors": 4,
+      "bound": 4,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -211,6 +211,46 @@
         },
         {
           "symbol": "generated",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "thiserror",
+      "repo": "dtolnay/thiserror",
+      "commit": "3b29f0107e7900860c7a061c069958569eb458e7",
+      "docs": 1,
+      "anchors": 162,
+      "bound": 21,
+      "bindRate": 0.12962962962962962,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "derive",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "source",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,

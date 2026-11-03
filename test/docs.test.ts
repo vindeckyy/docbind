@@ -104,6 +104,12 @@ describe("markdown parsing", () => {
     expect(result.anchors[0].signatureShape?.kind).toBe("function");
   });
 
+  it("marks derive attributes as structural evidence", () => {
+    const result = parseDoc("docs/api.md", "```rust\n#[derive(Serialize)]\npub struct Item;\n```\n");
+    const derive = result.anchors.find((anchor) => anchor.token === "Serialize");
+    expect(derive?.hints).toContain("derive");
+  });
+
   it("detects rust and go signature fences", () => {
     const rust = parseDoc("docs/api.md", "```rust\nfn get_user(id: &str) -> Option<User>\n```\n");
     expect(rust.anchors[0]).toMatchObject({ token: "get_user", surface: "signatureFence" });

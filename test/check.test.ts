@@ -458,6 +458,39 @@ describe("check pipeline", () => {
     expect(checkProject(root, config).findings).toEqual([]);
   });
 
+  it("binds traits referenced in derive attributes", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/lib.rs": "pub trait Serialize {}\n",
+      "docs/api.md": "```rust\n#[derive(Serialize)]\npub struct Item;\n```\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("Serialize");
+  });
+
+  it("binds proc-macro derive names", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/lib.rs": "#[proc_macro_derive(MyDerive)]\npub fn derive_my(input: TokenStream) -> TokenStream { input }\n",
+      "docs/api.md": "```rust\n#[derive(MyDerive)]\npub struct Item;\n```\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("derive_my");
+  });
+
+  it("binds derive-generated Rust methods", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/lib.rs": "#[derive(Clone, Default)]\npub struct Settings { pub name: String }\n",
+      "docs/api.md": "Call `Settings::default()` and `Settings::clone()`.\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(expect.arrayContaining(["default", "clone"]));
+  });
+
   it("binds Rust methods declared in another file", () => {
     const root = tempProject({
       "Cargo.toml": '[package]\nname = "rsapp"\n',
