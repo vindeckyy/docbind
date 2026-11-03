@@ -83,18 +83,18 @@ describe("Python surface", () => {
     };
     const previous = process.env.DOCBIND_PYTHON;
     try {
-      process.env.DOCBIND_PYTHON = fake("empty.sh", "printf '{}'");
+      process.env.DOCBIND_PYTHON = fake("empty.sh", "cat >/dev/null; printf '{}'");
       const empty = extractPython(root, ["pkg/a.py"]);
       expect(empty.symbols).toEqual([]);
       expect(empty.filesScanned).toBe(1);
 
-      process.env.DOCBIND_PYTHON = fake("bad.sh", "printf 'not json'");
+      process.env.DOCBIND_PYTHON = fake("bad.sh", "cat >/dev/null; printf 'not json'");
       expect(extractPython(root, ["pkg/a.py"]).error).toContain("invalid python extractor output");
 
-      process.env.DOCBIND_PYTHON = fake("fail.sh", "echo boom >&2; exit 1");
+      process.env.DOCBIND_PYTHON = fake("fail.sh", "cat >/dev/null; echo boom >&2; exit 1");
       expect(extractPython(root, ["pkg/a.py"]).error).toContain("boom");
 
-      process.env.DOCBIND_PYTHON = fake("silent.sh", "exit 1");
+      process.env.DOCBIND_PYTHON = fake("silent.sh", "cat >/dev/null; exit 1");
       expect(extractPython(root, ["pkg/a.py"]).error).toBe("python extractor failed");
       const combined = extractSurface(root, ["pkg/a.py"], parseConfig({ languages: { typescript: false } }));
       expect(combined.error).toContain("python extractor failed");
