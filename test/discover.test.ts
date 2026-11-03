@@ -48,6 +48,8 @@ describe("discovery", () => {
       "src/a.ts": "export const a = 1;",
       "src/b.py": "b = 1",
       "src/c.js": "export const c = 1;",
+      "src/lib.rs": "pub fn rust_item() {}",
+      "src/main.go": "package main",
       "src/d.min.js": "var d=1;",
       "node_modules/x/index.js": "x",
     });
@@ -55,13 +57,19 @@ describe("discovery", () => {
     expect(both).toContain("src/a.ts");
     expect(both).toContain("src/b.py");
     expect(both).toContain("src/c.js");
+    expect(both).toContain("src/lib.rs");
+    expect(both).not.toContain("src/main.go");
     expect(both).not.toContain("src/d.min.js");
     expect(both).not.toContain("node_modules/x/index.js");
 
     const tsOnly = discoverCode(root, parseConfig({ languages: { python: false } }));
     expect(tsOnly).not.toContain("src/b.py");
     const pyOnly = discoverCode(root, parseConfig({ languages: { typescript: false } }));
-    expect(pyOnly).toEqual(["src/b.py"]);
+    expect(pyOnly).toEqual(expect.arrayContaining(["src/b.py", "src/lib.rs"]));
+    const withGo = discoverCode(root, parseConfig({ languages: { go: true } }));
+    expect(withGo).toContain("src/main.go");
+    const noRust = discoverCode(root, parseConfig({ languages: { rust: false } }));
+    expect(noRust).not.toContain("src/lib.rs");
   });
 
   it("recognizes generated headers", () => {

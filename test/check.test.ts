@@ -22,8 +22,8 @@ function files(code: string, doc: string, extra: Record<string, string> = {}): R
   };
 }
 
-function lockNow(root: string): void {
-  const result = checkProject(root, config);
+function lockNow(root: string, activeConfig = config): void {
+  const result = checkProject(root, activeConfig);
   writeLock(root, markLockAdvanced({ ...result.lock, engine: "0.1.0" }));
 }
 
@@ -372,6 +372,29 @@ describe("check pipeline", () => {
       }],
     });
     expect(checkProject(tombstone, off).findings).toEqual([]);
+  });
+
+  it("checks Rust symbols", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/lib.rs": "pub fn get_user(id: &str) -> Option<User> { None }\n",
+      "docs/api.md": "Call `get_user(id)`.\n",
+    });
+    lockNow(root);
+    writeFileSync(join(root, "src/lib.rs"), "pub fn fetch_user(id: &str) -> Option<User> { None }\n");
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L4-renamed");
+  });
+
+  it("checks Go symbols when enabled", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "pkg/users.go": "package users\nfunc GetUser(id string) string { return id }\n",
+      "docs/api.md": "Call `GetUser(id)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    lockNow(root, goConfig);
+    writeFileSync(join(root, "pkg/users.go"), "package users\nfunc GetUser(id string, force bool) string { return id }\n");
+    expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
   });
 
   it("advances lock generations", () => {

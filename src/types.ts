@@ -16,7 +16,8 @@ export type ContractFlag =
   | "generator"
   | "abstract"
   | "readonly"
-  | "static";
+  | "static"
+  | "unsafe";
 
 export interface ParamShape {
   name?: string;
@@ -203,6 +204,8 @@ export interface CheckResult {
 export interface LanguageConfig {
   typescript: boolean;
   python: boolean;
+  rust: boolean;
+  go: boolean;
 }
 
 export interface Config {

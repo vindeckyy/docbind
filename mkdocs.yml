@@ -1,0 +1,14 @@
+site_name: docbind
+site_description: Symbol-level documentation staleness detection
+repo_url: https://github.com/docbind/docbind
+theme:
+  name: readthedocs
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Configuration: configuration.md
+  - Architecture: architecture.md
+  - Prior art: prior-art.md
+markdown_extensions:
+  - tables
+  - fenced_code

@@ -22,6 +22,7 @@ interface WalkContext {
 interface WalkState {
   anchors: DocAnchor[];
   ranges: Array<[number, number]>;
+  inlineRanges: Array<[number, number]>;
 }
 
 function mergeImports(
@@ -81,6 +82,8 @@ function walk(
     const token = node.value;
     if (token.includes("\n") || token.trim().length === 0) return;
     const start = nodePosition(node);
+    const inlineEnd = node.position?.end.offset ?? start.offset + token.length + 2;
+    state.inlineRanges.push([start.offset, inlineEnd]);
     const surface = context.inHeading
       ? "headingCode"
       : context.inTableCell
@@ -159,12 +162,13 @@ function explicitRefs(text: string, docPath: string, state: WalkState): void {
     /:(?:func|class|meth|attr|mod):`([^`\n]+)`/gu,
     /\bseealso\s*:?\s*`([^`\n]+)`/giu,
   ];
-  for (const pattern of patterns) {
+  for (const [patternIndex, pattern] of patterns.entries()) {
     for (const match of text.matchAll(pattern)) {
       const target = match[1]?.trim();
       if (!target || !/^[A-Za-z_$][\w$]*(?:(?:\.|::|#)[A-Za-z_$][\w$]*)*$/u.test(target)) continue;
       const offset = (match.index ?? 0) + match[0].indexOf(target);
       if (inRanges(offset, state.ranges)) continue;
+      if (patternIndex === 0 && inRanges(offset, state.inlineRanges)) continue;
       const { line, column } = offsetToLineColumn(text, offset);
       const lines = text.split(/\r?\n/u);
       const context = [
@@ -210,7 +214,7 @@ export function parseDoc(docPath: string, text: string): DocParseResult {
     inTableCell: false,
     inBlockquote: false,
   };
-  const state: WalkState = { anchors: [], ranges: [] };
+  const state: WalkState = { anchors: [], ranges: [], inlineRanges: [] };
   for (const child of root.children) {
     walk(child as Content, text, docPath, context, state, "");
   }

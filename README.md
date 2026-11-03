@@ -39,6 +39,17 @@ Exit codes:
 | 2 | config, IO, or parse failure that prevents a trustworthy run |
 | 3 | lock is out of date |
 
+## Supported languages
+
+| Language | Extractor | Default |
+|---|---|---|
+| TypeScript, JavaScript | TypeScript compiler API | on |
+| Python | bundled `ast` worker | on |
+| Rust | built-in lexer and item parser | on |
+| Go | built-in lexer and declaration parser | off |
+
+Go is opt-in. Set `"go": true` in `docbind.json`.
+
 ## What it catches
 
 - Removed exported symbols referenced by a doc.
@@ -76,7 +87,7 @@ Changed-line mode compares `coverage/lcov.info` against a git diff:
 npm run gate:changed -- --base origin/HEAD
 ```
 
-The structure gate checks required files, exports, scripts, forbidden test markers, per-file coverage, and the Python extractor entry point.
+The structure gate checks required files, exports, scripts, forbidden test markers, per-file coverage, and the extractor entry points.
 
 ## Configuration
 
@@ -86,7 +97,7 @@ The structure gate checks required files, exports, scripts, forbidden test marke
 {
   "docs": ["README.md", "docs/**/*.md", "**/*.md"],
   "exclude": ["CHANGELOG.md", "docs/migration/**"],
-  "languages": { "typescript": true, "python": true },
+  "languages": { "typescript": true, "python": true, "rust": true, "go": false },
   "severity": {
     "L1-broken": "error",
     "L2-moved": "error",
@@ -102,7 +113,7 @@ Thresholds and scoring weights are fixed in the engine. Per-repo tuning makes pu
 
 ## How it works
 
-1. Extract exported symbols from TypeScript, JavaScript, and Python.
+1. Extract exported symbols from TypeScript, JavaScript, Python, Rust, and Go.
 2. Parse markdown and collect inline code, fenced code, signature fences, and explicit references.
 3. Resolve tokens with import, qualified-name, alias, and score evidence.
 4. Store confirmed bindings with the code shape at claim time.
@@ -116,8 +127,18 @@ The lock keeps the shape the doc last asserted, not the latest shape seen. Addit
 - Shape comparison is syntactic. It does not type-check or evaluate generics.
 - Illustrative snippets with elisions get a confidence penalty.
 - Python support uses a bundled `ast` worker and requires `python3` on PATH.
-- Rust and Go are not implemented yet.
+- Rust and Go support is syntactic. Generic bounds and macro-generated items are not expanded.
+- Go extraction is opt-in. Enable it with `"go": true`.
 - A doc that was rewritten loses its old binding. Tombstones cover recent removals, not ancient history.
+
+## Documentation
+
+The docs site source lives in `docs/`, built with MkDocs.
+
+```sh
+pip install -r requirements-docs.txt
+mkdocs build --strict
+```
 
 ## License
 

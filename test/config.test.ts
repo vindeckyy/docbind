@@ -26,7 +26,7 @@ describe("config", () => {
     });
     expect(config.docs).toEqual(["README.md"]);
     expect(config.exclude).toEqual(["x.md"]);
-    expect(config.languages).toEqual({ typescript: true, python: false });
+    expect(config.languages).toEqual({ typescript: true, python: false, rust: true, go: false });
     expect(config.severity["L1-broken"]).toBe("warning");
     expect(config.severity["S1-deprecated"]).toBe("note");
     expect(config.maxFindings).toBe(5);
@@ -36,7 +36,7 @@ describe("config", () => {
     expect(() => parseConfig({ nope: true })).toThrow();
     expect(() => parseConfig({ severity: { "L1-broken": "loud" } })).toThrow();
     expect(() => parseConfig({ maxFindings: 0 })).toThrow();
-    expect(() => parseConfig({ languages: { rust: true } })).toThrow();
+    expect(() => parseConfig({ languages: { ruby: true } })).toThrow();
   });
 
   it("loads missing config as defaults", () => {

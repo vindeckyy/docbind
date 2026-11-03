@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fenceAnchors } from "../src/docs/fences.js";
+import { fenceAnchors, isSupportedFence } from "../src/docs/fences.js";
 import type { Code } from "mdast";
 
 function code(value: string, lang: string | null): Code {
@@ -85,6 +85,36 @@ x = 1
     expect(result.anchors.map((item) => item.token)).toContain("gu");
     const shadow = { type: "code", lang: "ts", value: "getUser()" } as unknown as Code;
     expect(fenceAnchors(shadow, "docs/api.md", "API").anchors[0].line).toBe(2);
+  });
+
+  it("extracts rust and go fence references", () => {
+    const rust = fenceAnchors(code(`
+use crate::users::User;
+use crate::repo::Repo as R;
+const local = 1;
+pub fn demo(value: User) -> R { todo!() }
+`, "rust"), "docs/api.md", "Rust");
+    expect(rust.imports.User).toEqual({ source: "crate::users::User", imported: "User" });
+    expect(rust.imports.R).toEqual({ source: "crate::repo::Repo", imported: "Repo" });
+    expect(rust.anchors[0].localDecls).toEqual(expect.arrayContaining(["local", "demo"]));
+    expect(rust.anchors.map((anchor) => anchor.token)).toContain("User");
+
+    const go = fenceAnchors(code(`
+import "example.com/users"
+import u "example.com/util"
+func Demo(value User) u.Option { return u.Option{} }
+`, "go"), "docs/api.md", "Go");
+    expect(go.imports.users).toEqual({ source: "example.com/users", imported: "users" });
+    expect(go.imports.u).toEqual({ source: "example.com/util", imported: "util" });
+    expect(go.anchors[0].localDecls).toContain("Demo");
+    expect(go.anchors.map((anchor) => anchor.token)).toContain("User");
+    expect(isSupportedFence("rust")).toBe(true);
+    expect(isSupportedFence("go")).toBe(true);
+  });
+
+  it("marks malformed rust and go fences as fragments", () => {
+    expect(fenceAnchors(code('let x = "open', "rust"), "docs/api.md", "Rust").anchors[0].fragment).toBe(true);
+    expect(fenceAnchors(code("func F( {", "go"), "docs/api.md", "Go").anchors.length).toBeGreaterThan(0);
   });
 
   it("supports only known languages", () => {

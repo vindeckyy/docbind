@@ -1,0 +1,46 @@
+# docbind
+
+Symbol-level documentation staleness detection for markdown.
+
+`docbind` binds symbol-shaped inline code in markdown to exported code symbols. It stores the claim, then reports when the code contract changes and the sentence does not.
+
+This is static analysis. No build, no project code execution, no network.
+
+## Quick start
+
+```sh
+npm install --save-dev docbind
+npx docbind init
+npx docbind check
+```
+
+Commit `docbind.lock.json`. Review findings in CI. Fix safe renames with `docbind fix --write`.
+
+## Supported languages
+
+| Language | Extraction | Default |
+|---|---|---|
+| TypeScript, JavaScript | TypeScript compiler API, syntactic | on |
+| Python | bundled `ast` worker | on |
+| Rust | built-in lexer and item parser | on |
+| Go | built-in lexer and declaration parser | off |
+
+Go is opt-in because many repositories vendor generated packages. Enable it with `"go": true`.
+
+## What a finding means
+
+The doc anchor did not change. The symbol contract it referenced did. The tool reports only breaking changes:
+
+- removed symbol
+- renamed symbol
+- moved qualified path
+- changed signature
+- signature fence mismatch
+- deprecation, when enabled
+
+## Next
+
+- [Usage](usage.md)
+- [Configuration](configuration.md)
+- [Architecture](architecture.md)
+- [Prior art](prior-art.md)
