@@ -1,6 +1,6 @@
 # Corpus results
 
-`corpus/repos.json` pins five open-source repositories at exact commits and two local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
+`corpus/repos.json` pins five open-source repositories at exact commits and three local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -14,11 +14,12 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
 | dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
-| spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
+| spf13/viper | Go | 2 | 293 | 66 | 0 | 5 | 5 | 0 | 0 |
 | encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
+| go-package-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -30,6 +31,10 @@ The first run produced two false positives on unchanged code.
 2. httpx uses Python property getter and setter pairs with the same name. Both members entered the class shape. Fixed by collapsing accessors to one property member.
 
 The same run also found a missed mutation. Removing the typed declaration for `slugifyWithCounter` was treated as compatible because a value with no type is not a value that contradicts a type. The compatibility lattice now treats type erasure as breaking.
+
+## Go package selectors and constants
+
+Go docs use the declared package name, while the extractor's module path follows the file path. Symbols now carry a package-clause alias such as `viper.ReadRemoteConfig` in addition to their file-based alias. Viper bind count rose from 53 to 66 anchors, and mutation coverage grew from 3 to 5. A local Go fixture also exercises a package selector and a constant: `viper.ReadRemoteConfig` and `viper.SupportedExts` both bind, and both mutations are detected.
 
 ## Crate macros and generic aliases
 
@@ -69,7 +74,7 @@ Python fences then gained local type inference. Source return annotations feed a
 - anyhow binds ten anchors after crate macros and generic type aliases were added. Most of its README still uses standard-library types and prose that do not map to crate symbols.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
-- The corpus uses five external repositories and two local fixtures. It is evidence, not a benchmark.
+- The corpus uses five external repositories and three local fixtures. It is evidence, not a benchmark.
 
 Run the harness from the repository root:
 

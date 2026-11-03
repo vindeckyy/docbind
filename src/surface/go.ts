@@ -36,6 +36,7 @@ interface GoContext {
   lexed: LexResult;
   filePath: string;
   packageName: string;
+  packageClause: string;
   packageRoot: string;
   modulePath: string;
   drafts: GoDraft[];
@@ -596,7 +597,10 @@ function buildGoTopSymbols(context: GoContext): Symbol[] {
       packageName: context.packageName,
       packageRoot: context.packageRoot,
       qualifiedName: `${context.packageName}.${context.modulePath.replace(/\//gu, ".")}.${draft.name}`,
-      aliases: [`${context.modulePath.replace(/\//gu, ".")}.${draft.name}`],
+      aliases: [...new Set([
+        `${context.modulePath.replace(/\//gu, ".")}.${draft.name}`,
+        `${context.packageClause}.${draft.name}`,
+      ])],
       shape: draft.shape,
       shapeText,
       shapeHash: shapeHash(draft.shape),
@@ -664,6 +668,7 @@ export function extractGo(root: string, files: string[]): ExtractResult {
       lexed,
       filePath: rel.replace(/\\/gu, "/"),
       packageName: packageInfo.name,
+      packageClause: /^\s*package\s+([A-Za-z_]\w*)/mu.exec(source)?.[1] ?? packageInfo.name.split("/").pop() ?? "",
       packageRoot: packageInfo.root,
       modulePath: modulePathFor(packageInfo.root, join(root, rel)),
       drafts: [],
@@ -695,6 +700,7 @@ export function snippetSignatureGo(code: string): GoSignatureSnippet | undefined
     lexed,
     filePath: "snippet.go",
     packageName: "snippet",
+    packageClause: "snippet",
     packageRoot: "",
     modulePath: "snippet",
     drafts: [],

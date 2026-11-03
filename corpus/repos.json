@@ -56,7 +56,7 @@
       "rust": false,
       "go": true
     },
-    "mutations": 3
+    "mutations": 5
   },
   {
     "name": "httpx",
@@ -137,5 +137,22 @@
       "rustdoc": true
     },
     "mutations": 1
+  },
+  {
+    "name": "go-package-fixture",
+    "repo": "local/go-package",
+    "commit": "fixture-v1",
+    "local": "corpus/fixtures/go-package",
+    "docs": [
+      "docs/**/*.md"
+    ],
+    "exclude": [],
+    "languages": {
+      "typescript": false,
+      "python": false,
+      "rust": false,
+      "go": true
+    },
+    "mutations": 2
   }
 ]

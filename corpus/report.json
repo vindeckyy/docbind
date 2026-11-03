@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T18:22:26.250Z",
+  "generatedAt": "2026-11-03T18:28:36.879Z",
   "report": [
     {
       "name": "slugify",
@@ -98,8 +98,8 @@
       "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
       "docs": 2,
       "anchors": 293,
-      "bound": 53,
-      "bindRate": 0.18088737201365188,
+      "bound": 66,
+      "bindRate": 0.22525597269624573,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -137,9 +137,31 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "ReadRemoteConfig",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "SetEnvPrefix",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 3,
+      "hits": 5,
       "misses": 0,
       "collateral": 0
     },
@@ -366,6 +388,46 @@
       "docEditRules": [],
       "mutations": [],
       "hits": 0,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "go-package-fixture",
+      "repo": "local/go-package",
+      "commit": "fixture-v1",
+      "docs": 1,
+      "anchors": 2,
+      "bound": 2,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "ReadRemoteConfig",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "SupportedExts",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
       "misses": 0,
       "collateral": 0
     }

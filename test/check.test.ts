@@ -469,6 +469,21 @@ describe("check pipeline", () => {
     expect(checkProject(root, config).findings[0]?.rule).toBe("L1-broken");
   });
 
+  it("binds Go package selectors across files", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/viper\n",
+      "pkg/remote.go": "package viper\nfunc ReadRemoteConfig() error { return nil }\n",
+      "pkg/viper.go": "package viper\nconst SupportedExts = \"yaml\"\n",
+      "docs/api.md": "Call `viper.ReadRemoteConfig()` and read `viper.SupportedExts`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(
+      expect.arrayContaining(["ReadRemoteConfig", "SupportedExts"]),
+    );
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

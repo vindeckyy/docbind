@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.15] - 2026-11-03
+
+### Added
+
+- Go symbols carry aliases from the declared package clause, not only the file-based module path.
+- Local Go corpus fixture covers a package selector and a constant.
+
+### Improved
+
+- viper corpus bind rate rose from 53 to 66 anchors. Mutation coverage rose from 3 to 5.
+- Corpus now detects 26 of 26 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go package aliases do not model re-exports through a separate package.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.14] - 2026-11-03
 
 ### Added
@@ -270,3 +287,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.12]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.12
 [0.1.13]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.13
 [0.1.14]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.14
+[0.1.15]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.15

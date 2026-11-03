@@ -77,6 +77,8 @@ describe("Go surface", () => {
     expect(names).not.toContain("hiddenMethod");
     expect(result.symbols.find((symbol) => symbol.name === "Old")?.contractFlags).toContain("deprecated");
     expect(result.symbols.find((symbol) => symbol.name === "User")?.modulePath).toBe("pkg/users");
+    expect(result.symbols.find((symbol) => symbol.name === "User")?.aliases).toContain("users.User");
+    expect(result.symbols.find((symbol) => symbol.name === "Version")?.aliases).toContain("users.Version");
   });
 
   it("builds struct, interface and function shapes", () => {
