@@ -243,6 +243,7 @@ class RustParser {
   constructor(
     private readonly context: ParserContext,
     private readonly externalMacros: Map<string, MacroRule[]> = new Map(),
+    private readonly crateMacros: Map<string, MacroRule[]> = new Map(),
   ) {
     this.tokens = context.lexed.tokens;
     this.masked = context.lexed.masked;
@@ -342,6 +343,7 @@ class RustParser {
     if (enabled) {
       const rules = this.parseMacroRules(cursor + 1, close);
       this.macros.set(name, rules);
+      this.crateMacros.set(name, rules);
       if (attributes.some((attribute) => attribute.includes("macro_export"))) {
         this.externalMacros.set(name, rules);
       }
@@ -364,7 +366,7 @@ class RustParser {
     /* v8 ignore next */
     /* v8 ignore next */
     if (this.tokens[cursor + 1]?.value !== "!") return undefined;
-    if (!this.macros.has(name) && !this.externalMacros.has(name)) return undefined;
+    if (!this.macros.has(name) && !this.crateMacros.has(name) && !this.externalMacros.has(name)) return undefined;
     return { name, bang: cursor + 1 };
   }
 
@@ -626,7 +628,7 @@ class RustParser {
     if (close < 0 || this.macroDepth >= 4) return close < 0 ? this.tokens.length : close + 1;
     const args = this.tokens.slice(bang + 2, close);
     /* v8 ignore next */
-    const rules = this.macros.get(name) ?? this.externalMacros.get(name) ?? [];
+    const rules = this.macros.get(name) ?? this.crateMacros.get(name) ?? this.externalMacros.get(name) ?? [];
     for (const rule of rules) {
       const captured = this.matchMacroRule(rule.matcher, args);
       if (!captured) continue;
@@ -645,7 +647,7 @@ class RustParser {
         aliases: [],
         failures: { count: 0 },
       };
-      const child = new RustParser(childContext, this.externalMacros);
+      const child = new RustParser(childContext, this.externalMacros, this.crateMacros);
       for (const [macroName, macroRules] of this.macros.entries()) child.macros.set(macroName, macroRules);
       this.macroDepth += 1;
       child.parseRange(0, childLexed.tokens.length, namespace, enabled, parentName, implicitPublic);
@@ -1155,6 +1157,7 @@ function buildRustChildren(context: ParserContext, parents: Map<string, Symbol>)
 export function extractRust(root: string, files: string[]): ExtractResult {
   const contexts: ParserContext[] = [];
   const globalAliases: UseAlias[] = [];
+  const crateMacros = new Map<string, Map<string, MacroRule[]>>();
   const sources: Array<{
     rel: string;
     source: string;
@@ -1187,6 +1190,9 @@ export function extractRust(root: string, files: string[]): ExtractResult {
 
   const exportedMacros = new Map<string, MacroRule[]>();
   for (const source of sources) {
+    const packageKey = `${source.packageInfo.root}\0${source.packageInfo.name}`;
+    const packageMacros = crateMacros.get(packageKey) ?? new Map<string, MacroRule[]>();
+    crateMacros.set(packageKey, packageMacros);
     const context: ParserContext = {
       source: source.source,
       lexed: source.lexed,
@@ -1198,10 +1204,12 @@ export function extractRust(root: string, files: string[]): ExtractResult {
       aliases: [],
       failures: { count: 0 },
     };
-    new RustParser(context, exportedMacros).parseRange(0, source.lexed.tokens.length, "", true);
+    new RustParser(context, exportedMacros, packageMacros).parseRange(0, source.lexed.tokens.length, "", true);
   }
 
   for (const source of sources) {
+    const packageKey = `${source.packageInfo.root}\0${source.packageInfo.name}`;
+    const packageMacros = crateMacros.get(packageKey) ?? new Map<string, MacroRule[]>();
     const context: ParserContext = {
       source: source.source,
       lexed: source.lexed,
@@ -1213,7 +1221,7 @@ export function extractRust(root: string, files: string[]): ExtractResult {
       aliases: [],
       failures: { count: 0 },
     };
-    const parser = new RustParser(context, exportedMacros);
+    const parser = new RustParser(context, exportedMacros, packageMacros);
     parser.parseRange(0, source.lexed.tokens.length, "", true);
     parseFailures += context.failures.count;
     globalAliases.push(...context.aliases);

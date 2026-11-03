@@ -1,5 +1,7 @@
 # Macro API
 
+Call `private_generated()` for the sibling-module macro.
+
 Call `alpha.one()` and read `alpha.two` for the first independent group.
 
 Call `beta.five()` for the second independent group.

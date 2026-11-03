@@ -1,5 +1,7 @@
+#[macro_use]
 mod macros;
 
+private_make!(private_generated);
 crate::define_public!(generated, generated_public);
 crate::define_nested!(nested_one, nested_two; nested_three);
 crate::define_grouped!(

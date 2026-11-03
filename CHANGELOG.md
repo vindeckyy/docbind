@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.12] - 2026-11-03
+
+### Added
+
+- Non-exported `macro_rules!` definitions are collected per package and resolve across sibling modules.
+- Macro corpus fixture now invokes a plain sibling-module macro under `#[macro_use]`.
+
+### Improved
+
+- Macro fixture bind rate rose from 8 to 9 anchors. Seeded mutations rose from 5 to 7, all detected.
+- Corpus now detects 19 of 19 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Crate-wide macro collection is name-based. Same-name non-exported macros in different modules let the last definition win.
+- `?` repetition and general proc-macro bodies remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.11] - 2026-11-03
 
 ### Added
@@ -212,3 +230,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.9]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.9
 [0.1.10]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.10
 [0.1.11]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.11
+[0.1.12]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.12

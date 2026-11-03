@@ -23,3 +23,9 @@ macro_rules! define_grouped {
         )*
     };
 }
+
+macro_rules! private_make {
+    ($name:ident) => {
+        pub fn $name() -> u8 { 4 }
+    };
+}

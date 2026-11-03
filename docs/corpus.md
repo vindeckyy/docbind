@@ -17,7 +17,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
 | encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
-| macro-fixture (local) | Rust | 1 | 8 | 8 | 0 | 5 | 5 | 0 | 0 |
+| macro-fixture (local) | Rust | 1 | 9 | 9 | 0 | 7 | 7 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
@@ -34,6 +34,10 @@ The same run also found a missed mutation. Removing the typed declaration for `s
 ## Nested macro capture groups
 
 The macro fixture now defines a `macro_rules!` pattern with an outer group list and two independent inner lists, one for argument names and types and one for return names and types. Each group has a different number of entries. Generated modules keep their own members: `alpha` gets `one`, `two`, and `three`, while `beta` gets `four`, `five`, and `six`. The fixture binds 8 of 8 anchors and detects 5 of 5 mutations, including one symbol from each independent group.
+
+## Non-exported sibling macros
+
+The fixture also defines a plain `macro_rules!` in `src/macros.rs` without `#[macro_export]` and invokes it from `src/lib.rs` under `#[macro_use]`. The first extraction pass now collects every definition for the package, so sibling-module macros resolve crate-wide. The fixture binds 9 of 9 anchors and detects 7 of 7 mutations.
 
 ## Bind-rate improvement
 
@@ -52,7 +56,8 @@ Python fences then gained local type inference. Source return annotations feed a
 - proc-macro-fixture enables the opt-in rustdoc JSON extractor. It requires `cargo +nightly` and executes a proc macro during extraction.
 - Standard derives such as `Clone`, `Default`, `Debug`, `PartialEq`, `PartialOrd`, `Ord`, and `Hash` are synthesized for public Rust types.
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
-- `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, nested repetition with independent capture groups, separate top-level repetition lists, and cross-file `#[macro_export]` macros. It does not handle `?` repetition, non-exported cross-file macros, or general proc-macro output.
+- `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, nested repetition with independent capture groups, separate top-level repetition lists, cross-file `#[macro_export]` macros, and non-exported sibling-module macros. It does not handle `?` repetition or general proc-macro output.
+- Non-exported macros are collected crate-wide per package. If two modules define the same macro name, the last definition wins.
 - anyhow binds five anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.

@@ -128,6 +128,18 @@ macro_rules! cross {
     };
 }
 `,
+    "src/private_macros.rs": `
+macro_rules! private_make {
+    ($name:ident) => {
+        pub fn $name() -> u8 { 4 }
+    };
+}
+`,
+    "src/private_use.rs": `
+#[macro_use]
+mod private_macros;
+private_make!(private_generated);
+`,
     "src/cross.rs": `
 mod macros;
 crate::cross!(cross_one, cross_two);
@@ -187,6 +199,13 @@ describe("Rust macro expansion", () => {
     expect(groups.symbols.find((symbol) => symbol.name === "y")?.shape.returnType).toBe("u8");
     const independent = extractRust(root, ["src/independent.rs"]);
     expect(independent.symbols.map((symbol) => symbol.name)).toEqual(["l1", "l2", "r1"]);
+  });
+
+  it("expands non-exported macros from sibling modules", () => {
+    const root = macroProject();
+    const result = extractRust(root, ["src/private_macros.rs", "src/private_use.rs"]);
+    expect(result.symbols.map((symbol) => symbol.name)).toContain("private_generated");
+    expect(result.symbols.find((symbol) => symbol.name === "private_generated")?.shape.returnType).toBe("u8");
   });
 
   it("survives malformed macro definitions", () => {
