@@ -35,12 +35,19 @@ interface JavaContext {
   failures: number;
 }
 
-function javaFlags(annotations: string[]): ContractFlag[] {
+interface JavaAnnotation {
+  name: string;
+  args?: string;
+}
+
+function javaFlags(annotations: JavaAnnotation[]): ContractFlag[] {
   const flags: ContractFlag[] = [];
   for (const annotation of annotations) {
-    const simple = annotation.split(".").pop() as string;
+    const simple = annotation.name.split(".").pop() as string;
     if (simple === "Deprecated") flags.push("deprecated");
-    else if (simple !== "Override") flags.push(`annotation:${simple}`);
+    else if (simple !== "Override") {
+      flags.push(`annotation:${simple}${annotation.args ? `(${annotation.args})` : ""}`);
+    }
   }
   return flags;
 }
@@ -122,7 +129,7 @@ class JavaParser {
   parse(): void {
     const tokens = this.context.lexed.tokens;
     let index = 0;
-    let annotations: string[] = [];
+    let annotations: JavaAnnotation[] = [];
     while (index < tokens.length) {
       const token = tokens[index] as Token;
       if (token.value === "package") {
@@ -138,7 +145,7 @@ class JavaParser {
       }
       if (token.value === "@") {
         const annotation = this.annotationAt(index);
-        if (annotation.name) annotations.push(annotation.name);
+        if (annotation.name) annotations.push(annotation);
         index = annotation.end;
         continue;
       }
@@ -163,7 +170,7 @@ class JavaParser {
     return "package";
   }
 
-  private annotationAt(index: number): { end: number; name: string } {
+  private annotationAt(index: number): JavaAnnotation & { end: number } {
     const tokens = this.context.lexed.tokens;
     let cursor = index + 1;
     let name = "";
@@ -178,15 +185,23 @@ class JavaParser {
       name = `${name}.${(tokens[cursor + 1] as Token).value}`;
       cursor += 2;
     }
+    let args: string | undefined;
     if ((tokens[cursor] as Token | undefined)?.value === "(") {
       const close = findMatching(tokens, cursor, "(", ")");
+      if (close > cursor) {
+        const raw = this.context.source
+          .slice((tokens[cursor] as Token).end, (tokens[close] as Token).start)
+          .replace(/\s+/gu, " ")
+          .trim();
+        if (raw.length > 0) args = raw;
+      }
       /* v8 ignore next */
       cursor = close < 0 ? cursor + 1 : close + 1;
     }
-    return { end: cursor, name };
+    return { end: cursor, name, ...(args ? { args } : {}) };
   }
 
-  private parseType(index: number, namespace = "", annotations: string[] = []): number {
+  private parseType(index: number, namespace = "", annotations: JavaAnnotation[] = []): number {
     const tokens = this.context.lexed.tokens;
     const keyword = (tokens[index] as Token).value;
     const nameToken = tokens[index + 1] as Token | undefined;
@@ -240,7 +255,7 @@ class JavaParser {
   private parseMembers(typePath: string, start: number, end: number, isInterface: boolean): void {
     const tokens = this.context.lexed.tokens;
     let index = start;
-    let annotations: string[] = [];
+    let annotations: JavaAnnotation[] = [];
     while (index < end) {
       const token = tokens[index] as Token;
       /* v8 ignore next */
@@ -250,7 +265,7 @@ class JavaParser {
       }
       if (token.value === "@") {
         const annotation = this.annotationAt(index);
-        if (annotation.name) annotations.push(annotation.name);
+        if (annotation.name) annotations.push(annotation);
         index = Math.min(annotation.end, end);
         continue;
       }
@@ -315,7 +330,7 @@ class JavaParser {
     paren: number,
     end: number,
     visibility: string,
-    annotations: string[] = [],
+    annotations: JavaAnnotation[] = [],
   ): number {
     const tokens = this.context.lexed.tokens;
     const close = findMatching(tokens, paren, "(", ")");
@@ -377,7 +392,7 @@ class JavaParser {
     start: number,
     semicolon: number,
     visibility: string,
-    annotations: string[] = [],
+    annotations: JavaAnnotation[] = [],
   ): void {
     const tokens = this.context.lexed.tokens;
     let nameIndex = semicolon - 1;

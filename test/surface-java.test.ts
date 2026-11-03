@@ -166,6 +166,8 @@ describe("Java surface", () => {
       "src/Annotated.java": [
         "@com.example.Audited",
         "@SuppressWarnings(\"unused\")",
+        "@NoArgs",
+        "@Empty()",
         "public class Annotated {",
         "    @Deprecated",
         "    public void old() {}",
@@ -178,6 +180,9 @@ describe("Java surface", () => {
     const result = extractJava(root, ["src/Annotated.java"]);
     const type = result.symbols.find((symbol) => symbol.name === "Annotated");
     expect(type?.contractFlags).toContain("annotation:Audited");
+    expect(type?.contractFlags).toContain('annotation:SuppressWarnings("unused")');
+    expect(type?.contractFlags).toContain("annotation:NoArgs");
+    expect(type?.contractFlags).toContain("annotation:Empty");
     expect(result.symbols.find((symbol) => symbol.name === "old")?.contractFlags).toContain("deprecated");
     expect(result.javadocs?.some((entry) => entry.owner === undefined)).toBe(true);
     expect(() => extractJava(tempProject({ "src/Odd.java": "@123\npublic class Odd {}" }), ["src/Odd.java"])).not.toThrow();

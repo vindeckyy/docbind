@@ -15,6 +15,10 @@ public class Client {
         return "";
     }
 
+    /** Helper: {@link #helper()}. */
+    @SuppressWarnings("unused")
+    public void helper() {}
+
     /** Legacy call: {@link #legacy()}. */
     @Deprecated
     public void legacy() {}

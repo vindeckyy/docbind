@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.54] - 2026-11-03
+
+### Added
+
+- Java annotation arguments are captured into contract flags, for example `annotation:SuppressWarnings("unused")`.
+- Whitespace in arguments is normalized; string values are preserved.
+- `java-javadoc-fixture` adds an annotated helper method and detects 11 of 11 mutations.
+
+### Limits
+
+- Annotation arguments are stored as raw normalized text, not parsed names and values.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.53] - 2026-11-03
 
 ### Added
@@ -991,3 +1004,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.51]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.51
 [0.1.52]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.52
 [0.1.53]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.53
+[0.1.54]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.54
