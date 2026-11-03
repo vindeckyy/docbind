@@ -39,3 +39,11 @@ func f(v *Viper) {
 v := viper.Default
 v.FromDefault("key")
 ```
+
+```go
+func loadViper() *Viper { return New() }
+func useHelper() {
+    v := loadViper()
+    v.Helper("key")
+}
+```

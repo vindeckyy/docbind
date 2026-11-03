@@ -226,6 +226,15 @@ describe("Go fence inference", () => {
     expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(2);
   });
 
+  it("types fence-local helper calls from their signatures", () => {
+    const result = fenceAnchors(
+      { ...code("func load() *Viper { return &Viper{} }\nfunc use() {\n    v := load()\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

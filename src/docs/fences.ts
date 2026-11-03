@@ -386,10 +386,14 @@ function pyFenceAnchors(
   return { anchors, imports };
 }
 
-function inferGoExpression(expression: string, hints: GoTypeHints): string | undefined {
+function inferGoExpression(
+  expression: string,
+  hints: GoTypeHints,
+  localReturns?: Map<string, string>,
+): string | undefined {
   const cleaned = expression.trim().replace(/^&/u, "");
   const call = /^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\s*\(/u.exec(cleaned);
-  if (call?.[1]) return hints.returns.get(call[1]);
+  if (call?.[1]) return localReturns?.get(call[1]) ?? hints.returns.get(call[1]);
   const composite = /^([A-Za-z_]\w*)\s*\{/u.exec(cleaned);
   if (composite?.[1] && hints.types.has(composite[1])) return composite[1];
   return hints.values.get(cleaned);
@@ -398,6 +402,16 @@ function inferGoExpression(expression: string, hints: GoTypeHints): string | und
 function goAnnotationType(annotation: string): string | undefined {
   const names = annotation.replace(/[\[\]]/gu, " ").match(/[A-Za-z_]\w*/gu) ?? [];
   return names[names.length - 1];
+}
+
+function goFunctionReturns(value: string): Map<string, string> {
+  const result = new Map<string, string>();
+  for (const match of value.matchAll(/\bfunc\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)\s*\(([\s\S]*?)\)\s*([^{;]*?)\{/gu)) {
+    const declared = ((match[3] as string).trim().replace(/^\(/u, "").split(",")[0] as string).trim();
+    const type = goAnnotationType(declared);
+    if (type && /^[A-Z]/u.test(type)) result.set(match[1] as string, type);
+  }
+  return result;
 }
 
 function goFunctionParameters(value: string): Map<string, string> {
@@ -445,6 +459,7 @@ function lexFenceAnchors(
   const imports: Record<string, ImportRef> = {};
   const locals = new Set<string>();
   const parameters = language === "go" ? goFunctionParameters(value) : new Map<string, string>();
+  const helperReturns = language === "go" ? goFunctionReturns(value) : new Map<string, string>();
   for (const line of value.split("\n")) {
     if (language === "rust") {
       const use = /^\s*use\s+([\w:]+)(?:\s+as\s+(\w+))?;/u.exec(line);
@@ -468,16 +483,17 @@ function lexFenceAnchors(
   }
   for (const name of parameters.keys()) locals.add(name);
   const localTypes = new Map<string, string>(parameters);
+  const goFallback: GoTypeHints = { types: new Set(), returns: new Map(), values: new Map() };
   const inferGoValue = (expression: string): string | undefined => {
     const alias = /^([A-Za-z_]\w*)$/u.exec(expression.trim());
     if (alias?.[1]) return localTypes.get(alias[1]);
-    return inferGoExpression(expression, goHints as GoTypeHints);
+    return inferGoExpression(expression, goHints ?? goFallback, helperReturns);
   };
   const setGoType = (name: string, type: string | undefined): void => {
     if (type) localTypes.set(name, type);
     else localTypes.delete(name);
   };
-  if (language === "go" && goHints) {
+  if (language === "go" && (goHints || helperReturns.size > 0)) {
     for (const line of value.split("\n")) {
       const declaration = /^\s*var\s+([A-Za-z_]\w*)\s*(.*)$/u.exec(line);
       if (declaration?.[1]) {
