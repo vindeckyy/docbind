@@ -34,3 +34,8 @@ func f(v *Viper) {
     v.Param("key")
 }
 ```
+
+```go
+v := viper.Default
+v.FromDefault("key")
+```

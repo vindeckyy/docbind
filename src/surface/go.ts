@@ -644,6 +644,7 @@ function buildGoTopSymbols(context: GoContext): Symbol[] {
       bodyHash: bodyHash(draft.body),
       contractFlags: draft.shape.flags ?? [],
       packageExport: true,
+      ...(draft.kind === "const" ? { goValue: draft.body } : {}),
       ...(draft.reexport ? { goReexport: draft.reexport } : {}),
       line: lineOf(context.source, draft.start),
       filePath: context.filePath,

@@ -392,7 +392,7 @@ function inferGoExpression(expression: string, hints: GoTypeHints): string | und
   if (call?.[1]) return hints.returns.get(call[1]);
   const composite = /^([A-Za-z_]\w*)\s*\{/u.exec(cleaned);
   if (composite?.[1] && hints.types.has(composite[1])) return composite[1];
-  return undefined;
+  return hints.values.get(cleaned);
 }
 
 function goAnnotationType(annotation: string): string | undefined {

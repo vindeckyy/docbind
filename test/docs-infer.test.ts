@@ -145,8 +145,28 @@ describe("Go fence inference", () => {
       aliases: ["New", "viper.New"],
       shape: { ...shape, returnType: "*Viper" },
     });
-    const hints = buildGoTypeHints([viper, get, make]);
+    const defaultVar = symbol("Default", {
+      id: "default",
+      kind: "const",
+      packageName: "viper",
+      qualifiedName: "viper.Default",
+      aliases: ["viper.Default"],
+      goValue: "New()",
+      shape: { ...shape, kind: "const", typeShape: "expression" },
+    });
+    const emptyVar = symbol("Empty", {
+      id: "empty",
+      kind: "const",
+      packageName: "viper",
+      qualifiedName: "viper.Empty",
+      aliases: ["viper.Empty"],
+      goValue: "Viper{}",
+      shape: { ...shape, kind: "const", typeShape: "expression" },
+    });
+    const hints = buildGoTypeHints([viper, get, make, defaultVar, emptyVar]);
     expect(hints.returns.get("viper.New")).toBe("Viper");
+    expect(hints.values.get("viper.Default")).toBe("Viper");
+    expect(hints.values.get("viper.Empty")).toBe("Viper");
     const result = fenceAnchors(
       {
         ...code([
@@ -170,6 +190,8 @@ describe("Go fence inference", () => {
           "initialized.Get(\"initialized\")",
           "var inferred = viper.New()",
           "inferred.Get(\"inferred\")",
+          "defaulted := viper.Default",
+          "defaulted.Get(\"default\")",
           "x := 1",
           "",
         ].join("\n")),
@@ -182,7 +204,7 @@ describe("Go fence inference", () => {
     );
     const tokens = result.anchors.map((anchor) => anchor.token);
     expect(tokens).toContain("viper.New");
-    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(8);
+    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(9);
   });
 
   it("types function parameters from their signatures", () => {

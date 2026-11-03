@@ -12,4 +12,8 @@ func (v *Viper) Copied(key string) any { return nil }
 
 func (v *Viper) Param(key string) any { return nil }
 
+func (v *Viper) FromDefault(key string) any { return nil }
+
 func New() *Viper { return &Viper{} }
+
+var Default = New()

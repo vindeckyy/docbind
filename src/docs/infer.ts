@@ -8,6 +8,7 @@ export interface PythonTypeHints {
 export interface GoTypeHints {
   types: Set<string>;
   returns: Map<string, string>;
+  values: Map<string, string>;
 }
 
 function returnTypeName(raw: string | undefined): string | undefined {
@@ -92,5 +93,31 @@ export function buildGoTypeHints(symbols: Symbol[]): GoTypeHints {
   for (const [key, values] of returns) {
     if (values.size === 1) resolved.set(key, [...values][0] as string);
   }
-  return { types, returns: resolved };
+
+  const valueTypes = new Map<string, Set<string>>();
+  const addValue = (key: string, type: string): void => {
+    const values = valueTypes.get(key) ?? new Set<string>();
+    values.add(type);
+    valueTypes.set(key, values);
+  };
+  for (const symbol of symbols) {
+    if (symbol.parentId || !symbol.goValue) continue;
+    const cleaned = symbol.goValue.trim().replace(/^&/u, "");
+    const call = /^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\s*\(/u.exec(cleaned);
+    const composite = /^([A-Za-z_]\w*)\s*\{/u.exec(cleaned);
+    const type = call?.[1]
+      ? resolved.get(call[1]) ?? resolved.get(`${symbol.packageName}.${call[1]}`)
+      : composite?.[1] && types.has(composite[1]) ? composite[1] : undefined;
+    if (!type) continue;
+    const keys = new Set<string>([symbol.name, `${symbol.packageName}.${symbol.name}`]);
+    for (const alias of symbol.aliases) {
+      if (alias.includes(".")) keys.add(alias);
+    }
+    for (const key of keys) addValue(key, type);
+  }
+  const values = new Map<string, string>();
+  for (const [key, found] of valueTypes) {
+    if (found.size === 1) values.set(key, [...found][0] as string);
+  }
+  return { types, returns: resolved, values };
 }

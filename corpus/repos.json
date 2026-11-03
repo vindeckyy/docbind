@@ -153,7 +153,7 @@
       "rust": false,
       "go": true
     },
-    "mutations": 16
+    "mutations": 18
   },
   {
     "name": "go-cycle-fixture",

@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.28] - 2026-11-03
+
+### Added
+
+- Go fence inference types package-level variables from constructor calls and composite literals.
+- `var Default = New()` lets `v := viper.Default` resolve `v.Get()` to `Viper.Get`.
+- Local Go fixture covers a package variable with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 20 to 22 bound anchors and from 16 to 18 detected mutations.
+- Corpus now detects 47 of 47 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go fence inference does not type externally supplied values.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.27] - 2026-11-03
 
 ### Added
@@ -522,3 +540,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.25]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.25
 [0.1.26]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.26
 [0.1.27]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.27
+[0.1.28]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.28

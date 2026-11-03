@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:32:02.637Z",
+  "generatedAt": "2026-11-03T19:36:53.884Z",
   "report": [
     {
       "name": "slugify",
@@ -429,8 +429,8 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 20,
-      "bound": 20,
+      "anchors": 22,
+      "bound": 22,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -582,6 +582,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "FromDefault",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Wrapped",
           "rule": "L4-renamed",
           "hit": true,
@@ -604,6 +615,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "Default",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Target",
           "rule": "L4-renamed",
           "hit": true,
@@ -615,7 +637,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 16,
+      "hits": 18,
       "misses": 0,
       "collateral": 0
     },
