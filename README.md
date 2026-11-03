@@ -125,19 +125,21 @@ The full design is in [docs/architecture.md](docs/architecture.md).
 
 ## Install
 
+The `docbind` npm name is held by an unrelated package. Install from source for now.
+
 ```sh
-npm install --save-dev docbind
-npx docbind init
-npx docbind check
+git clone https://github.com/vindeckyy/docbind.git
+cd docbind
+npm ci
+npm run build
+npm link
+docbind init
+docbind check
 ```
 
 Commit `docbind.lock.json`. Run `docbind lock` after changing docs.
 
-Without installing:
-
-```sh
-npx docbind check
-```
+A scoped npm package is reserved as `@vindeckyy/docbind` but is not published yet.
 
 ## CLI
 
@@ -162,7 +164,7 @@ docbind stats
 ## CI
 
 ```yaml
-- run: npx docbind check --sarif docbind.sarif
+- run: npx --yes github:vindeckyy/docbind check --sarif docbind.sarif
 - uses: github/codeql-action/upload-sarif@v3
   if: always()
   with:

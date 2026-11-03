@@ -11,7 +11,7 @@ body:
     id: version
     attributes:
       label: docbind version
-      description: Output of `npx docbind --version`.
+      description: Output of `docbind --version`.
     validations:
       required: true
   - type: dropdown
@@ -47,7 +47,7 @@ body:
     id: explain
     attributes:
       label: Explain output
-      description: Run `npx docbind explain <doc>:<line>` and paste the result.
+      description: Run `docbind explain <doc>:<line>` and paste the result.
       render: text
   - type: textarea
     id: expected

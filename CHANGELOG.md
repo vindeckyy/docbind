@@ -16,6 +16,11 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 - Go methods declared in a different file from their receiver type.
 - Rust impl methods declared in a different file from their type.
 
+### Changed
+
+- Package name is now `@vindeckyy/docbind`. The unscoped `docbind` npm name belongs to an unrelated package.
+- Source install and GitHub Action instructions no longer call the unscoped npm package.
+
 ## [0.1.0] - 2026-11-03
 
 ### Added

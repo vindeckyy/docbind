@@ -14,9 +14,9 @@ docbind stats
 ## First run
 
 ```sh
-npx docbind init
-npx docbind lock
-npx docbind check
+docbind init
+docbind lock
+docbind check
 ```
 
 `init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only.
@@ -24,7 +24,7 @@ npx docbind check
 ## CI
 
 ```yaml
-- run: npx docbind check --sarif docbind.sarif
+- run: npx --yes github:vindeckyy/docbind check --sarif docbind.sarif
 - uses: github/codeql-action/upload-sarif@v3
   if: always()
   with:
@@ -43,15 +43,15 @@ Exit codes:
 For pull requests, commit the lock after changing docs:
 
 ```sh
-npx docbind lock
-npx docbind lock --check
+docbind lock
+docbind lock --check
 ```
 
 ## Fixing
 
 ```sh
-npx docbind fix
-npx docbind fix --write
+docbind fix
+docbind fix --write
 ```
 
 The fix engine rewrites rename tokens and moved qualified paths. It refuses signature changes. It preserves bytes outside the span.
@@ -59,7 +59,7 @@ The fix engine rewrites rename tokens and moved qualified paths. It refuses sign
 ## Debugging a finding
 
 ```sh
-npx docbind explain docs/api.md:42
+docbind explain docs/api.md:42
 ```
 
 The output lists candidates, score evidence, vetoes, and the lock entry. Use it before filing a bug.

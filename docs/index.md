@@ -9,10 +9,16 @@ This is static analysis. No build, no project code execution, no network.
 ## Quick start
 
 ```sh
-npm install --save-dev docbind
-npx docbind init
-npx docbind check
+git clone https://github.com/vindeckyy/docbind.git
+cd docbind
+npm ci
+npm run build
+npm link
+docbind init
+docbind check
 ```
+
+The `docbind` npm name belongs to an unrelated package. The scoped package `@vindeckyy/docbind` is not published yet.
 
 Commit `docbind.lock.json`. Review findings in CI. Fix safe renames with `docbind fix --write`.
 

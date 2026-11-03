@@ -1,5 +1,5 @@
 {
-  "name": "docbind",
+  "name": "@vindeckyy/docbind",
   "version": "0.1.0",
   "description": "Static analysis for stale symbol references in markdown. Supports TypeScript, JavaScript, Python, Rust, and Go.",
   "type": "module",
@@ -19,7 +19,9 @@
     "gate:struct": "tsx scripts/struct-gate.ts",
     "gate": "npm run coverage && npm run gate:changed -- --all && npm run gate:struct",
     "typecheck": "tsc --noEmit",
-    "demo": "tsx scripts/demo.ts"
+    "demo": "tsx scripts/demo.ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run gate"
   },
   "dependencies": {
     "ignore": "^7.0.14",
@@ -71,5 +73,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "private": false
 }
