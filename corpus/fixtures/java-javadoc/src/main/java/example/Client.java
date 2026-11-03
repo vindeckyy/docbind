@@ -20,7 +20,7 @@ public class Client {
     public void helper() {}
 
     /** Command: {@link #command()}. */
-    @Command(value = "run", retries = 2)
+    @Command(value = "run", retries = 2, nested = @Inner(level = 1))
     public void command() {}
 
     /** Routes: {@link #routes()}. */

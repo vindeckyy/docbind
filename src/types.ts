@@ -56,6 +56,7 @@ export interface AnnotationArgument {
   value: string;
   kind: AnnotationArgumentKind;
   literal?: string | number | boolean;
+  items?: AnnotationArgument[];
 }
 
 export interface AnnotationShape {

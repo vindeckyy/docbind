@@ -172,6 +172,7 @@ describe("Java surface", () => {
         "@Named(value = \"x\", count = 2)",
         "@Values({\"a,b\", \"c\"})",
         "@Typed(number = 42, flag = true, mode = Mode.FAST, type = Client.class)",
+        "@Nested(inner = @Inner(level = 1, label = \"a)b,c\"), bare = @Bare, char = 'x', huge = 1e999, matrix = {{1,2},{3}})",
         "public class Annotated {",
         "    @Deprecated",
         "    public void old() {}",
@@ -195,13 +196,51 @@ describe("Java surface", () => {
       { name: "count", value: "2", kind: "number", literal: 2 },
     ]);
     expect(annotations.find((annotation) => annotation.name === "Values")?.args).toEqual([
-      { value: '{"a,b", "c"}', kind: "array" },
+      {
+        value: '{"a,b", "c"}',
+        kind: "array",
+        items: [
+          { value: '"a,b"', kind: "string", literal: "a,b" },
+          { value: '"c"', kind: "string", literal: "c" },
+        ],
+      },
     ]);
     expect(annotations.find((annotation) => annotation.name === "Typed")?.args).toEqual([
       { name: "number", value: "42", kind: "number", literal: 42 },
       { name: "flag", value: "true", kind: "boolean", literal: true },
       { name: "mode", value: "Mode.FAST", kind: "enum", literal: "Mode.FAST" },
       { name: "type", value: "Client.class", kind: "class", literal: "Client" },
+    ]);
+    expect(annotations.find((annotation) => annotation.name === "Nested")?.args).toEqual([
+      {
+        name: "inner",
+        value: '@Inner(level = 1, label = "a)b,c")',
+        kind: "annotation",
+        items: [
+          { name: "level", value: "1", kind: "number", literal: 1 },
+          { name: "label", value: '"a)b,c"', kind: "string", literal: "a)b,c" },
+        ],
+      },
+      {
+        name: "bare",
+        value: "@Bare",
+        kind: "annotation",
+        items: [],
+      },
+      { name: "char", value: "'x'", kind: "string", literal: "x" },
+      { name: "huge", value: "1e999", kind: "expression" },
+      {
+        name: "matrix",
+        value: "{{1,2},{3}}",
+        kind: "array",
+        items: [
+          { value: "{1,2}", kind: "array", items: [
+            { value: "1", kind: "number", literal: 1 },
+            { value: "2", kind: "number", literal: 2 },
+          ] },
+          { value: "{3}", kind: "array", items: [{ value: "3", kind: "number", literal: 3 }] },
+        ],
+      },
     ]);
     expect(type?.contractFlags).toContain("annotation:Empty");
     expect(result.symbols.find((symbol) => symbol.name === "old")?.contractFlags).toContain("deprecated");
@@ -223,12 +262,30 @@ describe("Java surface", () => {
         args: [
           { name: "value", value: '"run"', kind: "string", literal: "run" },
           { name: "retries", value: "2", kind: "number", literal: 2 },
+          {
+            name: "nested",
+            value: "@Inner(level = 1)",
+            kind: "annotation",
+            items: [{ name: "level", value: "1", kind: "number", literal: 1 }],
+          },
         ],
       },
     ]);
     const routes = result.symbols.find((symbol) => symbol.name === "routes");
     expect(routes?.shape.annotations).toEqual([
-      { name: "Routes", args: [{ value: '{"/a", "/b"}', kind: "array" }] },
+      {
+        name: "Routes",
+        args: [
+          {
+            value: '{"/a", "/b"}',
+            kind: "array",
+            items: [
+              { value: '"/a"', kind: "string", literal: "/a" },
+              { value: '"/b"', kind: "string", literal: "/b" },
+            ],
+          },
+        ],
+      },
     ]);
   });
 

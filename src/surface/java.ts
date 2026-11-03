@@ -47,31 +47,7 @@ interface JavaAnnotation {
   args?: string;
 }
 
-function annotationLiteral(raw: string): Pick<AnnotationArgument, "kind" | "literal"> {
-  const text = raw.trim();
-  if (text.startsWith("{") && text.endsWith("}")) return { kind: "array" };
-  if (text.startsWith("@")) return { kind: "annotation" };
-  if (text.startsWith("\"") && text.endsWith("\"")) {
-    try {
-      return { kind: "string", literal: JSON.parse(text) as string };
-    } catch {
-      return { kind: "string", literal: text.slice(1, -1) };
-    }
-  }
-  if (text.startsWith("'") && text.endsWith("'")) {
-    return { kind: "string", literal: text.slice(1, -1) };
-  }
-  if (text === "true" || text === "false") return { kind: "boolean", literal: text === "true" };
-  if (/^[-+]?(?:0x[0-9a-f]+|\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?[fFdDlL]?$/iu.test(text)) {
-    const numeric = Number(text.replace(/[fFdDlL]$/u, ""));
-    if (Number.isFinite(numeric)) return { kind: "number", literal: numeric };
-  }
-  if (/\.class$/u.test(text)) return { kind: "class", literal: text.slice(0, -6) };
-  if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/u.test(text)) return { kind: "enum", literal: text };
-  return { kind: "expression" };
-}
-
-function annotationArguments(raw: string): AnnotationArgument[] {
+function splitArguments(raw: string): string[] {
   const parts: string[] = [];
   let depth = 0;
   let quote = "";
@@ -94,31 +70,90 @@ function annotationArguments(raw: string): AnnotationArgument[] {
     }
   }
   parts.push(raw.slice(start));
-  return parts
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0)
-    .map((part) => {
-      let nested = 0;
-      let stringQuote = "";
-      for (let index = 0; index < part.length; index += 1) {
-        const char = part[index] as string;
-        if (stringQuote) {
-          if (char === stringQuote && part[index - 1] !== "\\") stringQuote = "";
-          continue;
-        }
-        if (char === "\"" || char === "'") {
-          stringQuote = char;
-          continue;
-        }
-        if (["(", "[", "{"].includes(char)) nested += 1;
-        else if ([")", "]", "}"].includes(char)) nested = Math.max(0, nested - 1);
-        else if (char === "=" && nested === 0) {
-          const value = part.slice(index + 1).trim();
-          return { name: part.slice(0, index).trim(), value, ...annotationLiteral(value) };
-        }
-      }
-      return { value: part, ...annotationLiteral(part) };
-    });
+  return parts.map((part) => part.trim()).filter((part) => part.length > 0);
+}
+
+function argumentAssignment(part: string): { name?: string; value: string } {
+  let depth = 0;
+  let quote = "";
+  for (let index = 0; index < part.length; index += 1) {
+    const char = part[index] as string;
+    if (quote) {
+      if (char === quote && part[index - 1] !== "\\") quote = "";
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (["(", "[", "{"].includes(char)) depth += 1;
+    else if ([")", "]", "}"].includes(char)) depth = Math.max(0, depth - 1);
+    else if (char === "=" && depth === 0) {
+      return { name: part.slice(0, index).trim(), value: part.slice(index + 1).trim() };
+    }
+  }
+  return { value: part };
+}
+
+function nestedAnnotationArguments(text: string): AnnotationArgument[] {
+  const open = text.indexOf("(");
+  if (open < 0) return [];
+  let depth = 0;
+  let quote = "";
+  for (let index = open; index < text.length; index += 1) {
+    const char = text[index] as string;
+    if (quote) {
+      if (char === quote && text[index - 1] !== "\\") quote = "";
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (char === "(") depth += 1;
+    else if (char === ")") {
+      depth -= 1;
+      if (depth === 0) return annotationArguments(text.slice(open + 1, index));
+    }
+  }
+  return [];
+}
+
+function annotationLiteral(raw: string): Pick<AnnotationArgument, "kind" | "literal" | "items"> {
+  const text = raw.trim();
+  if (text.startsWith("{") && text.endsWith("}")) {
+    return { kind: "array", items: splitArguments(text.slice(1, -1)).map(annotationArgument) };
+  }
+  if (text.startsWith("@")) {
+    return { kind: "annotation", items: nestedAnnotationArguments(text) };
+  }
+  if (text.startsWith("\"") && text.endsWith("\"")) {
+    try {
+      return { kind: "string", literal: JSON.parse(text) as string };
+    } catch {
+      return { kind: "string", literal: text.slice(1, -1) };
+    }
+  }
+  if (text.startsWith("'") && text.endsWith("'")) {
+    return { kind: "string", literal: text.slice(1, -1) };
+  }
+  if (text === "true" || text === "false") return { kind: "boolean", literal: text === "true" };
+  if (/^[-+]?(?:0x[0-9a-f]+|\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?[fFdDlL]?$/iu.test(text)) {
+    const numeric = Number(text.replace(/[fFdDlL]$/u, ""));
+    if (Number.isFinite(numeric)) return { kind: "number", literal: numeric };
+  }
+  if (/\.class$/u.test(text)) return { kind: "class", literal: text.slice(0, -6) };
+  if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/u.test(text)) return { kind: "enum", literal: text };
+  return { kind: "expression" };
+}
+
+function annotationArgument(part: string): AnnotationArgument {
+  const { name, value } = argumentAssignment(part);
+  return { ...(name ? { name } : {}), value, ...annotationLiteral(value) };
+}
+
+function annotationArguments(raw: string): AnnotationArgument[] {
+  return splitArguments(raw).map(annotationArgument);
 }
 
 function javaAnnotations(annotations: JavaAnnotation[]): AnnotationShape[] {

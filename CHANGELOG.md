@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.57] - 2026-11-03
+
+### Added
+
+- Java annotation arrays and nested annotations expand recursively into `items`.
+- Array elements keep their own names, kinds, literals, and nested items.
+- Nested annotation arguments are parsed with the same structure as top-level arguments.
+- `java-javadoc-fixture` adds a nested annotation argument and keeps 13 of 13 mutations.
+
+### Limits
+
+- Recursion follows source text only; cyclic annotation types are not evaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.56] - 2026-11-03
 
 ### Added
@@ -1035,3 +1049,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.54]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.54
 [0.1.55]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.55
 [0.1.56]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.56
+[0.1.57]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.57
