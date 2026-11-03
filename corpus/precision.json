@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T23:06:13.269Z",
+  "generatedAt": "2026-11-03T23:09:54.194Z",
   "scope": "local",
   "fixtures": "macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture,python-docstrings-fixture,python-asciidoc-fixture,java-javadoc-fixture",
   "rows": [

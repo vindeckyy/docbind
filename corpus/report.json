@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T23:07:29.644Z",
+  "generatedAt": "2026-11-03T23:10:56.622Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -950,7 +950,7 @@
           "collateralRules": []
         },
         {
-          "symbol": "RED",
+          "symbol": "routes",
           "kind": "value",
           "expectedRule": "L3-reshaped",
           "rule": "L3-reshaped",
@@ -964,20 +964,7 @@
         },
         {
           "symbol": "command",
-          "kind": "value",
-          "expectedRule": "L3-reshaped",
-          "rule": "L3-reshaped",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L3-reshaped"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "routes",
-          "kind": "value",
+          "kind": "annotation",
           "expectedRule": "L3-reshaped",
           "rule": "L3-reshaped",
           "hit": true,
@@ -991,6 +978,19 @@
         {
           "symbol": "routes",
           "kind": "annotation",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "RED",
+          "kind": "enum",
           "expectedRule": "L3-reshaped",
           "rule": "L3-reshaped",
           "hit": true,

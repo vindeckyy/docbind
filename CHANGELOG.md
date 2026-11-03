@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.68] - 2026-11-03
+
+### Changed
+
+- The `@Command(value = "run")` mutation is now token-located like the `@Routes` mutation, instead of a raw text replacement.
+- The `RED("red")` enum-argument mutation is now token-located: the harness finds the constant, bounds its constructor arguments, and replaces the unique matching string.
+- Raw value mutations are now limited to the `@Routes({"/a", "/b"})` case.
+- Mutation count stays 96; type mix is now 20 renames, 3 token-located edits, and 1 raw value edit for the Java fixture.
+
+### Limits
+
+- Token-located matching requires simple names and a unique string literal target.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.67] - 2026-11-03
 
 ### Added
@@ -1208,3 +1222,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.65]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.65
 [0.1.66]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.66
 [0.1.67]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.67
+[0.1.68]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.68

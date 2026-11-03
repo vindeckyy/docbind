@@ -18,20 +18,6 @@
   "valueMutations": [
     {
       "file": "src/main/java/example/Client.java",
-      "find": "RED(\"red\")",
-      "replace": "RED(\"crimson\")",
-      "symbol": "RED",
-      "expectedRule": "L3-reshaped"
-    },
-    {
-      "file": "src/main/java/example/Client.java",
-      "find": "@Command(value = \"run\", retries = 2, nested = @Inner(level = 1))",
-      "replace": "@Command(value = \"go\", retries = 2, nested = @Inner(level = 1))",
-      "symbol": "command",
-      "expectedRule": "L3-reshaped"
-    },
-    {
-      "file": "src/main/java/example/Client.java",
       "find": "@Routes({\"/a\", \"/b\"})",
       "replace": "@Routes({\"/a\", \"/c\"})",
       "symbol": "routes",
@@ -41,10 +27,28 @@
   "annotationMutations": [
     {
       "file": "src/main/java/example/Client.java",
+      "annotation": "Command",
+      "from": "run",
+      "to": "go",
+      "symbol": "command",
+      "expectedRule": "L3-reshaped"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
       "annotation": "Routes",
       "from": "/a",
       "to": "/z",
       "symbol": "routes",
+      "expectedRule": "L3-reshaped"
+    }
+  ],
+  "enumMutations": [
+    {
+      "file": "src/main/java/example/Client.java",
+      "constant": "RED",
+      "from": "red",
+      "to": "crimson",
+      "symbol": "RED",
       "expectedRule": "L3-reshaped"
     }
   ]

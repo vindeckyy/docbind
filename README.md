@@ -247,7 +247,7 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.67 tree:
+Measured on the 0.1.68 tree:
 
 | Gate | Result |
 |---|---|

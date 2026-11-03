@@ -42,11 +42,19 @@ interface CorpusEntry {
     symbol: string;
     expectedRule?: string;
   }>;
+  enumMutations?: Array<{
+    file: string;
+    constant: string;
+    from: string;
+    to: string;
+    symbol: string;
+    expectedRule?: string;
+  }>;
 }
 
 interface MutationResult {
   symbol: string;
-  kind?: "rename" | "value" | "annotation";
+  kind?: "rename" | "value" | "annotation" | "enum";
   expectedRule?: string;
   rule?: string;
   hit: boolean;
@@ -186,20 +194,22 @@ async function materialize(entry: CorpusEntry): Promise<string> {
   return target;
 }
 
-function replaceAnnotationString(source: string, annotation: string, from: string, to: string): string {
-  const tokens = lex(source, "java").tokens;
-  let open = -1;
-  for (let index = 0; index < tokens.length - 1; index += 1) {
-    if (tokens[index]?.value !== "@" || tokens[index + 1]?.value !== annotation) continue;
-    const paren = tokens.findIndex((token, cursor) => cursor > index + 1 && token.value === "(");
-    if (paren >= 0) {
-      open = paren;
-      break;
-    }
-  }
-  if (open < 0) throw new Error(`annotation not found: @${annotation}`);
+interface JavaToken {
+  value: string;
+  start: number;
+  end: number;
+}
+
+function replaceStringInParens(
+  source: string,
+  tokens: JavaToken[],
+  open: number,
+  label: string,
+  from: string,
+  to: string,
+): string {
   const close = findMatching(tokens, open, "(", ")");
-  if (close < 0) throw new Error(`unclosed annotation: @${annotation}`);
+  if (close < 0) throw new Error(`unclosed arguments: ${label}`);
   const bodyStart = tokens[open]?.end as number;
   const bodyEnd = tokens[close]?.start as number;
   const body = source.slice(bodyStart, bodyEnd);
@@ -212,10 +222,34 @@ function replaceAnnotationString(source: string, annotation: string, from: strin
         return false;
       }
     });
-  if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in @${annotation}, found ${matches.length}`);
+  if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in ${label}, found ${matches.length}`);
   const match = matches[0] as { text: string; index: number };
   const start = bodyStart + match.index;
   return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
+}
+
+function replaceAnnotationString(source: string, annotation: string, from: string, to: string): string {
+  const tokens = lex(source, "java").tokens;
+  let open = -1;
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    if (tokens[index]?.value !== "@" || tokens[index + 1]?.value !== annotation) continue;
+    const paren = tokens.findIndex((token, cursor) => cursor > index + 1 && token.value === "(");
+    if (paren >= 0) {
+      open = paren;
+      break;
+    }
+  }
+  if (open < 0) throw new Error(`annotation not found: @${annotation}`);
+  return replaceStringInParens(source, tokens, open, `@${annotation}`, from, to);
+}
+
+function replaceEnumArgumentString(source: string, constant: string, from: string, to: string): string {
+  const tokens = lex(source, "java").tokens;
+  const index = tokens.findIndex((token) => token.value === constant);
+  if (index < 0) throw new Error(`enum constant not found: ${constant}`);
+  const open = tokens[index + 1]?.value === "(" ? index + 1 : -1;
+  if (open < 0) throw new Error(`enum constant has no arguments: ${constant}`);
+  return replaceStringInParens(source, tokens, open, `enum constant ${constant}`, from, to);
 }
 
 function mutationTarget(symbol: Symbol): { path: string; lineIndex: number } | undefined {
@@ -402,6 +436,36 @@ for (const entry of selected) {
         symbol: annotationMutation.symbol,
         kind: "annotation",
         ...(annotationMutation.expectedRule ? { expectedRule: annotationMutation.expectedRule } : {}),
+        rule: relatedFindings[0]?.rule,
+        hit: ruleMatched,
+        findings: findings.length,
+        relatedRules: [...new Set(relatedFindings.map((finding) => finding.rule))],
+        collateral: collateralFindings.length,
+        collateralRules: [...new Set(collateralFindings.map((finding) => finding.rule))],
+      });
+    } finally {
+      writeFileSync(path, original);
+    }
+  }
+
+  for (const enumMutation of entry.enumMutations ?? []) {
+    const path = join(".", enumMutation.file);
+    const original = readFileSync(path, "utf8");
+    writeFileSync(
+      path,
+      replaceEnumArgumentString(original, enumMutation.constant, enumMutation.from, enumMutation.to),
+    );
+    try {
+      const findings = findingsFor(checkout, config);
+      const relatedFindings = findings.filter((finding) => finding.message.includes(enumMutation.symbol));
+      const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));
+      const ruleMatched = enumMutation.expectedRule
+        ? relatedFindings.some((finding) => finding.rule === enumMutation.expectedRule)
+        : relatedFindings.length > 0;
+      mutations.push({
+        symbol: enumMutation.symbol,
+        kind: "enum",
+        ...(enumMutation.expectedRule ? { expectedRule: enumMutation.expectedRule } : {}),
         rule: relatedFindings[0]?.rule,
         hit: ruleMatched,
         findings: findings.length,
