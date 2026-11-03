@@ -2,6 +2,18 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Rust `macro_rules!` repetition patterns with comma and semicolon separators, `*` and `+`.
+- Cross-file `#[macro_export]` macro usage through `crate::name!` paths.
+- Macro fixture now exercises cross-file repetition and two generated functions.
+
+### Limits
+
+- Nested repetition, non-exported cross-file macros, proc macros, and derive output are not expanded.
+
 ## [0.1.3] - 2026-11-03
 
 ### Added

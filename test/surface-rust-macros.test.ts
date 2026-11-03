@@ -79,6 +79,26 @@ pub mod inner {
     nested!(nested_fn);
 }
 `,
+    "src/repeat.rs": `
+macro_rules! many {
+    ($($name:ident),*) => {
+        $( pub fn $name() -> u8 { 0 } )*
+    };
+}
+many!(one, two, three);
+`,
+    "src/macros.rs": `
+#[macro_export]
+macro_rules! cross {
+    ($($name:ident),*) => {
+        $( pub fn $name() -> u8 { 1 } )*
+    };
+}
+`,
+    "src/cross.rs": `
+mod macros;
+crate::cross!(cross_one, cross_two);
+`,
     "src/bad-macro1.rs": "macro_rules! empty { () => {}; } empty!;",
     "src/bad-macro2.rs": "macro_rules! empty { () => {}; } empty!(x",
     "src/bad-macro3.rs": "macro_rules! vis { ($vis:vis fn $name:ident()) => { $vis fn $name() {} }; } vis!(pub(crate fn a());",
@@ -112,6 +132,15 @@ describe("Rust macro expansion", () => {
     expect(names).not.toContain("c");
     expect(result.symbols.find((symbol) => symbol.name === "go")?.parentId).toContain("Thing");
     expect(result.symbols.find((symbol) => symbol.name === "nested_fn")?.qualifiedName).toContain("inner");
+  });
+
+  it("expands repetition and cross-file exported macros", () => {
+    const root = macroProject();
+    const repeated = extractRust(root, ["src/repeat.rs"]);
+    expect(repeated.symbols.map((symbol) => symbol.name)).toEqual(["one", "two", "three"]);
+    const cross = extractRust(root, ["src/macros.rs", "src/cross.rs"]);
+    const names = cross.symbols.map((symbol) => symbol.name);
+    expect(names).toEqual(expect.arrayContaining(["cross_one", "cross_two"]));
   });
 
   it("survives malformed macro definitions", () => {

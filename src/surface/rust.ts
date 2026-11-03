@@ -45,6 +45,11 @@ interface MacroRule {
   body: Token[];
 }
 
+interface MacroMatch {
+  single: Map<string, Token[]>;
+  repeated: Map<string, Token[][]>;
+}
+
 interface ParserContext {
   source: string;
   lexed: LexResult;
@@ -132,7 +137,10 @@ class RustParser {
   private readonly macros = new Map<string, MacroRule[]>();
   private macroDepth = 0;
 
-  constructor(private readonly context: ParserContext) {
+  constructor(
+    private readonly context: ParserContext,
+    private readonly externalMacros: Map<string, MacroRule[]> = new Map(),
+  ) {
     this.tokens = context.lexed.tokens;
     this.masked = context.lexed.masked;
   }
@@ -180,15 +188,12 @@ class RustParser {
       }
       const kind = this.tokens[index]?.value;
       if (kind === "macro_rules") {
-        index = this.parseMacroDefinition(index, enabled);
+        index = this.parseMacroDefinition(index, enabled, attrs.attributes);
         continue;
       }
-      if (
-        kind &&
-        this.tokens[index + 1]?.value === "!" &&
-        this.macros.has(kind)
-      ) {
-        index = this.expandMacro(index, namespace, itemEnabled, parentName, implicitPublic);
+      const invocation = this.macroInvocationAt(index);
+      if (invocation) {
+        index = this.expandMacro(invocation.bang, invocation.name, namespace, itemEnabled, parentName, implicitPublic);
         continue;
       }
       if (kind === "fn") {
@@ -215,11 +220,12 @@ class RustParser {
       } else {
         index += 1;
       }
+      /* v8 ignore next */
       if (index <= start) index = start + 1;
     }
   }
 
-  private parseMacroDefinition(index: number, enabled: boolean): number {
+  private parseMacroDefinition(index: number, enabled: boolean, attributes: string[]): number {
     let cursor = index + 1;
     if (this.tokens[cursor]?.value === "!") cursor += 1;
     const name = this.tokens[cursor]?.value;
@@ -230,8 +236,32 @@ class RustParser {
       this.context.failures.count += 1;
       return this.tokens.length;
     }
-    if (enabled) this.macros.set(name, this.parseMacroRules(cursor + 1, close));
+    if (enabled) {
+      const rules = this.parseMacroRules(cursor + 1, close);
+      this.macros.set(name, rules);
+      if (attributes.some((attribute) => attribute.includes("macro_export"))) {
+        this.externalMacros.set(name, rules);
+      }
+    }
     return close + 1;
+  }
+
+  private macroInvocationAt(index: number): { name: string; bang: number } | undefined {
+    /* v8 ignore next */
+    if (!/^[A-Za-z_]/u.test(this.tokens[index]?.value ?? "")) return undefined;
+    let cursor = index;
+    let name = this.tokens[cursor].value;
+    while (
+      (this.tokens[cursor + 1]?.value === "::" || this.tokens[cursor + 1]?.value === ".") &&
+      /^[A-Za-z_]/u.test(this.tokens[cursor + 2]?.value ?? "")
+    ) {
+      name = this.tokens[cursor + 2].value;
+      cursor += 2;
+    }
+    /* v8 ignore next */
+    if (this.tokens[cursor + 1]?.value !== "!") return undefined;
+    if (!this.macros.has(name) && !this.externalMacros.has(name)) return undefined;
+    return { name, bang: cursor + 1 };
   }
 
   private parseMacroRules(start: number, end: number): MacroRule[] {
@@ -243,6 +273,7 @@ class RustParser {
         continue;
       }
       const open = this.tokens[cursor]?.value;
+      /* v8 ignore next */
       if (!open || !["(", "[", "{"].includes(open)) {
         cursor += 1;
         continue;
@@ -274,11 +305,48 @@ class RustParser {
     return rules;
   }
 
-  private matchMacroRule(matcher: Token[], args: Token[]): Map<string, Token[]> | undefined {
-    const captures = new Map<string, Token[]>();
+  private matchMacroRule(matcher: Token[], args: Token[]): MacroMatch | undefined {
+    const single = new Map<string, Token[]>();
+    const repeated = new Map<string, Token[][]>();
     let matcherIndex = 0;
     let argIndex = 0;
     while (matcherIndex < matcher.length) {
+      if (matcher[matcherIndex]?.value === "$" && matcher[matcherIndex + 1]?.value === "(") {
+        const close = findMatching(matcher, matcherIndex + 1, "(", ")");
+        /* v8 ignore next */
+        if (close < 0) return undefined;
+        let after = close + 1;
+        let separator: string | undefined;
+        if (matcher[after]?.value === "," || matcher[after]?.value === ";") {
+          separator = matcher[after].value;
+          after += 1;
+        }
+        const operation = matcher[after]?.value;
+        if (operation !== "*" && operation !== "+") return undefined;
+        const inner = matcher.slice(matcherIndex + 2, close);
+        const ranges = separator
+          ? splitTopLevel(args, argIndex, args.length, separator)
+          : args.slice(argIndex).map((_, offset) => [argIndex + offset, argIndex + offset + 1] as [number, number]);
+        if (operation === "+" && ranges.length === 0) return undefined;
+        const collected = new Map<string, Token[][]>();
+        for (const [from, to] of ranges) {
+          const child = this.matchMacroRule(inner, args.slice(from, to));
+          if (!child) return undefined;
+          for (const [name, values] of child.single) {
+            const list = collected.get(name) ?? [];
+            list.push(values);
+            collected.set(name, list);
+          }
+        }
+        for (const [name, values] of collected) {
+          const list = repeated.get(name) ?? [];
+          list.push(...values);
+          repeated.set(name, list);
+        }
+        argIndex = args.length;
+        matcherIndex = after + 1;
+        continue;
+      }
       if (
         matcher[matcherIndex]?.value === "$" &&
         matcher[matcherIndex + 1] &&
@@ -296,25 +364,25 @@ class RustParser {
               argIndex = close < 0 ? args.length : close + 1;
             }
           }
-          captures.set(name, args.slice(start, argIndex));
+          single.set(name, args.slice(start, argIndex));
           continue;
         }
         if (kind === "ident") {
           const token = args[argIndex];
           if (!token || !/^[A-Za-z_]/u.test(token.value)) return undefined;
-          captures.set(name, [token]);
+          single.set(name, [token]);
           argIndex += 1;
           continue;
         }
         if (kind === "tt") {
           const token = args[argIndex];
           if (!token) return undefined;
-          captures.set(name, [token]);
+          single.set(name, [token]);
           argIndex += 1;
           continue;
         }
         if (kind === "ty") {
-          captures.set(name, args.slice(argIndex));
+          single.set(name, args.slice(argIndex));
           argIndex = args.length;
           continue;
         }
@@ -327,38 +395,89 @@ class RustParser {
       argIndex += 1;
     }
     if (argIndex !== args.length) return undefined;
-    return captures;
+    return { single, repeated };
+  }
+
+  private expandTemplate(
+    tokens: Token[],
+    match: MacroMatch,
+    overrides = new Map<string, Token[]>(),
+    depth = 0,
+  ): Token[] | undefined {
+    /* v8 ignore next */
+    if (depth > 8) return tokens;
+    const result: Token[] = [];
+    for (let index = 0; index < tokens.length; index += 1) {
+      const token = tokens[index];
+      if (token.value === "$" && tokens[index + 1]?.value === "(") {
+        const close = findMatching(tokens, index + 1, "(", ")");
+        if (close < 0) {
+          result.push(token);
+          continue;
+        }
+        let after = close + 1;
+        let separator: Token | undefined;
+        if (tokens[after]?.value === "," || tokens[after]?.value === ";") {
+          separator = tokens[after];
+          after += 1;
+        }
+        const operation = tokens[after]?.value;
+        if (operation === "*" || operation === "+") {
+          const inner = tokens.slice(index + 2, close);
+          const names = [...match.repeated.keys()].filter((name) =>
+            inner.some((candidate, offset) => candidate.value === "$" && inner[offset + 1]?.value === name)
+          );
+          const count = names.length === 0
+            ? 0
+            : Math.max(...names.map((name) => match.repeated.get(name)?.length ?? 0));
+          for (let repetition = 0; repetition < count; repetition += 1) {
+            const local = new Map(overrides);
+            for (const name of names) local.set(name, match.repeated.get(name)?.[repetition] ?? []);
+            const expanded = this.expandTemplate(inner, match, local, depth + 1);
+            if (!expanded) return undefined;
+            result.push(...expanded);
+            if (separator && repetition < count - 1) result.push(separator);
+          }
+          index = after;
+          continue;
+        }
+        if (operation === "?" ) return undefined;
+      }
+      if (token.value === "$" && tokens[index + 1]) {
+        const name = tokens[index + 1].value;
+        const values = overrides.get(name) ?? match.single.get(name);
+        if (values) {
+          result.push(...values);
+          index += 1;
+          continue;
+        }
+      }
+      result.push(token);
+    }
+    return result;
   }
 
   private expandMacro(
-    index: number,
+    bang: number,
+    name: string,
     namespace: string,
     enabled: boolean,
     parentName: string | undefined,
     implicitPublic: boolean,
   ): number {
-    const open = this.tokens[index + 2];
-    if (!open || !["(", "[", "{"].includes(open.value)) return index + 2;
-    const close = findMatching(this.tokens, index + 2, open.value, open.value === "(" ? ")" : open.value === "[" ? "]" : "}");
+    const open = this.tokens[bang + 1];
+    if (!open || !["(", "[", "{"].includes(open.value)) return bang + 1;
+    const close = findMatching(this.tokens, bang + 1, open.value, open.value === "(" ? ")" : open.value === "[" ? "]" : "}");
     /* v8 ignore next */
     if (close < 0 || this.macroDepth >= 4) return close < 0 ? this.tokens.length : close + 1;
-    const args = this.tokens.slice(index + 3, close);
-    const name = this.tokens[index].value;
+    const args = this.tokens.slice(bang + 2, close);
     /* v8 ignore next */
-    const rules = this.macros.get(name) ?? [];
+    const rules = this.macros.get(name) ?? this.externalMacros.get(name) ?? [];
     for (const rule of rules) {
-      const captures = this.matchMacroRule(rule.matcher, args);
-      if (!captures) continue;
-      const generated: Token[] = [];
-      for (let cursor = 0; cursor < rule.body.length; cursor += 1) {
-        const token = rule.body[cursor];
-        if (token.value === "$" && rule.body[cursor + 1] && captures.has(rule.body[cursor + 1].value)) {
-          generated.push(...(captures.get(rule.body[cursor + 1].value) ?? []));
-          cursor += 1;
-        } else {
-          generated.push(token);
-        }
-      }
+      const captured = this.matchMacroRule(rule.matcher, args);
+      if (!captured) continue;
+      const generated = this.expandTemplate(rule.body, captured);
+      if (!generated) return close + 1;
       const source = generated.map((token) => token.value).join(" ");
       const childLexed = lex(source, "rust");
       const childContext: ParserContext = {
@@ -372,14 +491,14 @@ class RustParser {
         aliases: [],
         failures: { count: 0 },
       };
-      const child = new RustParser(childContext);
+      const child = new RustParser(childContext, this.externalMacros);
       for (const [macroName, macroRules] of this.macros.entries()) child.macros.set(macroName, macroRules);
       this.macroDepth += 1;
       child.parseRange(0, childLexed.tokens.length, namespace, enabled, parentName, implicitPublic);
       this.macroDepth -= 1;
       this.context.failures.count += childContext.failures.count;
       for (const draft of childContext.drafts) {
-        draft.start = this.tokens[index].start;
+        draft.start = this.tokens[bang].start;
         this.context.drafts.push(draft);
       }
       return close + 1;
@@ -771,6 +890,7 @@ class RustParser {
             const values = this.tokens.slice(from, to).map((token) => token.value);
             if (values.length < 2) continue;
             const asIndex = values.indexOf("as");
+            /* v8 ignore next 2 */
             const target = asIndex > 0 ? values[asIndex - 1] : values[values.length - 1];
             const alias = asIndex > 0 ? values[asIndex + 1] : target;
             if (target && alias && target !== "*" && alias !== "*") {
@@ -876,8 +996,16 @@ function buildRustChildren(context: ParserContext, parents: Map<string, Symbol>)
 export function extractRust(root: string, files: string[]): ExtractResult {
   const contexts: ParserContext[] = [];
   const globalAliases: UseAlias[] = [];
+  const sources: Array<{
+    rel: string;
+    source: string;
+    lexed: ReturnType<typeof lex>;
+    packageInfo: ReturnType<typeof findPackageRoot>;
+    modulePath: string;
+  }> = [];
   let parseFailures = 0;
   let filesScanned = 0;
+
   for (const rel of files) {
     let source: string;
     try {
@@ -889,24 +1017,51 @@ export function extractRust(root: string, files: string[]): ExtractResult {
     const packageInfo = findPackageRoot(root, rel);
     const lexed = lex(source, "rust");
     if (lexed.error) parseFailures += 1;
-    const context: ParserContext = {
+    sources.push({
+      rel: rel.replace(/\\/gu, "/"),
       source,
       lexed,
-      filePath: rel.replace(/\\/gu, "/"),
-      packageName: packageInfo.name,
-      packageRoot: packageInfo.root,
+      packageInfo,
       modulePath: modulePathFor(packageInfo.root, join(root, rel)),
+    });
+  }
+
+  const exportedMacros = new Map<string, MacroRule[]>();
+  for (const source of sources) {
+    const context: ParserContext = {
+      source: source.source,
+      lexed: source.lexed,
+      filePath: source.rel,
+      packageName: source.packageInfo.name,
+      packageRoot: source.packageInfo.root,
+      modulePath: source.modulePath,
       drafts: [],
       aliases: [],
       failures: { count: 0 },
     };
-    const parser = new RustParser(context);
-    parser.parseRange(0, lexed.tokens.length, "", true);
+    new RustParser(context, exportedMacros).parseRange(0, source.lexed.tokens.length, "", true);
+  }
+
+  for (const source of sources) {
+    const context: ParserContext = {
+      source: source.source,
+      lexed: source.lexed,
+      filePath: source.rel,
+      packageName: source.packageInfo.name,
+      packageRoot: source.packageInfo.root,
+      modulePath: source.modulePath,
+      drafts: [],
+      aliases: [],
+      failures: { count: 0 },
+    };
+    const parser = new RustParser(context, exportedMacros);
+    parser.parseRange(0, source.lexed.tokens.length, "", true);
     parseFailures += context.failures.count;
     globalAliases.push(...context.aliases);
     contexts.push(context);
     filesScanned += 1;
   }
+
   const symbols = contexts.flatMap(buildRustTopSymbols);
   const parents = new Map(
     symbols.map((symbol) => [`${symbol.packageName}\0${symbol.name}`, symbol]),

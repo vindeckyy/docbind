@@ -38,7 +38,7 @@ The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`,
 ## Limits
 
 - macro-fixture is local. It exists to exercise generated items, not to represent an external project.
-- Macro expansion covers same-file `macro_rules!` definitions with `ident`, `vis`, `tt`, and `ty` fragments and literal matcher tokens. It does not handle repetition, cross-file macro imports, proc macros, or derive output.
+- Macro expansion covers `macro_rules!` definitions with `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, and cross-file `#[macro_export]` macros. It does not handle proc macros, derive output, nested repetition, or non-exported cross-file macros.
 - anyhow binds four anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name. Their docs use macros and ambiguous package and method names, so the confidence floor stays silent.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
 - The corpus uses four repositories. It is evidence, not a benchmark.
