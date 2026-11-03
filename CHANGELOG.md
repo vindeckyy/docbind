@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.9] - 2026-11-03
+
+### Added
+
+- Python package-qualified aliases such as `httpx.Client` and `httpx.Response.json`.
+- Python class-qualified method and attribute binding for names such as `Response.json()` and `Response.status_code`.
+
+### Fixed
+
+- Class-qualified references ending in a file-like suffix, such as `Response.json()`, are no longer vetoed as file paths.
+- httpx corpus bind rate rose from 34 to 65 anchors with zero baseline findings.
+
+### Limits
+
+- Instance-qualified Python references such as `response.json()` still need local type inference.
+- Nested repetition with independent capture trees and non-exported cross-file macros remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.8] - 2026-11-03
 
 ### Added
@@ -150,3 +168,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.6
 [0.1.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.7
 [0.1.8]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.8
+[0.1.9]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.9

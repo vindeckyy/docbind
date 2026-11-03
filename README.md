@@ -233,13 +233,13 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.8 tree:
+Measured on the 0.1.9 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 253 passing |
+| Tests | 255 passing |
 | Statements | 98.86% |
-| Branches | 95.1% |
+| Branches | 95.15% |
 | Functions | 99.48% |
 | Lines | 99.45% |
 | Changed-line coverage, feature diff | 99.88% |

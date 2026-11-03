@@ -13,9 +13,9 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | Repository | Language | Docs | Anchors | Bound | Baseline findings | Mutations | Hits | Misses | Collateral |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
-| dtolnay/anyhow | Rust | 1 | 79 | 4 | 0 | 2 | 2 | 0 | 0 |
+| dtolnay/anyhow | Rust | 1 | 79 | 5 | 0 | 2 | 2 | 0 | 0 |
 | spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
-| encode/httpx | Python | 23 | 2541 | 34 | 0 | 3 | 3 | 0 | 0 |
+| encode/httpx | Python | 23 | 2541 | 65 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 5 | 5 | 0 | 3 | 3 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
@@ -37,6 +37,8 @@ The first anyhow run bound 0 of 90 anchors. Rust docs write `anyhow::Result`, wh
 
 The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`, and the fence parser was splitting it into `viper` and `SetConfigName`. Capturing qualified chains raised viper to 53 bound anchors and exposed three mutations, all detected.
 
+The first httpx run bound 34 of 2541 anchors. Class-qualified calls such as `Response.json()` were vetoed as file paths, and package-qualified names such as `httpx.Client` had no aliases. Exempting class-qualified calls from the path veto and adding package and class aliases raised httpx to 65 bound anchors. Most of its docs use instance names such as `response.json()`, which still need local type inference.
+
 ## Limits
 
 - thiserror is a real proc-macro crate. Its derive name is recognized through `#[proc_macro_derive]`, not expanded.
@@ -45,9 +47,10 @@ The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`,
 - Standard derives such as `Clone`, `Default`, `Debug`, `PartialEq`, `PartialOrd`, `Ord`, and `Hash` are synthesized for public Rust types.
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
 - `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, one level of nested repetition over a shared metavariable, and cross-file `#[macro_export]` macros. It does not handle nested repetition, non-exported cross-file macros, or general proc-macro output.
-- anyhow binds four anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name. Their docs use macros and ambiguous package and method names, so the confidence floor stays silent.
+- anyhow binds five anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name.
+- httpx docs rely on instance variables and prose, so most anchors stay unbound even after class-qualified resolution.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
-- The corpus uses four repositories. It is evidence, not a benchmark.
+- The corpus uses five external repositories and two local fixtures. It is evidence, not a benchmark.
 
 Run the harness from the repository root:
 

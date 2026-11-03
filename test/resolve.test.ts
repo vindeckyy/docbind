@@ -130,6 +130,10 @@ describe("vetoes", () => {
   it("allows ordinary identifiers", () => {
     expect(vetoReason("getUser", anchor("getUser"))).toBeUndefined();
     expect(vetoReason("FOO_BAR", anchor("FOO_BAR"))).toBeUndefined();
+    expect(vetoReason("Response.json()", anchor("Response.json()"))).toBeUndefined();
+    expect(vetoReason("Client.get", anchor("Client.get"))).toBeUndefined();
+    expect(vetoReason("data.json()", anchor("data.json()"))).toBeUndefined();
+    expect(vetoReason("README.md", anchor("README.md"))).toBe("path");
   });
 
   it("recognizes API docs", () => {
@@ -195,6 +199,22 @@ describe("indexing and scoring", () => {
     const index = buildIndex([symbol("getUser", { aliases: ["users.getUser"] })]);
     const result = scoreCandidates(anchor("users.getUser"), index);
     expect(result.reason).toBe("bound");
+  });
+
+  it("binds class-qualified method names that look like file extensions", () => {
+    const index = buildIndex([
+      symbol("json", {
+        kind: "method",
+        qualifiedName: "httpx._models.Response.json",
+        aliases: ["Response.json", "httpx.Response.json"],
+        shape: { kind: "method", async: false, params: [], returnType: "Any" },
+      }),
+    ]);
+    const result = scoreCandidates(anchor("Response.json()"), index);
+    expect(result.reason).toBe("bound");
+    expect(result.binding?.symbol.name).toBe("json");
+    const packageQualified = scoreCandidates(anchor("httpx.Response.json()"), index);
+    expect(packageQualified.reason).toBe("bound");
   });
 
   it("binds qualified suffixes", () => {

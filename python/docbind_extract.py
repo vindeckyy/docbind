@@ -158,8 +158,10 @@ def make_symbol(
     if parent:
         aliases.add(f"{parent['name']}.{name}")
         aliases.add(f"{parent['qualifiedName']}.{name}")
+        aliases.add(f"{payload['packageName']}.{parent['name']}.{name}")
     else:
         aliases.add(f"{module_path.replace('/', '.')}.{name}")
+        aliases.add(f"{payload['packageName']}.{name}")
         if module_path.startswith("src/"):
             aliases.add(f"{module_path[4:].replace('/', '.')}.{name}")
     return {

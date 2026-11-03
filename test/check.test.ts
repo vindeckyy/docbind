@@ -435,6 +435,26 @@ describe("check pipeline", () => {
     expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
   });
 
+  it("binds Python class-qualified methods and attributes", () => {
+    const root = tempProject({
+      "pyproject.toml": '[project]\nname = "httpx"\n',
+      "httpx/__init__.py": "",
+      "httpx/_models.py": "class Response:\n    @property\n    def status_code(self) -> int:\n        return 200\n    def json(self):\n        return {}\n",
+      "docs/api.md": "Call `Response.json()` and read `Response.status_code`.\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(
+      expect.arrayContaining(["json", "status_code"]),
+    );
+    lockNow(root);
+    writeFileSync(
+      join(root, "httpx/_models.py"),
+      "class Response:\n    @property\n    def status_code(self) -> int:\n        return 200\n    def json_data(self):\n        return {}\n",
+    );
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L1-broken");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T17:36:11.086Z",
+  "generatedAt": "2026-11-03T17:43:27.242Z",
   "report": [
     {
       "name": "slugify",
@@ -138,15 +138,15 @@
       "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
       "docs": 23,
       "anchors": 2541,
-      "bound": 34,
-      "bindRate": 0.01338055883510429,
+      "bound": 65,
+      "bindRate": 0.02558048012593467,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
         {
-          "symbol": "NetRCAuth",
+          "symbol": "Auth",
           "rule": "L1-broken",
           "hit": true,
           "findings": 1,
@@ -157,24 +157,22 @@
           "collateralRules": []
         },
         {
-          "symbol": "Client",
+          "symbol": "BasicAuth",
           "rule": "L1-broken",
           "hit": true,
-          "findings": 12,
+          "findings": 1,
           "relatedRules": [
-            "L1-broken",
-            "L2-moved"
+            "L1-broken"
           ],
           "collateral": 0,
           "collateralRules": []
         },
         {
-          "symbol": "url",
-          "rule": "L3-reshaped",
+          "symbol": "DigestAuth",
+          "rule": "L1-broken",
           "hit": true,
-          "findings": 2,
+          "findings": 1,
           "relatedRules": [
-            "L3-reshaped",
             "L1-broken"
           ],
           "collateral": 0,

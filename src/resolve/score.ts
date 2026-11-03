@@ -75,7 +75,9 @@ export function vetoReason(token: string, anchor: DocAnchor): string | undefined
   if (UUID_RE.test(base)) return "uuid";
   if (MIME_RE.test(base) && !base.includes("::")) return "mime";
   if (FLAG_RE.test(base)) return "cli flag";
-  if (PATH_RE.test(base)) return "path";
+  const qualified = base.includes(".") || base.includes("::") || base.includes("#");
+  const classQualified = /^[A-Z][a-z][\w$]*(?:\.|::)/u.test(base);
+  if (PATH_RE.test(base) && !classQualified && !(qualified && info.call)) return "path";
   if (/[*?[\]]/u.test(base) && !/[<>]/u.test(base)) return "glob or regex";
   if (KEYWORDS.has(base)) return "keyword";
   const imported = Object.keys(anchor.importTable).some((local) => base === local || base.startsWith(`${local}.`));

@@ -58,6 +58,10 @@ describe("Python surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "Client")?.shape.members?.filter((member) => member.name === "active")).toHaveLength(1);
     expect(result.symbols.find((symbol) => symbol.name === "_hidden")).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "_private")).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "Client")?.aliases).toContain("pyapp.Client");
+    expect(result.symbols.find((symbol) => symbol.name === "request")?.aliases).toEqual(
+      expect.arrayContaining(["Client.request", "pyapp.Client.request"]),
+    );
     expect(result.parseFailures).toBeGreaterThan(0);
   });
 
