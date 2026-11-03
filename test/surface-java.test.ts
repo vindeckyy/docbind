@@ -329,12 +329,19 @@ describe("Java surface", () => {
         "    boolean flag() default true;",
         "    Mode mode() default Mode.FAST;",
         "    String[] tags() default {\"a\", \"b\"};",
+        "    Class<?> type() default String.class;",
+        "    @Inner inner() default @Inner(level = 1);",
+        "    @Inner positional() default @Inner(1);",
+        "    @Inner bad() default @Inner(level = 1 + 2);",
+        "    int[] empty() default {};",
+        "    int calc() default 1 + 2;",
+        "    int[] raw() default {1 + 2};",
         "    String required();",
         "}",
         "",
       ].join("\n"),
     });
-    const result = extractJava(root, ["src/Marker.java"]);
+    const result = extractJava(root, ["src/Marker.java"], true);
     const marker = result.symbols.find((symbol) => symbol.name === "Marker");
     expect(marker?.kind).toBe("interface");
     expect(marker?.contractFlags).toContain("annotation-type");
@@ -352,6 +359,20 @@ describe("Java surface", () => {
       { value: '"a"', kind: "string", literal: "a" },
       { value: '"b"', kind: "string", literal: "b" },
     ]);
+    expect(value?.shape.evaluatedDefault).toBe("x");
+    expect(result.symbols.find((symbol) => symbol.name === "count")?.shape.evaluatedDefault).toBe(0);
+    expect(result.symbols.find((symbol) => symbol.name === "flag")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "mode")?.shape.evaluatedDefault).toBe("Mode.FAST");
+    expect(result.symbols.find((symbol) => symbol.name === "tags")?.shape.evaluatedDefault).toEqual(["a", "b"]);
+    expect(result.symbols.find((symbol) => symbol.name === "type")?.shape.evaluatedDefault).toBe("String");
+    expect(result.symbols.find((symbol) => symbol.name === "inner")?.shape.evaluatedDefault).toEqual({ level: 1 });
+    expect(result.symbols.find((symbol) => symbol.name === "positional")?.shape.evaluatedDefault).toEqual({ arg0: 1 });
+    expect(result.symbols.find((symbol) => symbol.name === "bad")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "empty")?.shape.evaluatedDefault).toEqual([]);
+    expect(result.symbols.find((symbol) => symbol.name === "calc")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "raw")?.shape.evaluatedDefault).toBeUndefined();
+    const off = extractJava(root, ["src/Marker.java"]);
+    expect(off.symbols.find((symbol) => symbol.name === "value")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "required")?.shape.defaultValue).toBeUndefined();
   });
 

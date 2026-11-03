@@ -26,6 +26,7 @@ interface CorpusEntry {
   docstrings?: boolean;
   asciidoc?: boolean;
   javadoc?: boolean;
+  javaDefaults?: boolean;
   mutations: number;
   valueMutations?: Array<{
     file: string;
@@ -51,11 +52,19 @@ interface CorpusEntry {
     symbol: string;
     expectedRule?: string;
   }>;
+  defaultMutations?: Array<{
+    file: string;
+    method: string;
+    from: string;
+    to: string;
+    symbol: string;
+    expectedRule?: string;
+  }>;
 }
 
 interface MutationResult {
   symbol: string;
-  kind?: "rename" | "value" | "annotation" | "enum";
+  kind?: "rename" | "value" | "annotation" | "enum" | "default";
   expectedRule?: string;
   rule?: string;
   hit: boolean;
@@ -108,35 +117,28 @@ function capture(): { stdout: (value: string) => void; stderr: (value: string) =
   };
 }
 
+function writeCorpusConfig(target: string, entry: CorpusEntry): void {
+  writeFileSync(
+    join(target, "docbind.json"),
+    `${JSON.stringify({
+      docs: entry.docs,
+      exclude: entry.exclude,
+      languages: entry.languages,
+      ...(entry.docstrings ? { docstrings: true } : {}),
+      ...(entry.asciidoc ? { asciidoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javaDefaults ? { javaDefaults: true } : {}),
+      ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
+    }, null, 2)}\n`,
+  );
+}
+
 async function materialize(entry: CorpusEntry): Promise<string> {
   const target = join(cache, entry.name);
   if (!refresh) {
     try {
       readFileSync(join(target, "corpus.ready"), "utf8");
-      writeFileSync(
-        join(target, "docbind.json"),
-        `${JSON.stringify({
-          docs: entry.docs,
-          exclude: entry.exclude,
-          languages: entry.languages,
-          ...(entry.docstrings ? { docstrings: true } : {}),
-    ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.javadoc ? { javadoc: true } : {}),
-        ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.javadoc ? { javadoc: true } : {}),
-        ...(entry.javadoc ? { javadoc: true } : {}),
-          ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.javadoc ? { javadoc: true } : {}),
-        ...(entry.javadoc ? { javadoc: true } : {}),
-          ...(entry.javadoc ? { javadoc: true } : {}),
-          ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
-        }, null, 2)}\n`,
-      );
+      writeCorpusConfig(target, entry);
       return target;
     } catch {
       // Download below.
@@ -146,25 +148,7 @@ async function materialize(entry: CorpusEntry): Promise<string> {
   mkdirSync(target, { recursive: true });
   if (entry.local) {
     cpSync(join(root, entry.local), target, { recursive: true });
-    writeFileSync(
-      join(target, "docbind.json"),
-      `${JSON.stringify({
-        docs: entry.docs,
-        exclude: entry.exclude,
-        languages: entry.languages,
-        ...(entry.docstrings ? { docstrings: true } : {}),
-    ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.javadoc ? { javadoc: true } : {}),
-        ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.javadoc ? { javadoc: true } : {}),
-        ...(entry.javadoc ? { javadoc: true } : {}),
-        ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
-      }, null, 2)}\n`,
-    );
+    writeCorpusConfig(target, entry);
     writeFileSync(join(target, "corpus.ready"), entry.commit);
     return target;
   }
@@ -176,21 +160,7 @@ async function materialize(entry: CorpusEntry): Promise<string> {
     stdio: "inherit",
   });
   if (unpack.status !== 0) throw new Error(`${entry.name}: tar failed`);
-  writeFileSync(
-    join(target, "docbind.json"),
-    `${JSON.stringify({
-      docs: entry.docs,
-      exclude: entry.exclude,
-      languages: entry.languages,
-      ...(entry.docstrings ? { docstrings: true } : {}),
-    ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.asciidoc ? { asciidoc: true } : {}),
-    ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(entry.javadoc ? { javadoc: true } : {}),
-      ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
-    }, null, 2)}\n`,
-  );
+  writeCorpusConfig(target, entry);
   writeFileSync(join(target, "corpus.ready"), entry.commit);
   return target;
 }
@@ -270,6 +240,39 @@ function replaceAnnotationString(
   return replaceStringInParens(source, tokens, open, `@${annotation}`, from, to, element);
 }
 
+function replaceDefaultString(source: string, method: string, from: string, to: string): string {
+  const tokens = lex(source, "java").tokens;
+  let open = -1;
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    if (tokens[index]?.value !== method || tokens[index + 1]?.value !== "(") continue;
+    const close = findMatching(tokens, index + 1, "(", ")");
+    if (close < 0) continue;
+    if (tokens[close + 1]?.value !== "default") continue;
+    open = close + 1;
+    break;
+  }
+  if (open < 0) throw new Error(`default not found for method: ${method}`);
+  const startOffset = tokens[open]?.end as number;
+  let cursor = open + 1;
+  while (cursor < tokens.length && tokens[cursor]?.value !== ";") cursor += 1;
+  if (cursor >= tokens.length) throw new Error(`default has no terminator: ${method}`);
+  const endOffset = tokens[cursor]?.start as number;
+  const body = source.slice(startOffset, endOffset);
+  const matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
+    .map((match) => ({ text: match[0], index: match.index as number }))
+    .filter((match) => {
+      try {
+        return JSON.parse(match.text) === from;
+      } catch {
+        return false;
+      }
+    });
+  if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in default of ${method}, found ${matches.length}`);
+  const match = matches[0] as { text: string; index: number };
+  const start = startOffset + match.index;
+  return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
+}
+
 function replaceEnumArgumentString(source: string, constant: string, from: string, to: string): string {
   const tokens = lex(source, "java").tokens;
   const index = tokens.findIndex((token) => token.value === constant);
@@ -328,6 +331,7 @@ for (const entry of selected) {
     ...(entry.docstrings ? { docstrings: true } : {}),
     ...(entry.asciidoc ? { asciidoc: true } : {}),
     ...(entry.javadoc ? { javadoc: true } : {}),
+    ...(entry.javaDefaults ? { javaDefaults: true } : {}),
     ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();
@@ -499,6 +503,36 @@ for (const entry of selected) {
         symbol: enumMutation.symbol,
         kind: "enum",
         ...(enumMutation.expectedRule ? { expectedRule: enumMutation.expectedRule } : {}),
+        rule: relatedFindings[0]?.rule,
+        hit: ruleMatched,
+        findings: findings.length,
+        relatedRules: [...new Set(relatedFindings.map((finding) => finding.rule))],
+        collateral: collateralFindings.length,
+        collateralRules: [...new Set(collateralFindings.map((finding) => finding.rule))],
+      });
+    } finally {
+      writeFileSync(path, original);
+    }
+  }
+
+  for (const defaultMutation of entry.defaultMutations ?? []) {
+    const path = join(".", defaultMutation.file);
+    const original = readFileSync(path, "utf8");
+    writeFileSync(
+      path,
+      replaceDefaultString(original, defaultMutation.method, defaultMutation.from, defaultMutation.to),
+    );
+    try {
+      const findings = findingsFor(checkout, config);
+      const relatedFindings = findings.filter((finding) => finding.message.includes(defaultMutation.symbol));
+      const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));
+      const ruleMatched = defaultMutation.expectedRule
+        ? relatedFindings.some((finding) => finding.rule === defaultMutation.expectedRule)
+        : relatedFindings.length > 0;
+      mutations.push({
+        symbol: defaultMutation.symbol,
+        kind: "default",
+        ...(defaultMutation.expectedRule ? { expectedRule: defaultMutation.expectedRule } : {}),
         rule: relatedFindings[0]?.rule,
         hit: ruleMatched,
         findings: findings.length,

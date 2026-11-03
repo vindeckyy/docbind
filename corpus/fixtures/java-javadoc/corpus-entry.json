@@ -51,5 +51,16 @@
       "symbol": "RED",
       "expectedRule": "L3-reshaped"
     }
+  ],
+  "javaDefaults": true,
+  "defaultMutations": [
+    {
+      "file": "src/main/java/example/Client.java",
+      "method": "value",
+      "from": "default",
+      "to": "other",
+      "symbol": "value",
+      "expectedRule": "L3-reshaped"
+    }
   ]
 }

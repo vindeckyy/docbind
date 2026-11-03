@@ -56,6 +56,7 @@ function shapeForHash(shape: Shape): Record<string, unknown> {
     output.enumMembers = [...shape.enumMembers].sort((a, b) => a.name.localeCompare(b.name));
   }
   if (shape.enumArgs?.length) output.enumArgs = shape.enumArgs;
+  if (shape.evaluatedDefault !== undefined) output.evaluatedDefault = shape.evaluatedDefault;
   if (shape.overload !== undefined) output.overload = shape.overload;
   return output;
 }

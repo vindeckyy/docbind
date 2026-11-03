@@ -62,6 +62,14 @@ export interface AnnotationArgument {
   items?: AnnotationArgument[];
 }
 
+export type EvaluatedValue =
+  | string
+  | number
+  | boolean
+  | null
+  | EvaluatedValue[]
+  | { [key: string]: EvaluatedValue };
+
 export interface AnnotationShape {
   name: string;
   args?: AnnotationArgument[];
@@ -89,6 +97,7 @@ export interface Shape {
   defaultKind?: AnnotationArgumentKind;
   defaultLiteral?: string | number | boolean;
   defaultItems?: AnnotationArgument[];
+  evaluatedDefault?: EvaluatedValue;
   overload?: number;
 }
 
@@ -258,6 +267,7 @@ export interface Config {
   docstrings: boolean;
   asciidoc: boolean;
   javadoc: boolean;
+  javaDefaults: boolean;
 }
 
 export const RULES: Rule[] = [

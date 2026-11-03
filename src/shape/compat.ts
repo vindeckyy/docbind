@@ -118,6 +118,10 @@ function compareMembers(oldMembers: MemberShape[], newMembers: MemberShape[], ta
 }
 
 function compareFunctionLike(oldShape: Shape, newShape: Shape, target: ShapeDelta): void {
+  if (stableStringify(oldShape.evaluatedDefault) !== stableStringify(newShape.evaluatedDefault)) {
+    target.breaking = true;
+    target.changes.push("evaluated default changed");
+  }
   if (oldShape.async !== newShape.async) {
     target.breaking = true;
     target.changes.push("sync/async contract changed");

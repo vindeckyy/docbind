@@ -15,6 +15,7 @@ import type {
   AnnotationShape,
   ContractFlag,
   EnumMemberShape,
+  EvaluatedValue,
   ParamShape,
   Shape,
   Symbol,
@@ -40,6 +41,7 @@ interface JavaContext {
   packageClause: string;
   drafts: JavaDraft[];
   types: Array<{ name: string; start: number; end: number }>;
+  evaluateDefaults: boolean;
   failures: number;
 }
 
@@ -156,6 +158,32 @@ function annotationArgument(part: string): AnnotationArgument {
 
 function annotationArguments(raw: string): AnnotationArgument[] {
   return splitArguments(raw).map(annotationArgument);
+}
+
+function evaluateArgument(argument: AnnotationArgument): EvaluatedValue | undefined {
+  if (argument.kind === "string" || argument.kind === "number" || argument.kind === "boolean") {
+    return argument.literal as EvaluatedValue;
+  }
+  if (argument.kind === "enum" || argument.kind === "class") {
+    return argument.literal as string;
+  }
+  if (argument.kind === "array") {
+    const values = (argument.items as AnnotationArgument[]).map(evaluateArgument);
+    if (values.some((value) => value === undefined)) return undefined;
+    return values as EvaluatedValue[];
+  }
+  if (argument.kind === "annotation") {
+    const evaluated: Record<string, EvaluatedValue> = {};
+    let position = 0;
+    for (const item of argument.items as AnnotationArgument[]) {
+      const value = evaluateArgument(item);
+      if (value === undefined) return undefined;
+      evaluated[item.name ?? `arg${position}`] = value;
+      position += 1;
+    }
+    return evaluated;
+  }
+  return undefined;
 }
 
 function javaAnnotations(annotations: JavaAnnotation[]): AnnotationShape[] {
@@ -614,6 +642,10 @@ class JavaParser {
       defaultValue = this.context.source.slice(startOffset, endOffset).trim();
       defaultParsed = annotationLiteral(defaultValue);
     }
+    const evaluatedDefault =
+      this.context.evaluateDefaults && defaultValue !== undefined && defaultParsed
+        ? evaluateArgument({ value: defaultValue, ...defaultParsed })
+        : undefined;
     let body = "";
     if ((tokens[cursor] as Token | undefined)?.value === "{") {
       const bodyClose = findMatching(tokens, cursor, "{", "}");
@@ -646,6 +678,7 @@ class JavaParser {
                 defaultKind: defaultParsed.kind,
                 ...(defaultParsed.literal !== undefined ? { defaultLiteral: defaultParsed.literal } : {}),
                 ...(defaultParsed.items !== undefined ? { defaultItems: defaultParsed.items } : {}),
+                ...(evaluatedDefault !== undefined ? { evaluatedDefault } : {}),
               }
             : {}),
           ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
@@ -725,7 +758,7 @@ function collectJavadocs(
   return entries;
 }
 
-export function extractJava(root: string, files: string[]): ExtractResult {
+export function extractJava(root: string, files: string[], evaluateDefaults = false): ExtractResult {
   const symbols: Symbol[] = [];
   const javadocs: DocstringEntry[] = [];
   let parseFailures = 0;
@@ -752,6 +785,7 @@ export function extractJava(root: string, files: string[]): ExtractResult {
       packageClause: "",
       drafts: [],
       types: [],
+      evaluateDefaults,
       failures: 0,
     };
     new JavaParser(context).parse();

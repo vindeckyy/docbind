@@ -8,6 +8,7 @@
 - mutation recall: rename one bound symbol in code, leave docs alone, count findings that mention the old name
 - annotation mutations: locate `@Annotation` arguments through the Java token stream, then pick the string literal by value or by array index and replace it; no raw annotation text match
 - enum mutations: locate an enum constant through the Java token stream, bound its constructor arguments, pick the unique string literal with the requested value, and replace it
+- default mutations: locate an annotation method through the Java token stream, find its `default` clause, and replace the unique matching string
 - macro fixture: cross-file `#[macro_export]` repetition macros, with two seeded mutations
 - collateral findings: findings for unrelated symbols during each mutation
 

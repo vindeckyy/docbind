@@ -289,6 +289,14 @@ describe("shape compatibility", () => {
       { kind: "method", flags: ['annotation:Command(value = "run")'] },
       { kind: "method", flags: ['annotation:Command(value = "go")'] },
     ).breaking).toBe(true);
+    expect(compareShapeClaims(
+      { kind: "method", evaluatedDefault: { arg0: 1 } },
+      { kind: "method", evaluatedDefault: { arg0: 2 } },
+    ).breaking).toBe(true);
+    expect(compareShapeClaims(
+      { kind: "method", evaluatedDefault: { arg0: 1, arg1: 2 } },
+      { kind: "method", evaluatedDefault: { arg1: 2, arg0: 1 } },
+    ).breaking).toBe(false);
     const stringArg = { kind: "enumMember" as const, enumArgs: [{ value: '"a"', kind: "string" as const, literal: "a" }] };
     expect(compareShapeClaims(stringArg, {
       kind: "enumMember",

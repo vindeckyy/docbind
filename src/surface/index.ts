@@ -31,7 +31,7 @@ export function extractSurface(root: string, files: string[], config: Config): E
     results.push(extractGo(root, goFiles));
   }
   if (config.javadoc && javaFiles.length > 0) {
-    results.push(extractJava(root, javaFiles));
+    results.push(extractJava(root, javaFiles, config.javaDefaults));
   }
 
   const symbols: Symbol[] = [];

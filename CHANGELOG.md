@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.71] - 2026-11-03
+
+### Added
+
+- Opt-in Java annotation default evaluation with `"javaDefaults": true`.
+- Annotation methods gain `evaluatedDefault` for strings, numbers, booleans, enum names, class names, arrays, and nested annotation objects.
+- Shape comparison reports `evaluated default changed` as a breaking reshape.
+- Corpus supports token-located default mutations; `Marker.value` default `"default"` is edited to `"other"` and must yield `L3-reshaped`.
+
+### Changed
+
+- Corpus harness config writing is one helper instead of three duplicated blocks.
+- Corpus mutations: 96 to 97; `java-javadoc-fixture` runs 25 mutations, all hitting with zero collateral.
+
+### Limits
+
+- Unsupported default expressions stay raw and are not evaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.70] - 2026-11-03
 
 ### Changed
@@ -1255,3 +1274,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.68]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.68
 [0.1.69]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.69
 [0.1.70]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.70
+[0.1.71]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.71
