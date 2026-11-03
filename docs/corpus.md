@@ -18,7 +18,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | encode/httpx | Python | 23 | 2541 | 34 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 4 | 4 | 0 | 2 | 2 | 0 | 0 |
-| proc-macro-fixture (local) | Rust | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
+| proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 

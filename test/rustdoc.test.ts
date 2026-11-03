@@ -74,6 +74,7 @@ describe("rustdoc type rendering", () => {
     expect(typeText({ resolved_path: { name: "Option", args: { angle_bracketed: { args: [{ type: { primitive: "u8" } }, { lifetime: "a" }] } } } })).toBe("Option<u8,'a>");
     expect(typeText({ resolved_path: { name: "Thing" } })).toBe("Thing");
     expect(typeText({ resolved_path: { args: {} } })).toBe("unknown");
+    expect(typeText({ resolved_path: { path: "a::Thing" } })).toBe("Thing");
     expect(typeText({ borrowed_ref: { mutable: true, type: { primitive: "u8" } } })).toBe("&mut u8");
     expect(typeText({ borrowed_ref: { mutable: false, type: { primitive: "u8" } } })).toBe("&u8");
     expect(typeText({ raw_pointer: { mutable: true, type: { primitive: "u8" } } })).toBe("*mut u8");
@@ -182,5 +183,77 @@ describe("rustdoc extraction wiring", () => {
     expect(symbols.filter((symbol) => symbol.name === "method")).toHaveLength(2);
     expect(symbols.find((symbol) => symbol.name === "method")?.aliases).toContain("Trait.method");
     expect(symbols.find((symbol) => symbol.name === "method")?.kind).toBe("method");
+  });
+});
+
+describe("rustdoc type shapes", () => {
+  it("extracts structs, enums, traits, aliases and constants", () => {
+    const root = tempProject({ "src/lib.rs": "" });
+    const data = {
+      index: {
+        "1": {
+          name: "Point",
+          visibility: "public",
+          span: { filename: "src/lib.rs", begin: [1, 1] },
+          inner: { struct: { kind: { plain: { fields: [10, 11, 12] } }, generics: { params: [{ name: "T" }] } } },
+        },
+        "10": { name: "x", visibility: "public", inner: { struct_field: { primitive: "u8" } } },
+        "11": { name: "y", visibility: "public", inner: { struct_field: { primitive: "u16" } } },
+        "12": { visibility: "private", inner: { struct_field: { primitive: "u32" } } },
+        "13": { name: "Tuple", visibility: "public", span: { filename: "src/lib.rs", begin: [6, 1] }, inner: { struct: { kind: { tuple: [12] }, generics: { params: [] } } } },
+        "2": {
+          name: "Mode",
+          visibility: "public",
+          span: { filename: "src/lib.rs", begin: [2, 1] },
+          inner: { enum: { generics: { params: [] }, variants: [20, 21, 24] } },
+        },
+        "20": { name: "A", visibility: "default", inner: { variant: { kind: "plain" } } },
+        "21": { name: "B", visibility: "default", inner: { variant: { kind: { tuple: [22] } } } },
+        "22": { name: "0", visibility: "public", inner: { struct_field: { primitive: "u8" } } },
+        "23": { visibility: "default", inner: { variant: { kind: "plain" } } },
+        "24": { name: "C", visibility: "default", inner: { variant: { kind: { struct: { fields: [25] } } } } },
+        "25": { visibility: "public", inner: { struct_field: { primitive: "u8" } } },
+        "26": { name: "Empty", visibility: "public", span: { filename: "src/lib.rs", begin: [7, 1] }, inner: { enum: { generics: { params: [] } } } },
+        "3": {
+          name: "Walk",
+          visibility: "public",
+          span: { filename: "src/lib.rs", begin: [3, 1] },
+          inner: { trait: { generics: { params: [] }, bounds: [{ primitive: "u8" }], items: [30] } },
+        },
+        "30": { name: "step", visibility: "default", inner: { function: { sig: { inputs: [["self", { borrowed_ref: { mutable: false, type: { generic: "Self" } } }], ["n", { primitive: "u8" }]] }, generics: {}, header: {} } } },
+        "31": { name: "Point", visibility: "public", span: { filename: "src/lib.rs", begin: [8, 1] }, inner: { struct: { kind: "unit", generics: { params: [] } } } },
+        "4": {
+          name: "Alias",
+          visibility: "public",
+          span: { filename: "src/lib.rs", begin: [4, 1] },
+          inner: { type_alias: { generics: { params: [] }, type: { primitive: "u8" } } },
+        },
+        "5": {
+          name: "LIMIT",
+          visibility: "public",
+          span: { filename: "src/lib.rs", begin: [5, 1] },
+          inner: { constant: { type: { primitive: "u8" } } },
+        },
+      },
+    };
+    const symbols = parseRustdocJson(data as never, root, root, "app");
+    const point = symbols.find((symbol) => symbol.name === "Point");
+    expect(point?.kind).toBe("class");
+    expect(point?.shape.typeParams).toBe("T");
+    expect(point?.shape.members?.map((member) => member.name)).toEqual(["x", "y"]);
+    expect(symbols.find((symbol) => symbol.name === "x")?.aliases).toContain("Point.x");
+    const mode = symbols.find((symbol) => symbol.name === "Mode");
+    expect(mode?.shape.enumMembers?.map((member) => member.name)).toEqual(["A", "B", "C"]);
+    expect(symbols.find((symbol) => symbol.name === "B")?.kind).toBe("enumMember");
+    expect(symbols.find((symbol) => symbol.name === "C")?.kind).toBe("enumMember");
+    expect(symbols.find((symbol) => symbol.name === "Empty")?.shape.enumMembers).toEqual([]);
+    expect(symbols.find((symbol) => symbol.name === "Tuple")?.kind).toBe("class");
+    const walk = symbols.find((symbol) => symbol.name === "Walk");
+    expect(walk?.kind).toBe("interface");
+    expect(walk?.shape.extends).toEqual(["u8"]);
+    expect(symbols.find((symbol) => symbol.name === "step")?.shape.params?.[0].kind).toBe("receiver");
+    expect(symbols.find((symbol) => symbol.name === "step")?.shape.params).toHaveLength(2);
+    expect(symbols.find((symbol) => symbol.name === "Alias")?.shape.typeShape).toBe("u8");
+    expect(symbols.find((symbol) => symbol.name === "LIMIT")?.kind).toBe("const");
   });
 });

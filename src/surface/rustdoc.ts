@@ -7,6 +7,7 @@ import type { ExtractResult } from "./protocol.js";
 import type { ParamShape, Shape, Symbol, SymbolKind } from "../types.js";
 
 interface RustdocItem {
+  id?: number;
   name?: string;
   visibility?: unknown;
   span?: { filename?: string; begin?: [number, number] };
@@ -53,7 +54,11 @@ export function typeText(value: unknown): string {
   if (typeof record.infer === "string") return record.infer;
   if (typeof record.resolved_path === "object" && record.resolved_path) {
     const path = record.resolved_path as Record<string, unknown>;
-    const name = typeof path.name === "string" ? path.name : "unknown";
+    const name = typeof path.name === "string"
+      ? path.name
+      : typeof path.path === "string"
+        ? path.path.split("::").pop() ?? "unknown"
+        : "unknown";
     const args = path.args as Record<string, unknown> | undefined;
     const angle = args?.angle_bracketed as Record<string, unknown> | undefined;
     const values = Array.isArray(angle?.args) ? angle.args : [];
@@ -104,13 +109,19 @@ export function typeName(value: unknown): string | undefined {
 function shapeFromFunction(input: Record<string, unknown>, method: boolean): Shape {
   const signature = (input.sig as Record<string, unknown> | undefined) ?? {};
   const inputs = Array.isArray(signature.inputs) ? signature.inputs : [];
-  const params: ParamShape[] = inputs.map((value, index) => ({
-    name: `arg${index}`,
-    type: typeText(value),
-    optional: false,
-    rest: false,
-    hasDefault: false,
-  }));
+  const params: ParamShape[] = inputs.map((value, index) => {
+    const named = Array.isArray(value) && value.length >= 2 ? value : undefined;
+    const name = named ? String(named[0]) : `arg${index}`;
+    const type = typeText(named ? named[1] : value);
+    return {
+      name,
+      type,
+      optional: false,
+      rest: false,
+      hasDefault: false,
+      ...(name === "self" ? { kind: "receiver" } : {}),
+    };
+  });
   const generics = (input.generics as Record<string, unknown> | undefined) ?? {};
   const typeParams = Array.isArray(generics.params)
     ? generics.params
@@ -131,35 +142,42 @@ function shapeFromFunction(input: Record<string, unknown>, method: boolean): Sha
   };
 }
 
-function symbolFromFunction(
+function typeParamsFor(generics: Record<string, unknown> | undefined): string | undefined {
+  const params = Array.isArray(generics?.params) ? generics.params : [];
+  const names = params
+    .map((parameter) => (parameter as Record<string, unknown>).name)
+    .filter((name): name is string => typeof name === "string");
+  return names.length > 0 ? names.join(",") : undefined;
+}
+
+function makeRustdocSymbol(
   item: RustdocItem,
-  functionInput: Record<string, unknown>,
+  name: string,
+  kind: SymbolKind,
+  shape: Shape,
   root: string,
   packageRoot: string,
   packageName: string,
   parentName?: string,
-): Symbol | undefined {
-  if (!item.name || !isPublic(item.visibility)) return undefined;
+): Symbol {
   const filename = item.span?.filename ?? "";
   const absolute = join(root, filename);
   const filePath = existsSync(absolute) ? relative(root, absolute).replace(/\\/gu, "/") : filename;
   const modulePath = filePath.endsWith(".rs") ? modulePathFor(packageRoot, join(root, filePath)) : "rustdoc";
-  const kind: SymbolKind = parentName ? "method" : "function";
-  const shape = shapeFromFunction(functionInput, Boolean(parentName));
   const shapeText = canonicalShape(shape);
-  const qualified = `${packageName}.${modulePath.replace(/\//gu, ".")}.${parentName ? `${parentName}.` : ""}${item.name}`;
+  const qualified = `${packageName}.${modulePath.replace(/\//gu, ".")}.${parentName ? `${parentName}.` : ""}${name}`;
   return {
-    id: `${packageName}|rustdoc|${kind}|${parentName ? `${parentName}.` : ""}${item.name}|0`,
-    name: item.name,
+    id: `${packageName}|rustdoc|${kind}|${parentName ? `${parentName}.` : ""}${name}|${item.id ?? 0}`,
+    name,
     kind,
     modulePath,
     packageName,
     packageRoot,
     qualifiedName: qualified,
     aliases: [
-      `${modulePath.replace(/\//gu, ".")}.${parentName ? `${parentName}.` : ""}${item.name}`,
-      `${packageName}.${parentName ? `${parentName}.` : ""}${item.name}`,
-      ...(parentName ? [`${parentName}.${item.name}`] : []),
+      `${modulePath.replace(/\//gu, ".")}.${parentName ? `${parentName}.` : ""}${name}`,
+      `${packageName}.${parentName ? `${parentName}.` : ""}${name}`,
+      ...(parentName ? [`${parentName}.${name}`] : []),
     ],
     shape,
     shapeText,
@@ -170,6 +188,181 @@ function symbolFromFunction(
     line: item.span?.begin?.[0] ?? 1,
     filePath,
   };
+}
+
+function symbolFromFunction(
+  item: RustdocItem,
+  functionInput: Record<string, unknown>,
+  root: string,
+  packageRoot: string,
+  packageName: string,
+  parentName?: string,
+): Symbol | undefined {
+  if (!item.name || !isPublic(item.visibility)) return undefined;
+  const kind: SymbolKind = parentName ? "method" : "function";
+  return makeRustdocSymbol(
+    item,
+    item.name,
+    kind,
+    shapeFromFunction(functionInput, Boolean(parentName)),
+    root,
+    packageRoot,
+    packageName,
+    parentName,
+  );
+}
+
+function typeSymbols(
+  item: RustdocItem,
+  index: Record<string, RustdocItem>,
+  root: string,
+  packageRoot: string,
+  packageName: string,
+): Symbol[] {
+  if (!item.name || !isPublic(item.visibility)) return [];
+  const inner = item.inner ?? {};
+  const symbols: Symbol[] = [];
+  const generics = (entry: Record<string, unknown> | undefined): string | undefined =>
+    typeParamsFor(entry?.generics as Record<string, unknown> | undefined);
+
+  if (inner.struct) {
+    const struct = inner.struct as Record<string, unknown>;
+    const kind = struct.kind;
+    const members: Array<{ name: string; type: string }> = [];
+    const fieldIds = kind && typeof kind === "object"
+      ? Array.isArray((kind as Record<string, unknown>).tuple)
+        ? ((kind as Record<string, unknown>).tuple as number[])
+        : Array.isArray(((kind as Record<string, unknown>).plain as Record<string, unknown> | undefined)?.fields)
+          ? (((kind as Record<string, unknown>).plain as Record<string, unknown>).fields as number[])
+          : []
+      : [];
+    for (const id of fieldIds) {
+      const field = index[String(id)];
+      if (!field?.name || !isPublic(field.visibility)) continue;
+      const type = typeText(field.inner?.struct_field);
+      members.push({ name: field.name, type });
+      symbols.push(makeRustdocSymbol(
+        field,
+        field.name,
+        "property",
+        { kind: "property", typeShape: type, visibility: "public" },
+        root,
+        packageRoot,
+        packageName,
+        item.name,
+      ));
+    }
+    symbols.unshift(makeRustdocSymbol(
+      item,
+      item.name,
+      "class",
+      {
+        kind: "class",
+        typeParams: generics(struct),
+        members: members.map((member) => ({
+          name: member.name,
+          kind: "property",
+          optional: false,
+          shape: { kind: "property", typeShape: member.type, visibility: "public" },
+        })),
+      },
+      root,
+      packageRoot,
+      packageName,
+    ));
+  } else if (inner.enum) {
+    const enumData = inner.enum as Record<string, unknown>;
+    const variantIds = Array.isArray(enumData.variants) ? enumData.variants : [];
+    const members = [];
+    for (const id of variantIds) {
+      const variant = index[String(id)];
+      if (!variant?.name) continue;
+      const variantData = (variant.inner?.variant as Record<string, unknown> | undefined) ?? {};
+      const kind = variantData.kind;
+      let value = "";
+      if (kind && typeof kind === "object") {
+        const record = kind as Record<string, unknown>;
+        if (Array.isArray(record.tuple)) {
+          value = record.tuple.map((fieldId) => typeText(index[String(fieldId)]?.inner?.struct_field)).join(",");
+        } else if (record.struct) {
+          const fields = (record.struct as Record<string, unknown>).fields;
+          if (Array.isArray(fields)) {
+            value = fields
+              .map((fieldId) => {
+                const field = index[String(fieldId)];
+                return `${field?.name ?? "field"}:${typeText(field?.inner?.struct_field)}`;
+              })
+              .join(",");
+          }
+        }
+      }
+      members.push({ name: variant.name, value });
+      symbols.push(makeRustdocSymbol(
+        variant,
+        variant.name,
+        "enumMember",
+        { kind: "enumMember", literalKind: value || "unit" },
+        root,
+        packageRoot,
+        packageName,
+        item.name,
+      ));
+    }
+    symbols.unshift(makeRustdocSymbol(
+      item,
+      item.name,
+      "enum",
+      { kind: "enum", typeParams: generics(enumData), enumMembers: members },
+      root,
+      packageRoot,
+      packageName,
+    ));
+  } else if (inner.trait) {
+    const traitData = inner.trait as Record<string, unknown>;
+    const bounds = Array.isArray(traitData.bounds) ? traitData.bounds.map(typeText).filter(Boolean) : [];
+    const itemIds = Array.isArray(traitData.items) ? traitData.items : [];
+    const members = itemIds
+      .map((id) => index[String(id)])
+      .filter((method): method is RustdocItem => Boolean(method?.name && method.inner?.function))
+      .map((method) => ({
+        name: method.name!,
+        kind: "method" as const,
+        optional: false,
+        shape: shapeFromFunction(method.inner!.function as Record<string, unknown>, true),
+      }));
+    symbols.unshift(makeRustdocSymbol(
+      item,
+      item.name,
+      "interface",
+      { kind: "interface", typeParams: generics(traitData), extends: bounds, members },
+      root,
+      packageRoot,
+      packageName,
+    ));
+  } else if (inner.type_alias) {
+    const alias = inner.type_alias as Record<string, unknown>;
+    symbols.unshift(makeRustdocSymbol(
+      item,
+      item.name,
+      "type",
+      { kind: "type", typeParams: generics(alias), typeShape: typeText(alias.type) },
+      root,
+      packageRoot,
+      packageName,
+    ));
+  } else if (inner.constant) {
+    const constant = inner.constant as Record<string, unknown>;
+    symbols.unshift(makeRustdocSymbol(
+      item,
+      item.name,
+      "const",
+      { kind: "const", typeShape: typeText(constant.type) },
+      root,
+      packageRoot,
+      packageName,
+    ));
+  }
+  return symbols;
 }
 
 export function parseRustdocJson(
@@ -243,6 +436,7 @@ export function parseRustdocJson(
         kind: "function",
       });
     }
+    for (const symbol of typeSymbols(item, index, root, packageRoot, packageName)) add(symbol);
   }
   return symbols;
 }

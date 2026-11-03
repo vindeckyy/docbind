@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Rustdoc shape fidelity for structs, enums, traits, fields, variants, type aliases, and constants.
+- Proc-macro fixture now generates both a function and a struct field that the rustdoc extractor discovers.
+
+### Limits
+
+- Rustdoc type rendering remains coarse for complex qualified, function-pointer, and associated types.
+- Nested `macro_rules!` repetition and non-exported cross-file macros remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.6] - 2026-11-03
 
 ### Added

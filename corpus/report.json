@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T17:22:12.437Z",
+  "generatedAt": "2026-11-03T17:28:10.823Z",
   "report": [
     {
       "name": "slugify",
@@ -270,8 +270,8 @@
       "repo": "local/proc-macro-crate",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 1,
-      "bound": 1,
+      "anchors": 2,
+      "bound": 2,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
