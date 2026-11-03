@@ -4,9 +4,25 @@ Design plan for a static analyzer that binds symbol-shaped markdown references t
 
 Repo: `/Users/hayden/Desktop/Projects/docbind`
 
-Status: design only. No implementation yet.
+Status: M1 through M6 implemented. A light M0 prior-art sweep is in `docs/prior-art.md`; publication remains a release task. M7 language breadth is deferred.
 
-Working name: `docbind`. The name is not final until the M0 check.
+Working name: `docbind`.
+
+Implemented surface:
+
+- TypeScript, JavaScript, and Python extraction.
+- Markdown inline code, tables, headings, fenced code, signature fences, and explicit references.
+- Score-gated resolution, lock file, three-way diff, tombstones, rename and move inference.
+- Compatibility lattice, SARIF, GitHub annotations, CLI, fix engine.
+- Gates: 95% test coverage, 95% changed-line coverage, 95% structure.
+
+Current gate results at the implementation commit:
+
+- Test coverage: 99.47% statements, 95.43% branches, 100% functions, 99.47% lines.
+- Changed-line coverage: 100% on the last code diff; 99.47% across all executable lines.
+- Structure gate: 47 of 47 checks.
+
+Deferred: Rust and Go extractors, docs site, prior-art publication.
 
 ---
 

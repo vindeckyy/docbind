@@ -31,6 +31,18 @@ describe("discovery", () => {
     expect(files).not.toContain("docs/generated.md");
   });
 
+  it("respects .gitignore", () => {
+    const root = tempProject({
+      ".gitignore": "ignored.md\nignored.ts\n",
+      "kept.md": "# kept",
+      "ignored.md": "# ignored",
+      "kept.ts": "export const kept = 1;",
+      "ignored.ts": "export const ignored = 1;",
+    });
+    expect(discoverDocs(root, DEFAULT_CONFIG)).toEqual(["kept.md"]);
+    expect(discoverCode(root, DEFAULT_CONFIG)).toEqual(["kept.ts"]);
+  });
+
   it("discovers code by language and ignores noise", () => {
     const root = tempProject({
       "src/a.ts": "export const a = 1;",

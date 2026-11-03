@@ -109,6 +109,7 @@ function walk(
     for (const child of table.children) {
       walk(child as Content, text, docPath, context, state, blockText);
     }
+    context.tableHeader = "";
     return;
   }
   if (node.type === "blockquote") {

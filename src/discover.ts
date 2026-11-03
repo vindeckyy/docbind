@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative } from "node:path";
 import { globSync } from "tinyglobby";
+import ignore from "ignore";
 import type { Config } from "./types.js";
 
 export interface PackageInfo {
@@ -10,6 +11,15 @@ export interface PackageInfo {
 
 const PACKAGE_MARKERS = ["package.json", "pyproject.toml", "Cargo.toml", "go.mod"];
 
+function gitignoreFilter(root: string): ((path: string) => boolean) | undefined {
+  try {
+    const matcher = ignore().add(readFileSync(join(root, ".gitignore"), "utf8"));
+    return (path: string) => !matcher.ignores(path);
+  } catch {
+    return undefined;
+  }
+}
+
 export function discoverDocs(root: string, config: Config): string[] {
   const files = globSync(config.docs, {
     cwd: root,
@@ -18,7 +28,9 @@ export function discoverDocs(root: string, config: Config): string[] {
     absolute: false,
     dot: false,
   }).sort();
+  const keep = gitignoreFilter(root);
   return files.filter((file) => {
+    if (keep && !keep(file)) return false;
     try {
       return !isGeneratedDoc(readFileSync(join(root, file), "utf8"));
     } catch {
@@ -35,7 +47,7 @@ export function discoverCode(root: string, config: Config): string[] {
   if (config.languages.python) {
     patterns.push("**/*.py");
   }
-  return globSync(patterns, {
+  const files = globSync(patterns, {
     cwd: root,
     ignore: [
       ...config.exclude,
@@ -54,6 +66,8 @@ export function discoverCode(root: string, config: Config): string[] {
     absolute: false,
     dot: false,
   }).sort();
+  const keep = gitignoreFilter(root);
+  return keep ? files.filter((file) => keep(file)) : files;
 }
 
 export function isGeneratedDoc(text: string): boolean {
