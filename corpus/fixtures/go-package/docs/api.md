@@ -53,3 +53,8 @@ v, err := viper.Load()
 if err != nil { return }
 v.Multi("key")
 ```
+
+```go
+cfg := Config{Viper: viper.New()}
+cfg.Viper.Field("key")
+```

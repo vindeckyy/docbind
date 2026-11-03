@@ -9,6 +9,7 @@ export interface GoTypeHints {
   types: Set<string>;
   returns: Map<string, string>;
   values: Map<string, string>;
+  fields: Map<string, string>;
 }
 
 function returnTypeName(raw: string | undefined): string | undefined {
@@ -120,5 +121,23 @@ export function buildGoTypeHints(symbols: Symbol[]): GoTypeHints {
   for (const [key, found] of valueTypes) {
     if (found.size === 1) values.set(key, [...found][0] as string);
   }
-  return { types, returns: resolved, values };
+
+  const fieldTypes = new Map<string, Set<string>>();
+  const addField = (key: string, type: string): void => {
+    const found = fieldTypes.get(key) ?? new Set<string>();
+    found.add(type);
+    fieldTypes.set(key, found);
+  };
+  for (const symbol of symbols) {
+    if (!["class", "interface"].includes(symbol.kind)) continue;
+    for (const member of symbol.shape.members ?? []) {
+      const type = goTypeName(member.shape.typeShape ?? "");
+      if (type && types.has(type)) addField(`${symbol.name}.${member.name}`, type);
+    }
+  }
+  const fields = new Map<string, string>();
+  for (const [key, found] of fieldTypes) {
+    if (found.size === 1) fields.set(key, [...found][0] as string);
+  }
+  return { types, returns: resolved, values, fields };
 }

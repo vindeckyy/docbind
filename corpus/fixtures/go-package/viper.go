@@ -2,6 +2,10 @@ package viper
 
 type Viper struct{}
 
+type Config struct {
+	Viper *Viper
+}
+
 func (v *Viper) Get(key string) any { return nil }
 
 func (v *Viper) Reload(key string) any { return nil }
@@ -17,6 +21,8 @@ func (v *Viper) FromDefault(key string) any { return nil }
 func (v *Viper) Helper(key string) any { return nil }
 
 func (v *Viper) Multi(key string) any { return nil }
+
+func (v *Viper) Field(key string) any { return nil }
 
 func New() *Viper { return &Viper{} }
 

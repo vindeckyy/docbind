@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.31] - 2026-11-03
+
+### Added
+
+- Go fence inference follows struct field chains, so `cfg := Config{Viper: New()}` resolves `cfg.Viper.Field()` through `Config.Viper -> Viper.Field`.
+- Local Go fixture covers a struct-field method with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 27 to 31 bound anchors and from 21 to 22 detected mutations.
+- Corpus now detects 51 of 51 seeded mutations with zero collateral findings.
+- The new struct-field selector binds to the target method instead of a local struct path.
+
+### Limits
+
+- Go fence inference does not type values supplied from outside the fence.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.30] - 2026-11-03
 
 ### Added
@@ -580,3 +598,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.28]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.28
 [0.1.29]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.29
 [0.1.30]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.30
+[0.1.31]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.31

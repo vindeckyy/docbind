@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:46:46.760Z",
+  "generatedAt": "2026-11-03T19:51:29.040Z",
   "report": [
     {
       "name": "slugify",
@@ -429,8 +429,8 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 27,
-      "bound": 27,
+      "anchors": 31,
+      "bound": 31,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -450,6 +450,17 @@
         },
         {
           "symbol": "Helper",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Field",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -615,6 +626,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "Config",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Wrapped",
           "rule": "L4-renamed",
           "hit": true,
@@ -657,20 +679,9 @@
           ],
           "collateral": 0,
           "collateralRules": []
-        },
-        {
-          "symbol": "Target",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
         }
       ],
-      "hits": 21,
+      "hits": 22,
       "misses": 0,
       "collateral": 0
     },

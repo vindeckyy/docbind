@@ -485,7 +485,12 @@ function lexFenceAnchors(
   }
   for (const name of parameters.keys()) locals.add(name);
   const localTypes = new Map<string, string>(parameters);
-  const goFallback: GoTypeHints = { types: new Set(), returns: new Map(), values: new Map() };
+  const goFallback: GoTypeHints = {
+    types: new Set(),
+    returns: new Map(),
+    values: new Map(),
+    fields: new Map(),
+  };
   const inferGoValue = (expression: string): string | undefined => {
     const alias = /^([A-Za-z_]\w*)$/u.exec(expression.trim());
     if (alias?.[1]) return localTypes.get(alias[1]);
@@ -574,7 +579,16 @@ function lexFenceAnchors(
         index = chainEnd;
         continue;
       }
-      anchorToken = `${type}${chain.slice(token.value.length)}`;
+      const parts = chain.split(".");
+      let resolvedType = type;
+      let partIndex = 1;
+      while (partIndex < parts.length - 1) {
+        const fieldType = goHints?.fields.get(`${resolvedType}.${parts[partIndex]}`);
+        if (!fieldType) break;
+        resolvedType = fieldType;
+        partIndex += 1;
+      }
+      anchorToken = `${resolvedType}.${parts.slice(partIndex).join(".")}`;
     }
     const position = lexed.masked.slice(0, token.start).split("\n").length - 1;
     const column = token.start - lexed.masked.lastIndexOf("\n", token.start - 1);
