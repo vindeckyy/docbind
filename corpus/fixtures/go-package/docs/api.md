@@ -58,3 +58,8 @@ v.Multi("key")
 cfg := Config{Viper: viper.New()}
 cfg.Viper.Field("key")
 ```
+
+```go
+v := viper.Qualified
+v.Qualified("key")
+```

@@ -274,6 +274,28 @@ describe("Go fence inference", () => {
     expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Field");
   });
 
+  it("types qualified variables with explicit types", () => {
+    const viper = symbol("Viper", {
+      id: "viper", kind: "class", packageName: "viper",
+      qualifiedName: "viper.Viper", aliases: ["viper.Viper"],
+    });
+    const selected = symbol("Selected", {
+      id: "selected", kind: "const", packageName: "other",
+      qualifiedName: "other.Selected", aliases: ["Selected", "other.Selected", "viper.Qualified"],
+      shape: { kind: "const", typeShape: "*Viper" },
+    });
+    const hints = buildGoTypeHints([viper, selected]);
+    expect(hints.values.get("viper.Qualified")).toBe("Viper");
+    const result = fenceAnchors(
+      { ...code("v := viper.Qualified\nv.Get(\"key\")\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+      undefined,
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

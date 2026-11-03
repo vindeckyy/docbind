@@ -117,6 +117,15 @@ export function buildGoTypeHints(symbols: Symbol[]): GoTypeHints {
     }
     for (const key of keys) addValue(key, type);
   }
+  for (const symbol of symbols) {
+    const type = goTypeName(symbol.shape.typeShape ?? "");
+    if (!type || !types.has(type)) continue;
+    const keys = new Set<string>([symbol.name, `${symbol.packageName}.${symbol.name}`]);
+    for (const alias of symbol.aliases) {
+      if (alias.includes(".")) keys.add(alias);
+    }
+    for (const key of keys) addValue(key, type);
+  }
   const values = new Map<string, string>();
   for (const [key, found] of valueTypes) {
     if (found.size === 1) values.set(key, [...found][0] as string);

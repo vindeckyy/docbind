@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.32] - 2026-11-03
+
+### Added
+
+- Go fence inference keeps declared types from qualified package-variable selectors such as `var Qualified = other.Selected`.
+- Local Go fixture covers a qualified selected variable with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 31 to 33 bound anchors and from 22 to 23 detected mutations.
+- Corpus now detects 52 of 52 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go fence inference does not type values supplied from outside the fence.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.31] - 2026-11-03
 
 ### Added
@@ -599,3 +616,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.29]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.29
 [0.1.30]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.30
 [0.1.31]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.31
+[0.1.32]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.32
