@@ -278,6 +278,15 @@
       "go": false
     },
     "javadoc": true,
-    "mutations": 20
+    "mutations": 20,
+    "valueMutations": [
+      {
+        "file": "src/main/java/example/Client.java",
+        "find": "RED(\"red\")",
+        "replace": "RED(\"crimson\")",
+        "symbol": "RED",
+        "expectedRule": "L3-reshaped"
+      }
+    ]
   }
 ]

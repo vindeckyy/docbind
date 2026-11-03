@@ -83,6 +83,7 @@ export interface Shape {
   typeShape?: string;
   literalKind?: string;
   enumMembers?: EnumMemberShape[];
+  enumArgs?: AnnotationArgument[];
   annotations?: AnnotationShape[];
   defaultValue?: string;
   defaultKind?: AnnotationArgumentKind;

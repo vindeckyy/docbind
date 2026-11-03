@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.64] - 2026-11-03
+
+### Added
+
+- Corpus harness supports value mutations with an expected rule; failures count as misses.
+- `java-javadoc-fixture` edits `RED("red")` to `RED("crimson")` and requires an `L3-reshaped` finding.
+- Enum constant symbols carry typed constructor arguments in `shape.enumArgs`, so argument edits are contract-enforced.
+- Shape comparison reports `enum arguments changed` for enum member argument edits.
+
+### Changed
+
+- Corpus mutations: 92 to 93; the new value mutation hits with zero collateral.
+
+### Limits
+
+- Value mutations are literal text replacements; they do not parse the file being edited.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.63] - 2026-11-03
 
 ### Changed
@@ -1139,3 +1157,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.61]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.61
 [0.1.62]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.62
 [0.1.63]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.63
+[0.1.64]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.64

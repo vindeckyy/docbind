@@ -433,6 +433,7 @@ class JavaParser {
             }
             cursor = close < 0 ? segmentEnd : close + 1;
           }
+          const argValues = args ? annotationArguments(args) : undefined;
           this.context.drafts.push({
             name: value,
             kind: "enumMember",
@@ -440,7 +441,11 @@ class JavaParser {
             parentPath: typePath,
             start,
             body: "",
-            shape: { kind: "enumMember", flags: [] },
+            shape: {
+              kind: "enumMember",
+              flags: [],
+              ...(argValues ? { enumArgs: argValues } : {}),
+            },
           });
           if ((tokens[cursor] as Token | undefined)?.value === "{") {
             const close = findMatching(tokens, cursor, "{", "}");
@@ -454,7 +459,7 @@ class JavaParser {
           members.push({
             name: value,
             value: args ?? "",
-            ...(args ? { args, argValues: annotationArguments(args) } : {}),
+            ...(args ? { args, argValues } : {}),
           });
           return;
         }

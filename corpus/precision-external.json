@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T22:48:41.080Z",
+  "generatedAt": "2026-11-03T22:56:40.873Z",
   "scope": "all",
   "fixtures": "corpus/repos.json",
   "rows": [
@@ -9,12 +9,12 @@
       "bound": 837,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 92,
+      "hits": 93,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 2863,
       "bindRate": 0.2471213463241807,
-      "selections": 92,
+      "selections": 93,
       "recall": 1
     },
     {
@@ -23,12 +23,12 @@
       "bound": 837,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 92,
+      "hits": 93,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 2863,
       "bindRate": 0.2471213463241807,
-      "selections": 92,
+      "selections": 93,
       "recall": 1
     },
     {
@@ -37,12 +37,12 @@
       "bound": 821,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 92,
+      "hits": 93,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 2863,
       "bindRate": 0.2423974018305285,
-      "selections": 92,
+      "selections": 93,
       "recall": 1
     },
     {
@@ -51,12 +51,12 @@
       "bound": 820,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 92,
+      "hits": 93,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 2863,
       "bindRate": 0.24210215529967524,
-      "selections": 92,
+      "selections": 93,
       "recall": 1
     },
     {
@@ -65,12 +65,12 @@
       "bound": 661,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 90,
+      "hits": 91,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 2863,
       "bindRate": 0.1951579568940065,
-      "selections": 90,
+      "selections": 91,
       "recall": 1
     },
     {
@@ -79,12 +79,12 @@
       "bound": 620,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 83,
+      "hits": 84,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 2863,
       "bindRate": 0.18305284912902273,
-      "selections": 83,
+      "selections": 84,
       "recall": 1
     }
   ]

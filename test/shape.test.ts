@@ -285,6 +285,17 @@ describe("shape compatibility", () => {
       { kind: "enumMember", literalKind: "string" },
       { kind: "enumMember", literalKind: "number" },
     ).breaking).toBe(true);
+    const stringArg = { kind: "enumMember" as const, enumArgs: [{ value: '"a"', kind: "string" as const, literal: "a" }] };
+    expect(compareShapeClaims(stringArg, {
+      kind: "enumMember",
+      enumArgs: [{ literal: "a", kind: "string", value: '"a"' }],
+    }).breaking).toBe(false);
+    const changedArg = compareShapeClaims(stringArg, {
+      kind: "enumMember",
+      enumArgs: [{ value: '"b"', kind: "string", literal: "b" }],
+    });
+    expect(changedArg.breaking).toBe(true);
+    expect(changedArg.changes).toContain("enum arguments changed");
     expect(compareShapeClaims(
       { kind: "module", params: [] },
       { kind: "module", params: [param("x")] },

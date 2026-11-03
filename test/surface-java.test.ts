@@ -366,6 +366,11 @@ describe("Java surface", () => {
     expect(red?.kind).toBe("enumMember");
     expect(red?.parentId).toBe(color?.id);
     expect(red?.aliases).toEqual(expect.arrayContaining(["Color.RED", "Color#RED", "example.Color.RED"]));
+    expect(red?.shape.enumArgs).toEqual([
+      { value: '"red"', kind: "string", literal: "red" },
+      { value: "2", kind: "number", literal: 2 },
+      { value: "true", kind: "boolean", literal: true },
+    ]);
     const blue = result.symbols.find((symbol) => symbol.name === "BLUE");
     const label = result.symbols.find((symbol) => symbol.name === "label");
     expect(label?.parentId).toBe(blue?.id);

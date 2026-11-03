@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T22:52:40.506Z",
+  "generatedAt": "2026-11-03T22:57:18.557Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -948,9 +948,22 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "RED",
+          "kind": "value",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 20,
+      "hits": 21,
       "misses": 0,
       "collateral": 0
     }

@@ -25,10 +25,19 @@ interface CorpusEntry {
   asciidoc?: boolean;
   javadoc?: boolean;
   mutations: number;
+  valueMutations?: Array<{
+    file: string;
+    find: string;
+    replace: string;
+    symbol: string;
+    expectedRule?: string;
+  }>;
 }
 
 interface MutationResult {
   symbol: string;
+  kind?: "rename" | "value";
+  expectedRule?: string;
   rule?: string;
   hit: boolean;
   findings: number;
@@ -300,6 +309,36 @@ for (const entry of selected) {
       });
     } finally {
       restore();
+    }
+  }
+
+  for (const valueMutation of entry.valueMutations ?? []) {
+    const path = join(".", valueMutation.file);
+    const original = readFileSync(path, "utf8");
+    if (!original.includes(valueMutation.find)) {
+      throw new Error(`${entry.name}: value mutation target not found: ${valueMutation.find}`);
+    }
+    writeFileSync(path, original.replace(valueMutation.find, valueMutation.replace));
+    try {
+      const findings = findingsFor(checkout, config);
+      const relatedFindings = findings.filter((finding) => finding.message.includes(valueMutation.symbol));
+      const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));
+      const ruleMatched = valueMutation.expectedRule
+        ? relatedFindings.some((finding) => finding.rule === valueMutation.expectedRule)
+        : relatedFindings.length > 0;
+      mutations.push({
+        symbol: valueMutation.symbol,
+        kind: "value",
+        ...(valueMutation.expectedRule ? { expectedRule: valueMutation.expectedRule } : {}),
+        rule: relatedFindings[0]?.rule,
+        hit: ruleMatched,
+        findings: findings.length,
+        relatedRules: [...new Set(relatedFindings.map((finding) => finding.rule))],
+        collateral: collateralFindings.length,
+        collateralRules: [...new Set(collateralFindings.map((finding) => finding.rule))],
+      });
+    } finally {
+      writeFileSync(path, original);
     }
   }
 

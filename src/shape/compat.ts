@@ -1,3 +1,4 @@
+import { stableStringify } from "./canonical.js";
 import { isUnionSubset, splitTopLevelUnion } from "../hash.js";
 import type { MemberShape, ParamShape, Shape, SymbolKind } from "../types.js";
 
@@ -234,6 +235,10 @@ export function compareShapeClaims(oldShape: Shape, newShape: Shape): ShapeDelta
       if (oldShape.literalKind !== newShape.literalKind) {
         target.breaking = true;
         target.changes.push("enum value changed");
+      }
+      if (stableStringify(oldShape.enumArgs ?? []) !== stableStringify(newShape.enumArgs ?? [])) {
+        target.breaking = true;
+        target.changes.push("enum arguments changed");
       }
       break;
     default:
