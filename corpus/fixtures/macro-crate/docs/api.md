@@ -1,5 +1,7 @@
 # Macro API
 
+Call `nested_three()` for the nested macro output.
+
 Call `generated()` for the generated getter.
 
 Call `generated_public()` for the generated public function.

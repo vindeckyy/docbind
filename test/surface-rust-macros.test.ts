@@ -87,6 +87,14 @@ macro_rules! many {
 }
 many!(one, two, three);
 `,
+    "src/nested.rs": `
+macro_rules! nested {
+    ($($($name:ident),*);*) => {
+        $( $( pub fn $name() {} )* )*
+    };
+}
+nested!(a, b; c);
+`,
     "src/macros.rs": `
 #[macro_export]
 macro_rules! cross {
@@ -141,6 +149,8 @@ describe("Rust macro expansion", () => {
     const cross = extractRust(root, ["src/macros.rs", "src/cross.rs"]);
     const names = cross.symbols.map((symbol) => symbol.name);
     expect(names).toEqual(expect.arrayContaining(["cross_one", "cross_two"]));
+    const nested = extractRust(root, ["src/nested.rs"]);
+    expect(nested.symbols.map((symbol) => symbol.name)).toEqual(["a", "b", "c"]);
   });
 
   it("survives malformed macro definitions", () => {

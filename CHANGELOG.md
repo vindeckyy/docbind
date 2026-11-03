@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.8] - 2026-11-03
+
+### Added
+
+- Nested Rust `macro_rules!` repetition for patterns that share a metavariable across levels.
+- Macro corpus fixture now includes a cross-file nested repetition invocation.
+- Nested-generated symbol mutation is detected.
+
+### Limits
+
+- Nested repetition with independent capture trees is still not expanded.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.7] - 2026-11-03
 
 ### Added
@@ -136,3 +149,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.5
 [0.1.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.6
 [0.1.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.7
+[0.1.8]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.8

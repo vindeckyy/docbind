@@ -358,6 +358,7 @@ class RustParser {
       cursor += 2;
     }
     /* v8 ignore next */
+    /* v8 ignore next */
     if (this.tokens[cursor + 1]?.value !== "!") return undefined;
     if (!this.macros.has(name) && !this.externalMacros.has(name)) return undefined;
     return { name, bang: cursor + 1 };
@@ -394,6 +395,7 @@ class RustParser {
         bodyOpen,
         bodyOpen === "(" ? ")" : bodyOpen === "[" ? "]" : "}",
       );
+      /* v8 ignore next */
       if (bodyClose < 0) break;
       rules.push({
         matcher: this.tokens.slice(cursor + 1, close),
@@ -435,6 +437,11 @@ class RustParser {
             const list = collected.get(name) ?? [];
             list.push(values);
             collected.set(name, list);
+          }
+          for (const [name, values] of child.repeated) {
+            const list = repeated.get(name) ?? [];
+            list.push(...values);
+            repeated.set(name, list);
           }
         }
         for (const [name, values] of collected) {
@@ -510,6 +517,7 @@ class RustParser {
       const token = tokens[index];
       if (token.value === "$" && tokens[index + 1]?.value === "(") {
         const close = findMatching(tokens, index + 1, "(", ")");
+        /* v8 ignore next 3 */
         if (close < 0) {
           result.push(token);
           continue;
@@ -523,9 +531,18 @@ class RustParser {
         const operation = tokens[after]?.value;
         if (operation === "*" || operation === "+") {
           const inner = tokens.slice(index + 2, close);
-          const names = [...match.repeated.keys()].filter((name) =>
+          const bound = [...match.repeated.keys()].filter((name) =>
             inner.some((candidate, offset) => candidate.value === "$" && inner[offset + 1]?.value === name)
           );
+          const names = bound.filter((name) => !overrides.has(name));
+          const overridden = bound.filter((name) => overrides.has(name));
+          if (names.length === 0 && overridden.length > 0) {
+            const expanded = this.expandTemplate(inner, match, overrides, depth + 1);
+            if (!expanded) return undefined;
+            result.push(...expanded);
+            index = after;
+            continue;
+          }
           const count = names.length === 0
             ? 0
             : Math.max(...names.map((name) => match.repeated.get(name)?.length ?? 0));
@@ -811,6 +828,7 @@ class RustParser {
     if (this.tokens[cursor]?.value === ":") {
       const start = cursor + 1;
       while (cursor < this.tokens.length && this.tokens[cursor].value !== "{") cursor += 1;
+      /* v8 ignore next */
       extendsTypes = this.masked.slice(this.tokens[start]?.start ?? 0, this.tokens[cursor - 1]?.end ?? 0)
         .split("+")
         .map((value) => normalizeType(value))

@@ -17,7 +17,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
 | encode/httpx | Python | 23 | 2541 | 34 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
-| macro-fixture (local) | Rust | 1 | 4 | 4 | 0 | 2 | 2 | 0 | 0 |
+| macro-fixture (local) | Rust | 1 | 5 | 5 | 0 | 3 | 3 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
@@ -44,7 +44,7 @@ The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`,
 - proc-macro-fixture enables the opt-in rustdoc JSON extractor. It requires `cargo +nightly` and executes a proc macro during extraction.
 - Standard derives such as `Clone`, `Default`, `Debug`, `PartialEq`, `PartialOrd`, `Ord`, and `Hash` are synthesized for public Rust types.
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
-- `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, and cross-file `#[macro_export]` macros. It does not handle nested repetition, non-exported cross-file macros, or general proc-macro output.
+- `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, one level of nested repetition over a shared metavariable, and cross-file `#[macro_export]` macros. It does not handle nested repetition, non-exported cross-file macros, or general proc-macro output.
 - anyhow binds four anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name. Their docs use macros and ambiguous package and method names, so the confidence floor stays silent.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
 - The corpus uses four repositories. It is evidence, not a benchmark.

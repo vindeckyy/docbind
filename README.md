@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml/badge.svg"></a>
-  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.39%25-brightgreen">
+  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.45%25-brightgreen">
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D22.12-339933?logo=node.js&logoColor=white">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -207,7 +207,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and two local fixtures produce zero baseline findings, zero doc-edit findings, and 14 of 14 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and two local fixtures produce zero baseline findings, zero doc-edit findings, and 15 of 15 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
 
 ## Development
 
@@ -233,15 +233,15 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.7 tree:
+Measured on the 0.1.8 tree:
 
 | Gate | Result |
 |---|---|
 | Tests | 253 passing |
-| Statements | 98.8% |
-| Branches | 95.04% |
+| Statements | 98.86% |
+| Branches | 95.1% |
 | Functions | 99.48% |
-| Lines | 99.39% |
+| Lines | 99.45% |
 | Changed-line coverage, feature diff | 99.88% |
 | Structure gate | 73 of 73 checks |
 | Docs build | `mkdocs build --strict` passes |

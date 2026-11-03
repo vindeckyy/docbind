@@ -96,7 +96,7 @@
       "rust": true,
       "go": false
     },
-    "mutations": 4
+    "mutations": 5
   },
   {
     "name": "thiserror",

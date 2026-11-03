@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T17:28:10.823Z",
+  "generatedAt": "2026-11-03T17:36:11.086Z",
   "report": [
     {
       "name": "slugify",
@@ -190,8 +190,8 @@
       "repo": "local/macro-crate",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 4,
-      "bound": 4,
+      "anchors": 5,
+      "bound": 5,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -219,9 +219,20 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "nested_three",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 2,
+      "hits": 3,
       "misses": 0,
       "collateral": 0
     },
