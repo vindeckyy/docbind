@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml/badge.svg"></a>
-  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.62%25-brightgreen">
+  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.68%25-brightgreen">
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D22.12-339933?logo=node.js&logoColor=white">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -230,7 +230,7 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.1 tree:
+Measured on the 0.1.2 tree:
 
 | Gate | Result |
 |---|---|
