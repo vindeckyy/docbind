@@ -19,7 +19,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| go-package-fixture (local) | Go | 1 | 6 | 6 | 0 | 6 | 6 | 0 | 0 |
+| go-package-fixture (local) | Go | 1 | 7 | 7 | 0 | 7 | 7 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -42,7 +42,9 @@ Cross-package type aliases now propagate method aliases. A package that writes `
 
 Variable and constant re-exports follow simple selectors. `const Limit = client.Limit` and `var ErrX = client.ErrX` add the re-exporting alias to the target symbol and drop the duplicate local symbol.
 
-Wrapper functions such as `func Wrap(value int) int { return client.Target(value) }` attach `viper.Wrap` to `client.Target`. The fixture binds 6 of 6 anchors and detects 6 of 6 mutations.
+Wrapper functions such as `func Wrap(value int) int { return client.Target(value) }` attach `viper.Wrap` to `client.Target`.
+
+Re-export aliases propagate through multiple hops. A middle package can alias a type or value, and the outermost package adds its selector to the original target. The fixture resolves `viper.AppClient.Special()` through `app.AppClient -> middle.MidClient -> client.Client`, binds 7 of 7 anchors, and detects 7 of 7 mutations.
 
 ## Crate macros and generic aliases
 

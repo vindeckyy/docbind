@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.20] - 2026-11-03
+
+### Added
+
+- Go re-export aliases propagate through multiple package hops for type aliases, values, constants, and wrapper functions.
+- Local Go fixture covers a chained `viper.AppClient.Special()` selector.
+
+### Improved
+
+- Go fixture grew from 6 to 7 bound anchors and from 6 to 7 detected mutations.
+- Corpus now detects 34 of 34 seeded mutations with zero collateral findings.
+- Branch coverage rose from 95.01% to 95.02%.
+
+### Limits
+
+- Go computed re-exports, method-valued wrappers, and re-export cycles are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.19] - 2026-11-03
 
 ### Added
@@ -368,3 +386,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.17]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.17
 [0.1.18]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.18
 [0.1.19]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.19
+[0.1.20]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.20

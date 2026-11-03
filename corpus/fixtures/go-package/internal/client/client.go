@@ -9,3 +9,5 @@ const Limit = 5
 var ErrX = 1
 
 func Target(value int) int { return value }
+
+func (c *Client) Special() error { return nil }

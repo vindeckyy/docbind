@@ -665,49 +665,78 @@ function buildGoChildren(context: GoContext, parents: Map<string, Symbol>): Symb
   return result;
 }
 
+function goPackageAlias(symbol: Symbol): string {
+  const moduleAlias = `${symbol.modulePath.replace(/\//gu, ".")}.${symbol.name}`;
+  return symbol.aliases.find((alias) =>
+    alias.endsWith(`.${symbol.name}`) && alias !== moduleAlias
+  ) ?? moduleAlias;
+}
+
+function isTypeReexport(symbol: Symbol): boolean {
+  return symbol.kind === "type" &&
+    /^(?:\*|\[\])?[A-Za-z_]\w*\.[A-Za-z_]\w*/u.test(symbol.shape.typeShape ?? "");
+}
+
 function applyGoReexports(symbols: Symbol[]): Symbol[] {
   const removed = new Set<string>();
   const top = symbols.filter((symbol) => !symbol.parentId);
-  for (const reexport of top) {
-    if (reexport.kind !== "type") continue;
-    const match = /^(?:\*|\[\])?([A-Za-z_]\w*)\.([A-Za-z_]\w*)/u.exec(reexport.shape.typeShape ?? "");
-    if (!match?.[1] || !match[2]) continue;
-    const packageName = match[1];
-    const typeName = match[2];
-    const targets = top.filter((symbol) =>
-      symbol.id !== reexport.id &&
-      symbol.name === typeName &&
-      symbol.aliases.includes(`${packageName}.${typeName}`)
-    );
-    if (targets.length !== 1) continue;
-    const target = targets[0] as Symbol;
-    const moduleAlias = `${reexport.modulePath}.${reexport.name}`;
-    const prefix = reexport.aliases.find((alias) =>
-      alias.endsWith(`.${reexport.name}`) && alias !== moduleAlias
-    ) ?? moduleAlias;
-    for (const child of symbols) {
-      if (child.parentId !== target.id) continue;
-      const alias = `${prefix}.${child.name}`;
-      if (!child.aliases.includes(alias)) child.aliases.push(alias);
+
+  for (let pass = 0; pass < 16; pass += 1) {
+    let changed = false;
+    for (const reexport of top) {
+      if (reexport.kind !== "type") continue;
+      const match = /^(?:\*|\[\])?([A-Za-z_]\w*)\.([A-Za-z_]\w*)/u.exec(reexport.shape.typeShape ?? "");
+      if (!match?.[1] || !match[2]) continue;
+      const packageName = match[1];
+      const typeName = match[2];
+      const targets = top.filter((symbol) =>
+        symbol.id !== reexport.id &&
+        !isTypeReexport(symbol) &&
+        symbol.aliases.includes(`${packageName}.${typeName}`)
+      );
+      if (targets.length !== 1) continue;
+      const target = targets[0] as Symbol;
+      const prefix = goPackageAlias(reexport);
+      if (!target.aliases.includes(prefix)) {
+        target.aliases.push(prefix);
+        changed = true;
+      }
+      for (const child of symbols) {
+        if (child.parentId !== target.id) continue;
+        const alias = `${prefix}.${child.name}`;
+        if (!child.aliases.includes(alias)) {
+          child.aliases.push(alias);
+          changed = true;
+        }
+      }
     }
+    if (!changed) break;
   }
-  for (const reexport of top) {
-    const source = reexport.goReexport;
-    if (!source) continue;
-    const targets = top.filter((symbol) =>
-      symbol.id !== reexport.id &&
-      !symbol.goReexport &&
-      symbol.name === source.name &&
-      symbol.aliases.includes(`${source.packageName}.${source.name}`)
-    );
-    if (targets.length !== 1) continue;
-    const target = targets[0] as Symbol;
-    const moduleAlias = `${reexport.modulePath}.${reexport.name}`;
-    const alias = reexport.aliases.find((candidate) =>
-      candidate.endsWith(`.${reexport.name}`) && candidate !== moduleAlias
-    ) ?? moduleAlias;
-    if (!target.aliases.includes(alias)) target.aliases.push(alias);
-    removed.add(reexport.id);
+
+  for (let pass = 0; pass < 16; pass += 1) {
+    let changed = false;
+    for (const reexport of top) {
+      if (removed.has(reexport.id)) continue;
+      const source = reexport.goReexport;
+      if (!source) continue;
+      const targets = top.filter((symbol) =>
+        symbol.id !== reexport.id &&
+        !removed.has(symbol.id) &&
+        !symbol.goReexport &&
+        ["function", "const"].includes(symbol.kind) &&
+        symbol.aliases.includes(`${source.packageName}.${source.name}`)
+      );
+      if (targets.length !== 1) continue;
+      const target = targets[0] as Symbol;
+      const alias = goPackageAlias(reexport);
+      if (!target.aliases.includes(alias)) {
+        target.aliases.push(alias);
+        changed = true;
+      }
+      removed.add(reexport.id);
+      changed = true;
+    }
+    if (!changed) break;
   }
   return symbols.filter((symbol) => !removed.has(symbol.id));
 }

@@ -149,6 +149,35 @@ describe("Go surface", () => {
     expect(result.symbols.some((symbol) => symbol.name === "Wrap")).toBe(false);
   });
 
+  it("resolves multi-step value and wrapper re-export chains", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "lib/lib.go": "package lib\nconst Limit = 5\nfunc Target(value int) int { return value }\n",
+      "mid/mid.go": "package mid\nimport \"example.com/app/lib\"\nconst MidLimit = lib.Limit\nfunc Mid(value int) int { return lib.Target(value) }\n",
+      "app.go": "package app\nimport \"example.com/app/mid\"\nconst AppLimit = mid.MidLimit\nfunc App(value int) int { return mid.Mid(value) }\n",
+    });
+    const result = extractGo(root, ["lib/lib.go", "mid/mid.go", "app.go"]);
+    const limits = result.symbols.filter((symbol) => symbol.name === "Limit");
+    const targets = result.symbols.filter((symbol) => symbol.name === "Target");
+    expect(limits).toHaveLength(1);
+    expect(targets).toHaveLength(1);
+    expect(limits[0].aliases).toContain("app.AppLimit");
+    expect(targets[0].aliases).toContain("app.App");
+    expect(result.symbols.some((symbol) => ["MidLimit", "AppLimit", "Mid", "App"].includes(symbol.name))).toBe(false);
+  });
+
+  it("resolves multi-step type alias chains", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/client/client.go": "package client\ntype Client struct{}\nfunc (c *Client) Special() error { return nil }\n",
+      "internal/middle/middle.go": "package middle\nimport \"example.com/app/internal/client\"\ntype MidClient = client.Client\n",
+      "root.go": "package app\nimport \"example.com/app/internal/middle\"\ntype AppClient = middle.MidClient\n",
+    });
+    const result = extractGo(root, ["internal/client/client.go", "internal/middle/middle.go", "root.go"]);
+    const method = result.symbols.find((symbol) => symbol.name === "Special");
+    expect(method?.aliases).toContain("app.AppClient.Special");
+  });
+
   it("falls back when the re-export file matches the package name", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",
