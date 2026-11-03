@@ -525,6 +525,19 @@ describe("check pipeline", () => {
     expect(result.pending[0]?.symbol.name).toBe("Target");
   });
 
+  it("binds Go method-valued and computed aliases", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "lib/lib.go": "package lib\ntype Client struct{}\nfunc (c *Client) Computed(value int) error { return nil }\nfunc (c *Client) Wrapped(value int) error { return nil }\n",
+      "root.go": "package app\nimport \"example.com/app/lib\"\nvar MethodValue = lib.Client.Computed\nfunc WrapComputed(c *lib.Client, value int) error { return lib.Client.Wrapped(c, value) }\n",
+      "docs/api.md": "Call `app.MethodValue(client, 1)` and `app.WrapComputed(client, 1)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(["Computed", "Wrapped"]);
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

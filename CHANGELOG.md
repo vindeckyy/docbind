@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.21] - 2026-11-03
+
+### Added
+
+- Go method-valued selectors such as `var MethodValue = client.Client.Computed` attach the re-export alias to the target method.
+- Direct method-call wrappers such as `return client.Client.Wrapped(...)` attach the wrapper selector to the target method.
+- Local Go fixture covers method-valued and computed aliases with separate mutation coverage.
+
+### Improved
+
+- Go fixture grew from 7 to 9 bound anchors and from 7 to 9 detected mutations.
+- Corpus now detects 36 of 36 seeded mutations with zero collateral findings.
+- Branch coverage rose from 95.02% to 95.05%.
+
+### Limits
+
+- Go arbitrary arithmetic and composite expressions, instance-method wrappers, and re-export cycles are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.20] - 2026-11-03
 
 ### Added
@@ -387,3 +406,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.18]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.18
 [0.1.19]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.19
 [0.1.20]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.20
+[0.1.21]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.21

@@ -9,3 +9,5 @@ Read `viper.Limit` and `viper.ErrX` through constant and variable re-exports.
 Call `viper.Wrap(1)` through the wrapper re-export.
 
 Call `viper.AppClient.Special()` through a chained type alias.
+
+Call `viper.MethodValue(c, 1)` and `viper.WrapComputed(c, 1)` through method-valued and computed aliases.

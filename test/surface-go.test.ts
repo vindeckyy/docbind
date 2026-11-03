@@ -178,6 +178,18 @@ describe("Go surface", () => {
     expect(method?.aliases).toContain("app.AppClient.Special");
   });
 
+  it("resolves method-valued and computed aliases", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "lib/lib.go": "package lib\ntype Client struct{}\nfunc (c *Client) Computed(value int) error { return nil }\nfunc (c *Client) Wrapped(value int) error { return nil }\n",
+      "root.go": "package app\nimport \"example.com/app/lib\"\nvar MethodValue = lib.Client.Computed\nfunc WrapComputed(c *lib.Client, value int) error { return lib.Client.Wrapped(c, value) }\n",
+    });
+    const result = extractGo(root, ["lib/lib.go", "root.go"]);
+    expect(result.symbols.find((symbol) => symbol.name === "Computed")?.aliases).toContain("app.MethodValue");
+    expect(result.symbols.find((symbol) => symbol.name === "Wrapped")?.aliases).toContain("app.WrapComputed");
+    expect(result.symbols.some((symbol) => ["MethodValue", "WrapComputed"].includes(symbol.name))).toBe(false);
+  });
+
   it("falls back when the re-export file matches the package name", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

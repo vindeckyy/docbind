@@ -27,7 +27,7 @@ interface GoDraft {
   start: number;
   body: string;
   parentName?: string;
-  reexport?: { packageName: string; name: string };
+  reexport?: { packageName: string; receiver?: string; name: string };
   enabled: boolean;
   exported: boolean;
 }
@@ -44,11 +44,15 @@ interface GoContext {
   failures: { count: number };
 }
 
-function wrapperReexport(body: string): { packageName: string; name: string } | undefined {
+function wrapperReexport(body: string): { packageName: string; receiver?: string; name: string } | undefined {
   const inner = body.trim().replace(/^\{/u, "").replace(/\}$/u, "").trim();
-  const match = /^return\s+([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(([\s\S]*)\)\s*$/u.exec(inner);
-  return match?.[1] && match[2]
-    ? { packageName: match[1], name: match[2] }
+  const method = /^return\s+([A-Za-z_]\w*)\.([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(([\s\S]*)\)\s*$/u.exec(inner);
+  if (method?.[1] && method[2] && method[3]) {
+    return { packageName: method[1], receiver: method[2], name: method[3] };
+  }
+  const plain = /^return\s+([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(([\s\S]*)\)\s*$/u.exec(inner);
+  return plain?.[1] && plain[2]
+    ? { packageName: plain[1], name: plain[2] }
     : undefined;
 }
 
@@ -572,7 +576,11 @@ class GoParser {
       : /^-?\d/u.test(value) ? "number"
       : value === "true" || value === "false" ? "boolean"
       : "expression";
-    const selector = /^([A-Za-z_]\w*)\.([A-Za-z_]\w*)$/u.exec(value);
+    const selectorParts = value.split(".");
+    const selector = selectorParts.length >= 2 && selectorParts.length <= 3 &&
+      selectorParts.every((part) => /^[A-Za-z_]\w*$/u.test(part))
+      ? selectorParts
+      : undefined;
     for (const name of names) {
       if (!isExportedGo(name)) continue;
       this.context.drafts.push({
@@ -581,8 +589,14 @@ class GoParser {
         shape: { kind: "const", typeShape: type || literal, literalKind: literal },
         start: offset + clean.indexOf(name),
         body: value,
-        ...(selector?.[1] && selector[2]
-          ? { reexport: { packageName: selector[1], name: selector[2] } }
+        ...(selector
+          ? {
+              reexport: {
+                packageName: selector[0] as string,
+                ...(selector.length === 3 ? { receiver: selector[1] as string } : {}),
+                name: selector[selector.length - 1] as string,
+              },
+            }
           : {}),
         enabled: true,
         exported: true,
@@ -719,13 +733,22 @@ function applyGoReexports(symbols: Symbol[]): Symbol[] {
       if (removed.has(reexport.id)) continue;
       const source = reexport.goReexport;
       if (!source) continue;
-      const targets = top.filter((symbol) =>
-        symbol.id !== reexport.id &&
-        !removed.has(symbol.id) &&
-        !symbol.goReexport &&
-        ["function", "const"].includes(symbol.kind) &&
-        symbol.aliases.includes(`${source.packageName}.${source.name}`)
-      );
+      const targetAlias = source.receiver
+        ? `${source.packageName}.${source.receiver}.${source.name}`
+        : `${source.packageName}.${source.name}`;
+      const targets = source.receiver
+        ? symbols.filter((symbol) =>
+            symbol.id !== reexport.id &&
+            !removed.has(symbol.id) &&
+            symbol.aliases.includes(targetAlias)
+          )
+        : top.filter((symbol) =>
+            symbol.id !== reexport.id &&
+            !removed.has(symbol.id) &&
+            !symbol.goReexport &&
+            ["function", "const"].includes(symbol.kind) &&
+            symbol.aliases.includes(targetAlias)
+          );
       if (targets.length !== 1) continue;
       const target = targets[0] as Symbol;
       const alias = goPackageAlias(reexport);
