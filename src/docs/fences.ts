@@ -6,6 +6,7 @@ import { snippetSignature } from "../surface/typescript.js";
 import { snippetSignatureRust } from "../surface/rust.js";
 import { snippetSignatureGo } from "../surface/go.js";
 import { lex } from "../surface/lex.js";
+import { findMatching } from "../surface/syntax.js";
 import type { GoTypeHints, PythonTypeHints } from "./infer.js";
 
 const TS_LANGS = new Set(["ts", "typescript", "tsx", "js", "javascript", "jsx", "mjs", "cjs"]);
@@ -23,6 +24,12 @@ const GO_KEYWORDS = new Set([
   "fallthrough", "for", "func", "go", "goto", "if", "import", "interface",
   "map", "package", "range", "return", "select", "struct", "switch", "type",
   "var", "nil", "true", "false",
+]);
+// Predeclared Go types are never exported package symbols, so they stay out of anchors.
+const GO_BUILTINS = new Set([
+  "any", "bool", "byte", "comparable", "complex64", "complex128", "error",
+  "float32", "float64", "int", "int8", "int16", "int32", "int64", "rune",
+  "string", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr",
 ]);
 
 const TS_KEYWORDS = new Set([
@@ -552,6 +559,37 @@ function goInterfaceParameters(value: string): Map<string, Set<string>> {
   return result;
 }
 
+function goMapElementType(annotation: string): string | undefined {
+  const map = /^map\s*\[[^\]]*\]\s*(.+)$/u.exec(annotation.trim());
+  return map?.[1] ? goAnnotationType(map[1]) : undefined;
+}
+
+function goMapParameters(value: string): Map<string, string> {
+  const result = new Map<string, string>();
+  for (const source of goParameterLists(value)) {
+    const parts: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let index = 0; index < source.length; index += 1) {
+      const char = source[index];
+      if (char === "(" || char === "[" || char === "{") depth += 1;
+      else if (char === ")" || char === "]" || char === "}") depth = Math.max(0, depth - 1);
+      else if (char === "," && depth === 0) {
+        parts.push(source.slice(start, index));
+        start = index + 1;
+      }
+    }
+    if (start < source.length) parts.push(source.slice(start));
+    for (const part of parts) {
+      const named = /^([A-Za-z_]\w*)\s+(.+)$/u.exec(part.trim());
+      if (!named?.[1] || !named[2]) continue;
+      const element = goMapElementType(named[2]);
+      if (element) result.set(named[1], element);
+    }
+  }
+  return result;
+}
+
 function lexFenceAnchors(
   node: Code,
   docPath: string,
@@ -565,6 +603,7 @@ function lexFenceAnchors(
   const locals = new Set<string>();
   const parameters = language === "go" ? goFunctionParameters(value) : new Map<string, string>();
   const interfaceParameters = language === "go" ? goInterfaceParameters(value) : new Map<string, Set<string>>();
+  const mapParameters = language === "go" ? goMapParameters(value) : new Map<string, string>();
   const helperReturns = language === "go" ? goFunctionReturns(value) : new Map<string, string>();
   for (const line of value.split("\n")) {
     if (language === "rust") {
@@ -592,6 +631,7 @@ function lexFenceAnchors(
   for (const name of parameters.keys()) locals.add(name);
   for (const name of interfaceParameters.keys()) locals.add(name);
   const localTypes = new Map<string, string>(parameters);
+  const mapTypes = new Map<string, string>(mapParameters);
   const goFallback: GoTypeHints = {
     types: new Set(),
     returns: new Map(),
@@ -615,7 +655,7 @@ function lexFenceAnchors(
     if (type) localTypes.set(name, type);
     else localTypes.delete(name);
   };
-  if (language === "go" && (goHints || helperReturns.size > 0)) {
+  if (language === "go") {
     for (const line of value.split("\n")) {
       const declaration = /^\s*var\s+([A-Za-z_]\w*)\s*(.*)$/u.exec(line);
       if (declaration?.[1]) {
@@ -624,17 +664,23 @@ function lexFenceAnchors(
         if (equal >= 0) {
           const annotation = rest.slice(0, equal).trim();
           const expression = rest.slice(equal + 1).trim();
+          const mapType = goMapElementType(annotation) ?? goMapElementType(expression);
+          if (mapType) mapTypes.set(declaration[1], mapType);
           setGoType(
             declaration[1],
             goAnnotationType(annotation) ?? inferGoValue(expression),
           );
         } else {
+          const mapType = goMapElementType(rest);
+          if (mapType) mapTypes.set(declaration[1], mapType);
           setGoType(declaration[1], goAnnotationType(rest));
         }
         continue;
       }
       const short = /^\s*([A-Za-z_]\w*)(?:\s*,\s*[A-Za-z_]\w*)*\s*:=\s*(.+)$/u.exec(line);
       if (short?.[1]) {
+        const mapType = goMapElementType(short[2] as string);
+        if (mapType) mapTypes.set(short[1], mapType);
         setGoType(short[1], inferGoValue(short[2] as string));
         continue;
       }
@@ -675,9 +721,35 @@ function lexFenceAnchors(
     const token = lexed.tokens[index];
     if (!/^[A-Za-z_]/u.test(token.value)) continue;
     if (language === "go" && GO_KEYWORDS.has(token.value)) continue;
+    if (language === "go" && GO_BUILTINS.has(token.value)) continue;
     if (language === "go") {
       const lineNumber = lexed.masked.slice(0, token.start).split("\n").length - 1;
       if (/\binterface\s*\{/u.test(contextLine(value, lineNumber))) continue;
+    }
+    if (language === "go" && mapTypes.has(token.value) && lexed.tokens[index + 1]?.value === "[") {
+      const close = findMatching(lexed.tokens, index + 1, "[", "]");
+      const dot = close >= 0 ? lexed.tokens[close + 1] : undefined;
+      const method = close >= 0 ? lexed.tokens[close + 2] : undefined;
+      if (close >= 0 && dot?.value === "." && method && /^[A-Za-z_]/u.test(method.value)) {
+        const position = lexed.masked.slice(0, token.start).split("\n").length - 1;
+        const column = token.start - lexed.masked.lastIndexOf("\n", token.start - 1);
+        anchors.push(
+          makeAnchor(
+            docPath,
+            `${mapTypes.get(token.value)}.${method.value}`,
+            startLine + 1 + position,
+            column,
+            "fenceToken",
+            [heading, contextLine(value, position)],
+            imports,
+            [...locals],
+            lexed.error || /\.\.\./u.test(value),
+            node.lang ?? undefined,
+          ),
+        );
+        index = close + 2;
+        continue;
+      }
     }
     if (token.value.length < 2 && !localTypes.has(token.value) && !interfaceParameters.has(token.value)) continue;
     let chain = token.value;

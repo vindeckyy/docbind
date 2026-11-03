@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.39] - 2026-11-03
+
+### Added
+
+- Go fence inference types map-index values from the map's element type, so `providers["default"].Get()` resolves through `map[string]*Viper`.
+- Map parameters, `var` declarations, and `:=` map literals all contribute element types.
+- Go predeclared types such as `string`, `any`, and `error` are filtered from fence anchors.
+
+### Improved
+
+- Go fixture grew from 43 to 45 bound anchors and from 27 to 28 detected mutations.
+- Corpus now detects 58 of 58 seeded mutations with zero collateral findings.
+- Viper anchors fell from 189 to 167 through builtin filtering, while keeping 94 bound symbols.
+- Branch coverage rose from 95.01% to 95.06%.
+
+### Limits
+
+- Go fence inference does not type values supplied from outside the fence.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.38] - 2026-11-03
 
 ### Added
@@ -726,3 +746,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.36]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.36
 [0.1.37]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.37
 [0.1.38]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.38
+[0.1.39]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.39

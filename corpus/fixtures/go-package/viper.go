@@ -35,6 +35,8 @@ func (v *Viper) Anonymous(key string) any { return nil }
 
 func (v *Viper) FromLoad(key string) any { return nil }
 
+func (v *Viper) Mapped(key string) any { return nil }
+
 func New() *Viper { return &Viper{} }
 
 var Default = New()

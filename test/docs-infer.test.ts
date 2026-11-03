@@ -412,6 +412,60 @@ describe("Go fence inference", () => {
     expect(missingMethod.anchors.map((anchor) => anchor.token)).not.toContain("Viper.Get");
   });
 
+  it("types map-index values", () => {
+    const viper = symbol("Viper", {
+      id: "viper", kind: "class", packageName: "viper",
+      qualifiedName: "viper.Viper", aliases: ["viper.Viper"],
+    });
+    const hints = buildGoTypeHints([viper]);
+    const result = fenceAnchors(
+      { ...code("func f(providers map[string]*Viper) {\n    providers[\"default\"].Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+      undefined,
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+  });
+
+  it("skips Go builtin types in fences", () => {
+    const result = fenceAnchors(
+      { ...code("func f(providers map[string]*Viper) {\n    providers[\"default\"].Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    const tokens = result.anchors.map((anchor) => anchor.token);
+    expect(tokens).not.toContain("string");
+    expect(tokens).not.toContain("any");
+    expect(tokens).toContain("Viper.Get");
+  });
+
+  it("tracks declared and literal map locals", () => {
+    const result = fenceAnchors(
+      {
+        ...code([
+          "func f() {",
+          "    var declared map[string]*Viper",
+          "    declared[\"a\"].Get(\"a\")",
+          "    var assigned map[string]*Viper = make(map[string]*Viper)",
+          "    assigned[\"b\"].Get(\"b\")",
+          "    literal := map[string]*Viper{}",
+          "    literal[\"c\"].Get(\"c\")",
+          "    literal[\"missing\"]",
+          "    literal[\"unclosed",
+          "}",
+          "",
+        ].join("\n")),
+        lang: "go",
+      } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    const tokens = result.anchors.map((anchor) => anchor.token);
+    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(3);
+    expect(tokens).not.toContain("missing");
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

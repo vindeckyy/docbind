@@ -90,3 +90,9 @@ func useLoaded(h Handler) {
     v.FromLoad("key")
 }
 ```
+
+```go
+func useMap(providers map[string]*Viper) {
+    providers["default"].Mapped("key")
+}
+```
