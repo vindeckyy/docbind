@@ -111,6 +111,31 @@ describe("Go surface", () => {
     expect(method?.aliases).toEqual(expect.arrayContaining(["client.Client.Do", "app.Client.Do"]));
   });
 
+  it("resolves variable and constant re-exports", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/config/config.go": "package config\nconst Limit = 5\nvar ErrX = 1\n",
+      "root.go": "package app\nimport \"example.com/app/internal/config\"\nconst Limit = config.Limit\nvar ErrX = config.ErrX\n",
+    });
+    const result = extractGo(root, ["internal/config/config.go", "root.go"]);
+    const limits = result.symbols.filter((symbol) => symbol.name === "Limit");
+    const errors = result.symbols.filter((symbol) => symbol.name === "ErrX");
+    expect(limits).toHaveLength(1);
+    expect(errors).toHaveLength(1);
+    expect(limits[0].aliases).toEqual(expect.arrayContaining(["config.Limit", "app.Limit"]));
+    expect(errors[0].aliases).toEqual(expect.arrayContaining(["config.ErrX", "app.ErrX"]));
+  });
+
+  it("keeps unresolved constant re-exports as local symbols", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "root.go": "package app\nimport \"example.com/missing/config\"\nconst Limit = config.Limit\n",
+    });
+    const result = extractGo(root, ["root.go"]);
+    const limit = result.symbols.find((symbol) => symbol.name === "Limit");
+    expect(limit?.aliases).toEqual(expect.arrayContaining(["root.Limit", "app.Limit"]));
+  });
+
   it("falls back when the re-export file matches the package name", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

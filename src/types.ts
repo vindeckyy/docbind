@@ -75,6 +75,7 @@ export interface Symbol {
   bodyHash: string;
   contractFlags: ContractFlag[];
   packageExport?: boolean;
+  goReexport?: { packageName: string; name: string };
   parentId?: string;
   line: number;
   filePath: string;

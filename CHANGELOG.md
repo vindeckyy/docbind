@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.18] - 2026-11-03
+
+### Added
+
+- Go variable and constant re-exports follow simple selectors such as `var ErrX = client.ErrX` and `const Limit = client.Limit`.
+- Re-export aliases attach to the target symbol and the duplicate local symbol is removed.
+
+### Improved
+
+- Go fixture grew from 3 to 5 bound anchors and from 3 to 5 detected mutations.
+- Corpus now detects 32 of 32 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go wrapper-function and multi-step re-export chains are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.17] - 2026-11-03
 
 ### Added
@@ -331,3 +348,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.15]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.15
 [0.1.16]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.16
 [0.1.17]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.17
+[0.1.18]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.18

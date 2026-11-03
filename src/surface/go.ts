@@ -27,6 +27,7 @@ interface GoDraft {
   start: number;
   body: string;
   parentName?: string;
+  reexport?: { packageName: string; name: string };
   enabled: boolean;
   exported: boolean;
 }
@@ -561,6 +562,7 @@ class GoParser {
       : /^-?\d/u.test(value) ? "number"
       : value === "true" || value === "false" ? "boolean"
       : "expression";
+    const selector = /^([A-Za-z_]\w*)\.([A-Za-z_]\w*)$/u.exec(value);
     for (const name of names) {
       if (!isExportedGo(name)) continue;
       this.context.drafts.push({
@@ -569,6 +571,9 @@ class GoParser {
         shape: { kind: "const", typeShape: type || literal, literalKind: literal },
         start: offset + clean.indexOf(name),
         body: value,
+        ...(selector?.[1] && selector[2]
+          ? { reexport: { packageName: selector[1], name: selector[2] } }
+          : {}),
         enabled: true,
         exported: true,
       });
@@ -608,6 +613,7 @@ function buildGoTopSymbols(context: GoContext): Symbol[] {
       bodyHash: bodyHash(draft.body),
       contractFlags: draft.shape.flags ?? [],
       packageExport: true,
+      ...(draft.reexport ? { goReexport: draft.reexport } : {}),
       line: lineOf(context.source, draft.start),
       filePath: context.filePath,
     });
@@ -649,7 +655,8 @@ function buildGoChildren(context: GoContext, parents: Map<string, Symbol>): Symb
   return result;
 }
 
-function applyGoReexports(symbols: Symbol[]): void {
+function applyGoReexports(symbols: Symbol[]): Symbol[] {
+  const removed = new Set<string>();
   const top = symbols.filter((symbol) => !symbol.parentId);
   for (const reexport of top) {
     if (reexport.kind !== "type") continue;
@@ -674,6 +681,25 @@ function applyGoReexports(symbols: Symbol[]): void {
       if (!child.aliases.includes(alias)) child.aliases.push(alias);
     }
   }
+  for (const reexport of top) {
+    const source = reexport.goReexport;
+    if (!source) continue;
+    const targets = top.filter((symbol) =>
+      symbol.id !== reexport.id &&
+      !symbol.goReexport &&
+      symbol.name === source.name &&
+      symbol.aliases.includes(`${source.packageName}.${source.name}`)
+    );
+    if (targets.length !== 1) continue;
+    const target = targets[0] as Symbol;
+    const moduleAlias = `${reexport.modulePath}.${reexport.name}`;
+    const alias = reexport.aliases.find((candidate) =>
+      candidate.endsWith(`.${reexport.name}`) && candidate !== moduleAlias
+    ) ?? moduleAlias;
+    if (!target.aliases.includes(alias)) target.aliases.push(alias);
+    removed.add(reexport.id);
+  }
+  return symbols.filter((symbol) => !removed.has(symbol.id));
 }
 
 export function extractGo(root: string, files: string[]): ExtractResult {
@@ -715,8 +741,7 @@ export function extractGo(root: string, files: string[]): ExtractResult {
     ]),
   );
   symbols.push(...contexts.flatMap((context) => buildGoChildren(context, parents)));
-  applyGoReexports(symbols);
-  return { symbols, parseFailures, filesScanned };
+  return { symbols: applyGoReexports(symbols), parseFailures, filesScanned };
 }
 
 export interface GoSignatureSnippet {

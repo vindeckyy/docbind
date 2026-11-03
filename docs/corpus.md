@@ -19,7 +19,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| go-package-fixture (local) | Go | 1 | 3 | 3 | 0 | 3 | 3 | 0 | 0 |
+| go-package-fixture (local) | Go | 1 | 5 | 5 | 0 | 5 | 5 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -38,7 +38,9 @@ Go docs use the declared package name, while the extractor's module path follows
 
 Unique bare exported identifiers now earn package-export evidence. Names such as `SetDefault`, `GetInt`, `Unmarshal`, and `FlagValue` bind to the package-level symbol even when a same-named method exists. Viper reached 94 bound anchors and mutation coverage grew from 3 to 8. A local Go fixture also exercises a package selector and a constant: `viper.ReadRemoteConfig` and `viper.SupportedExts` both bind, and both mutations are detected.
 
-Cross-package type aliases now propagate method aliases. A package that writes `type Client = client.Client` exposes target methods under the re-exporting selector, so `viper.Client.Perform()` binds to the method declared in `internal/client`. The fixture binds 3 of 3 anchors and detects 3 of 3 mutations.
+Cross-package type aliases now propagate method aliases. A package that writes `type Client = client.Client` exposes target methods under the re-exporting selector, so `viper.Client.Perform()` binds to the method declared in `internal/client`.
+
+Variable and constant re-exports follow simple selectors. `const Limit = client.Limit` and `var ErrX = client.ErrX` add the re-exporting alias to the target symbol and drop the duplicate local symbol. The fixture binds 5 of 5 anchors and detects 5 of 5 mutations.
 
 ## Crate macros and generic aliases
 

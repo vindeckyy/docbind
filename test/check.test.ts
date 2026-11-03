@@ -497,6 +497,21 @@ describe("check pipeline", () => {
     expect(result.pending[0]?.symbol.name).toBe("Do");
   });
 
+  it("binds Go re-exported variables and constants", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/config/config.go": "package config\nconst Limit = 5\nvar ErrX = 1\n",
+      "root.go": "package app\nimport \"example.com/app/internal/config\"\nconst Limit = config.Limit\nvar ErrX = config.ErrX\n",
+      "docs/api.md": "Read `app.Limit` and `app.ErrX`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(
+      expect.arrayContaining(["Limit", "ErrX"]),
+    );
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",
