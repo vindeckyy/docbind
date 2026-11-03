@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.13] - 2026-11-03
+
+### Added
+
+- Rust `macro_rules!` supports optional `?` repetition in matchers and transcribers, including absent captures.
+- Macro corpus fixture covers optional argument and return captures.
+
+### Improved
+
+- Macro fixture bind rate rose from 9 to 11 anchors. Seeded mutations rose from 7 to 9, all detected.
+- Corpus now detects 21 of 21 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Crate-wide macro collection is name-based. Same-name non-exported macros in different modules let the last definition win.
+- General proc-macro bodies remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.12] - 2026-11-03
 
 ### Added
@@ -231,3 +249,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.10]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.10
 [0.1.11]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.11
 [0.1.12]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.12
+[0.1.13]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.13

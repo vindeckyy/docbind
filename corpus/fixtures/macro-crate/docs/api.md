@@ -1,5 +1,9 @@
 # Macro API
 
+Call `optional_public(value)` for the optional argument and return.
+
+Call `optional_plain()` for the absent optional captures.
+
 Call `private_generated()` for the sibling-module macro.
 
 Call `alpha.one()` and read `alpha.two` for the first independent group.

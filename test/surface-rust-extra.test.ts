@@ -95,6 +95,9 @@ pub struct Settings;
 #[derive(Clone)]
 pub enum Mode { A, B }
 
+#[derive(Clone,)]
+pub struct Trailing;
+
 #[proc_macro_derive(MyDerive, attributes(helper))]
 pub fn derive_my(input: TokenStream) -> TokenStream { input }
 `,
@@ -175,6 +178,7 @@ describe("Rust surface edge cases", () => {
     ]));
     expect(result.symbols.find((symbol) => symbol.name === "default")?.parentId).toContain("Settings");
     expect(result.symbols.find((symbol) => symbol.name === "clone")?.parentId).toBeDefined();
+    expect(result.symbols.some((symbol) => symbol.name === "clone" && (symbol.parentId ?? "").includes("Trailing"))).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "derive_my")?.aliases).toContain("MyDerive");
     expect(result.symbols.find((symbol) => symbol.name === "const_fn")?.shape.async).toBe(false);
     expect(result.symbols.find((symbol) => symbol.name === "lost")).toBeUndefined();

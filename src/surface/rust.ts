@@ -442,27 +442,31 @@ class RustParser {
           after += 1;
         }
         const operation = matcher[after]?.value;
-        if (operation !== "*" && operation !== "+") return undefined;
+        if (operation !== "*" && operation !== "+" && operation !== "?") return undefined;
+        if (operation === "?" && separator) return undefined;
         const inner = matcher.slice(matcherIndex + 2, close);
         const limit = this.repetitionLimit(matcher, after, args, argIndex);
+        const collected = new Map<string, MacroCapture[]>();
+        if (operation === "?") {
+          const child = this.matchMacroRule(inner, args.slice(argIndex, limit));
+          if (child) {
+            this.collectMacroMatch(collected, child);
+            argIndex = limit;
+          }
+          for (const [name, items] of collected) {
+            repeated.set(name, { kind: "repeat", items });
+          }
+          matcherIndex = after + 1;
+          continue;
+        }
         const ranges = separator
           ? splitTopLevel(args, argIndex, limit, separator)
           : args.slice(argIndex, limit).map((_, offset) => [argIndex + offset, argIndex + offset + 1] as [number, number]);
         if (operation === "+" && ranges.length === 0) return undefined;
-        const collected = new Map<string, MacroCapture[]>();
         for (const [from, to] of ranges) {
           const child = this.matchMacroRule(inner, args.slice(from, to));
           if (!child) return undefined;
-          for (const [name, values] of child.single) {
-            const list = collected.get(name) ?? [];
-            list.push({ kind: "tokens", tokens: values });
-            collected.set(name, list);
-          }
-          for (const [name, values] of child.repeated) {
-            const list = collected.get(name) ?? [];
-            list.push(values);
-            collected.set(name, list);
-          }
+          this.collectMacroMatch(collected, child);
         }
         for (const [name, items] of collected) {
           repeated.set(name, { kind: "repeat", items });
@@ -522,6 +526,22 @@ class RustParser {
     return { single, repeated };
   }
 
+  private collectMacroMatch(
+    collected: Map<string, MacroCapture[]>,
+    child: MacroMatch,
+  ): void {
+    for (const [name, values] of child.single) {
+      const list = collected.get(name) ?? [];
+      list.push({ kind: "tokens", tokens: values });
+      collected.set(name, list);
+    }
+    for (const [name, values] of child.repeated) {
+      const list = collected.get(name) ?? [];
+      list.push(values);
+      collected.set(name, list);
+    }
+  }
+
   private templateNames(tokens: Token[]): string[] {
     const names = new Set<string>();
     for (let index = 0; index < tokens.length; index += 1) {
@@ -566,7 +586,7 @@ class RustParser {
           after += 1;
         }
         const operation = tokens[after]?.value;
-        if (operation === "*" || operation === "+") {
+        if (operation === "*" || operation === "+" || operation === "?") {
           const inner = tokens.slice(index + 2, close);
           const names = this.templateNames(inner);
           const drivers = names
@@ -583,7 +603,9 @@ class RustParser {
             index = after;
             continue;
           }
-          const count = drivers[0].capture.items.length;
+          const count = operation === "?"
+            ? Math.min(1, drivers[0].capture.items.length)
+            : drivers[0].capture.items.length;
           for (let repetition = 0; repetition < count; repetition += 1) {
             const local = new Map(overrides);
             for (const driver of drivers) {
@@ -597,7 +619,6 @@ class RustParser {
           index = after;
           continue;
         }
-        if (operation === "?") return undefined;
       }
       if (token.value === "$" && tokens[index + 1]) {
         const capture = resolve(tokens[index + 1].value);

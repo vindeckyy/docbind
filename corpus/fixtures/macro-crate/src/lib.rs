@@ -2,6 +2,8 @@
 mod macros;
 
 private_make!(private_generated);
+make_optional!(pub fn optional_public(value) -> u8);
+make_optional!(pub fn optional_plain());
 crate::define_public!(generated, generated_public);
 crate::define_nested!(nested_one, nested_two; nested_three);
 crate::define_grouped!(

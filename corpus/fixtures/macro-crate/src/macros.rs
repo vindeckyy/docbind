@@ -29,3 +29,9 @@ macro_rules! private_make {
         pub fn $name() -> u8 { 4 }
     };
 }
+
+macro_rules! make_optional {
+    ($vis:vis fn $name:ident($($arg:ident)?) $(-> $ret:ty)?) => {
+        $vis fn $name($($arg)?) $(-> $ret)? { loop {} }
+    };
+}

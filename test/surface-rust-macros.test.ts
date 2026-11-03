@@ -111,6 +111,16 @@ grouped!(
     g2 { c: u64 } -> { y: u8, z: u16 }
 );
 `,
+    "src/optional.rs": `
+macro_rules! optional_make {
+    ($vis:vis fn $name:ident($($arg:ident)?) $(-> $ret:ty)?) => {
+        $vis fn $name($($arg)?) $(-> $ret)? { loop {} }
+    };
+}
+optional_make!(pub fn with_arg(value) -> u8);
+optional_make!(pub fn without_arg());
+optional_make!(fn private_optional());
+`,
     "src/independent.rs": `
 macro_rules! split_lists {
     ($($left:ident),* ; $($right:ident),*) => {
@@ -199,6 +209,18 @@ describe("Rust macro expansion", () => {
     expect(groups.symbols.find((symbol) => symbol.name === "y")?.shape.returnType).toBe("u8");
     const independent = extractRust(root, ["src/independent.rs"]);
     expect(independent.symbols.map((symbol) => symbol.name)).toEqual(["l1", "l2", "r1"]);
+  });
+
+  it("expands optional repetition with present and absent captures", () => {
+    const root = macroProject();
+    const result = extractRust(root, ["src/optional.rs"]);
+    const names = result.symbols.map((symbol) => symbol.name);
+    expect(names).toEqual(expect.arrayContaining(["with_arg", "without_arg"]));
+    expect(names).not.toContain("private_optional");
+    expect(result.symbols.find((symbol) => symbol.name === "with_arg")?.shape.params?.map((param) => param.name)).toEqual(["value"]);
+    expect(result.symbols.find((symbol) => symbol.name === "with_arg")?.shape.returnType).toBe("u8");
+    expect(result.symbols.find((symbol) => symbol.name === "without_arg")?.shape.params).toEqual([]);
+    expect(result.symbols.find((symbol) => symbol.name === "without_arg")?.shape.returnType).toBeUndefined();
   });
 
   it("expands non-exported macros from sibling modules", () => {
