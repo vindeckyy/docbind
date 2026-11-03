@@ -260,9 +260,12 @@ class JavaParser {
         continue;
       }
       let cursor = index;
-      let isPublic = isInterface;
+      let visibility = isInterface ? "public" : "package";
       while (cursor < end && MODIFIERS.has((tokens[cursor] as Token).value)) {
-        if ((tokens[cursor] as Token).value === "public") isPublic = true;
+        const modifier = (tokens[cursor] as Token).value;
+        if (modifier === "public" || modifier === "protected" || modifier === "private") {
+          visibility = modifier;
+        }
         cursor += 1;
       }
       if (["class", "interface", "enum", "record"].includes((tokens[cursor] as Token | undefined)?.value ?? "")) {
@@ -292,7 +295,7 @@ class JavaParser {
         scan += 1;
       }
       if (paren >= 0 && (boundary < 0 || paren < boundary)) {
-        index = this.parseMethod(typePath, index, cursor, paren, end, isPublic, annotations);
+        index = this.parseMethod(typePath, index, cursor, paren, end, visibility, annotations);
         annotations = [];
         continue;
       }
@@ -300,7 +303,7 @@ class JavaParser {
       if (boundary < 0) break;
       /* v8 ignore next */
       if ((tokens[boundary] as Token).value === ";") {
-        this.parseField(typePath, cursor, boundary, isPublic, annotations);
+        this.parseField(typePath, cursor, boundary, visibility, annotations);
         annotations = [];
         index = boundary + 1;
         continue;
@@ -315,7 +318,7 @@ class JavaParser {
     bodyStart: number,
     paren: number,
     end: number,
-    isPublic: boolean,
+    visibility: string,
     annotations: string[] = [],
   ): number {
     const tokens = this.context.lexed.tokens;
@@ -351,7 +354,7 @@ class JavaParser {
     } else if ((tokens[cursor] as Token | undefined)?.value === ";") {
       cursor += 1;
     }
-    if (isPublic) {
+    {
       this.context.drafts.push({
         name,
         kind: "method",
@@ -365,7 +368,7 @@ class JavaParser {
           generator: false,
           params: javaParams(tokens, paren + 1, close),
           returnType,
-          visibility: "public",
+          visibility,
           flags: javaFlags(annotations),
         },
       });
@@ -377,10 +380,9 @@ class JavaParser {
     typePath: string,
     start: number,
     semicolon: number,
-    isPublic: boolean,
+    visibility: string,
     annotations: string[] = [],
   ): void {
-    if (!isPublic) return;
     const tokens = this.context.lexed.tokens;
     let nameIndex = semicolon - 1;
     while (nameIndex >= start && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
@@ -402,7 +404,7 @@ class JavaParser {
       parentPath: typePath,
       start: (tokens[nameIndex] as Token).start,
       body: "",
-      shape: { kind: "property", typeShape: type, visibility: "public", flags: javaFlags(annotations) },
+      shape: { kind: "property", typeShape: type, visibility, flags: javaFlags(annotations) },
     });
   }
 }

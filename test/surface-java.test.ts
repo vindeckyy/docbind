@@ -13,6 +13,7 @@ describe("Java surface", () => {
         "public class Client {",
         "    @Inject",
         "    public int status;",
+        "    public static final int LIMIT = 1;",
         "",
         "    @Override",
         "    @Deprecated",
@@ -21,6 +22,10 @@ describe("Java surface", () => {
         "    }",
         "",
         "    private void hidden() {}",
+        "",
+        "    protected void guarded() {}",
+        "",
+        "    void local() {}",
         "}",
         "",
         "class Internal {}",
@@ -30,7 +35,9 @@ describe("Java surface", () => {
     const result = extractJava(root, ["src/main/java/example/Client.java"]);
     const names = result.symbols.map((symbol) => symbol.name);
     expect(names).toEqual(expect.arrayContaining(["Client", "get", "status"]));
-    expect(names).not.toContain("hidden");
+    expect(result.symbols.find((symbol) => symbol.name === "hidden")?.shape.visibility).toBe("private");
+    expect(result.symbols.find((symbol) => symbol.name === "guarded")?.shape.visibility).toBe("protected");
+    expect(result.symbols.find((symbol) => symbol.name === "local")?.shape.visibility).toBe("package");
     expect(names).not.toContain("Internal");
     const get = result.symbols.find((symbol) => symbol.name === "get");
     expect(get?.shape.params?.map((param) => [param.name, param.type])).toEqual([["id", "int"], ["label", "String"]]);
@@ -88,7 +95,7 @@ describe("Java surface", () => {
       false,
       true,
     ]);
-    expect(names).not.toContain("hidden");
+    expect(result.symbols.find((symbol) => symbol.name === "hidden")?.shape.visibility).toBe("private");
     expect(names).not.toContain("Inner");
   });
 
@@ -113,7 +120,7 @@ describe("Java surface", () => {
       "ids",
       "old",
     ]);
-    expect(result.symbols.some((symbol) => symbol.name === "hiddenField")).toBe(false);
+    expect(result.symbols.find((symbol) => symbol.name === "hiddenField")?.shape.visibility).toBe("private");
   });
 
   it("extracts public nested types with qualified aliases", () => {

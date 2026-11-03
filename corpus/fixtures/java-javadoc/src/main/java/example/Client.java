@@ -10,6 +10,11 @@ public class Client {
         return label;
     }
 
+    /** Internal hook: {@link #secret()}. */
+    private String secret() {
+        return "";
+    }
+
     /** Legacy call: {@link #legacy()}. */
     @Deprecated
     public void legacy() {}
@@ -28,6 +33,11 @@ public class Client {
 public class Other {
     public String get(int id, String label) {
         return label;
+    }
+
+    /** Internal hook: {@link #secret()}. */
+    private String secret() {
+        return "";
     }
 
     /** Legacy call: {@link #legacy()}. */

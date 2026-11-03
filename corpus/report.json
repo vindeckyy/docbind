@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T22:05:18.287Z",
+  "generatedAt": "2026-11-03T22:09:34.933Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,8 +720,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 7,
-      "bound": 7,
+      "anchors": 9,
+      "bound": 9,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -793,9 +793,42 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "get",
+          "rule": "L2-moved",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "secret",
+          "rule": "L2-moved",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "secret",
+          "rule": "L2-moved",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 6,
+      "hits": 9,
       "misses": 0,
       "collateral": 0
     }

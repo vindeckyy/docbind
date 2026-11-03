@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.52] - 2026-11-03
+
+### Added
+
+- Java extraction includes non-public members: protected, private, and package-private methods and fields.
+- Member shapes record `public`, `protected`, `private`, or `package` visibility.
+- `java-javadoc-fixture` includes private methods referenced from Javadoc and detects 9 of 9 mutations.
+
+### Limits
+
+- Java top-level and nested types are still extracted only when public.
+- Annotation arguments are ignored; only the annotation name is recorded.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.51] - 2026-11-03
 
 ### Added
@@ -962,3 +976,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.49]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.49
 [0.1.50]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.50
 [0.1.51]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.51
+[0.1.52]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.52
