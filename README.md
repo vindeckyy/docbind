@@ -221,9 +221,9 @@ Measured on the 0.1.0 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 221 passing |
-| Statements | 98.95% |
-| Branches | 95.33% |
+| Tests | 224 passing |
+| Statements | 98.96% |
+| Branches | 95.07% |
 | Functions | 100% |
 | Lines | 99.62% |
 | Changed-line coverage, feature diff | 99.88% |

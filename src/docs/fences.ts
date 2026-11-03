@@ -3,6 +3,8 @@ import type { Code } from "mdast";
 import { contextFingerprint, hasNegativeCue } from "./context.js";
 import type { DocAnchor, ImportRef, Shape } from "../types.js";
 import { snippetSignature } from "../surface/typescript.js";
+import { snippetSignatureRust } from "../surface/rust.js";
+import { snippetSignatureGo } from "../surface/go.js";
 import { lex } from "../surface/lex.js";
 
 const TS_LANGS = new Set(["ts", "typescript", "tsx", "js", "javascript", "jsx", "mjs", "cjs"]);
@@ -329,7 +331,32 @@ function lexFenceAnchors(
       if (local?.[1]) locals.add(local[1]);
     }
   }
+  const signature = language === "rust" ? snippetSignatureRust(value) : snippetSignatureGo(value);
   const startLine = node.position?.start.line ?? 1;
+  if (signature) {
+    const identifier = value.indexOf(signature.name);
+    const before = identifier >= 0 ? value.slice(0, identifier) : "";
+    const lines = before.split("\n");
+    return {
+      anchors: [
+        makeAnchor(
+          docPath,
+          signature.name,
+          startLine + 1 + Math.max(0, lines.length - 1),
+          (lines[lines.length - 1]?.length ?? 0) + 1,
+          "signatureFence",
+          [heading, value.split("\n")[0] ?? ""],
+          imports,
+          [...locals].filter((name) => name !== signature.name),
+          false,
+          node.lang ?? undefined,
+          signature.shape,
+        ),
+      ],
+      imports,
+    };
+  }
+
   const anchors: DocAnchor[] = [];
   const seen = new Set<string>();
   for (const token of lexed.tokens) {

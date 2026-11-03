@@ -95,6 +95,17 @@ describe("markdown parsing", () => {
     expect(result.anchors[0].signatureShape?.kind).toBe("function");
   });
 
+  it("detects rust and go signature fences", () => {
+    const rust = parseDoc("docs/api.md", "```rust\nfn get_user(id: &str) -> Option<User>\n```\n");
+    expect(rust.anchors[0]).toMatchObject({ token: "get_user", surface: "signatureFence" });
+    expect(rust.anchors[0].signatureShape?.kind).toBe("function");
+    const go = parseDoc("docs/api.md", "```go\nfunc GetUser(id string) string\n```\n");
+    expect(go.anchors[0]).toMatchObject({ token: "GetUser", surface: "signatureFence" });
+    expect(go.anchors[0].signatureShape?.kind).toBe("function");
+    const goMethod = parseDoc("docs/api.md", "```go\nfunc (u *User) Rename(name string) error\n```\n");
+    expect(goMethod.anchors[0].signatureShape?.kind).toBe("method");
+  });
+
   it("marks fragment fences", () => {
     const text = "```ts\nconst x = getUser(/* ... */ id);\n```\n";
     const result = parseDoc("docs/api.md", text);

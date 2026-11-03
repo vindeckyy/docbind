@@ -703,3 +703,38 @@ export function extractRust(root: string, files: string[]): ExtractResult {
   }
   return { symbols, parseFailures, filesScanned };
 }
+
+export interface RustSignatureSnippet {
+  name: string;
+  kind: SymbolKind;
+  shape: Shape;
+}
+
+export function snippetSignatureRust(code: string): RustSignatureSnippet | undefined {
+  const lexed = lex(code, "rust");
+  const context: ParserContext = {
+    source: code,
+    lexed,
+    filePath: "snippet.rs",
+    packageName: "snippet",
+    packageRoot: "",
+    modulePath: "snippet",
+    drafts: [],
+    aliases: [],
+    failures: { count: 0 },
+  };
+  new RustParser(context).parseRange(0, lexed.tokens.length, "", true);
+  const draft = context.drafts.find((candidate) =>
+    !candidate.parentName &&
+    candidate.body.length === 0 &&
+    candidate.kind !== "const" &&
+    candidate.kind !== "module"
+  );
+  if (!draft) return undefined;
+  const method = (draft.shape.params ?? []).some((param) => param.kind === "receiver");
+  return {
+    name: draft.name,
+    kind: method ? "method" : draft.kind,
+    shape: { ...draft.shape, kind: method ? "method" : draft.shape.kind },
+  };
+}

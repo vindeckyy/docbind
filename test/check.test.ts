@@ -374,6 +374,29 @@ describe("check pipeline", () => {
     expect(checkProject(tombstone, off).findings).toEqual([]);
   });
 
+  it("checks Rust signature fences", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/lib.rs": "pub struct User;\npub fn get_user(id: &str) -> Option<User> { None }\n",
+      "docs/api.md": "```rust\nfn get_user(id: &str) -> Option<User>\n```\n",
+    });
+    expect(checkProject(root, config).findings).toEqual([]);
+    writeFileSync(join(root, "src/lib.rs"), "pub struct User;\npub fn get_user(id: &str) -> User { User }\n");
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L3-reshaped");
+  });
+
+  it("checks Go signature fences", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "pkg/users.go": "package users\nfunc GetUser(id string) string { return id }\n",
+      "docs/api.md": "```go\nfunc GetUser(id string) string\n```\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    expect(checkProject(root, goConfig).findings).toEqual([]);
+    writeFileSync(join(root, "pkg/users.go"), "package users\nfunc GetUser(id string, force bool) string { return id }\n");
+    expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
+  });
+
   it("checks Rust symbols", () => {
     const root = tempProject({
       "Cargo.toml": '[package]\nname = "rsapp"\n',

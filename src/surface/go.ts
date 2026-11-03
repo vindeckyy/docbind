@@ -597,3 +597,30 @@ export function extractGo(root: string, files: string[]): ExtractResult {
   }
   return { symbols, parseFailures, filesScanned };
 }
+
+export interface GoSignatureSnippet {
+  name: string;
+  kind: SymbolKind;
+  shape: Shape;
+}
+
+export function snippetSignatureGo(code: string): GoSignatureSnippet | undefined {
+  const lexed = lex(code, "go");
+  const context: GoContext = {
+    source: code,
+    lexed,
+    filePath: "snippet.go",
+    packageName: "snippet",
+    packageRoot: "",
+    modulePath: "snippet",
+    drafts: [],
+    failures: { count: 0 },
+  };
+  new GoParser(context).parseRange(0, lexed.tokens.length);
+  const draft = context.drafts.find((candidate) =>
+    candidate.body.length === 0 &&
+    candidate.kind !== "const" &&
+    candidate.kind !== "module"
+  );
+  return draft ? { name: draft.name, kind: draft.kind, shape: draft.shape } : undefined;
+}

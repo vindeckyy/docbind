@@ -2,6 +2,13 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Rust and Go signature fences. Fenced declarations now compare against the real symbol shape.
+- Signature pairing for Rust methods and Go receiver methods.
+
 ## [0.1.0] - 2026-11-03
 
 ### Added
