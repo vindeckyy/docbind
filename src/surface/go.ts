@@ -142,6 +142,7 @@ class GoParser {
   private parseFunction(index: number, end: number): number {
     let cursor = index + 1;
     let receiver: string | undefined;
+    let receiverType = "";
     if (this.tokens[cursor]?.value === "(") {
       const close = findMatching(this.tokens, cursor, "(", ")");
       if (close < 0) {
@@ -151,6 +152,8 @@ class GoParser {
       const receiverText = tokenText(this.masked, this.tokens, cursor + 1, close);
       const match = /(?:^|[.\s*])([A-Za-z_]\w*)(?:\[[^\]]*\])?$/u.exec(receiverText);
       receiver = match?.[1];
+      const namedReceiver = /^\s*[A-Za-z_]\w*\s+(.+)$/u.exec(receiverText);
+      receiverType = namedReceiver?.[1] ?? receiverText;
       cursor = close + 1;
     }
     const nameToken = this.tokens[cursor];
@@ -183,7 +186,7 @@ class GoParser {
     if (receiver) {
       params.unshift({
         name: "receiver",
-        type: receiver,
+        type: receiverType,
         optional: false,
         rest: false,
         hasDefault: false,
@@ -220,11 +223,7 @@ class GoParser {
         return end;
       }
       const body = this.context.source.slice(this.tokens[index + 1].end, this.tokens[close].start);
-      let offset = this.tokens[index + 1].end;
-      for (const line of body.split(/\r?\n/u)) {
-        this.parseTypeLine(line, offset);
-        offset += line.length + 1;
-      }
+      this.parseTypeBlock(body, this.tokens[index + 1].end);
       return close + 1;
     }
     const nameToken = this.tokens[index + 1];
@@ -259,11 +258,12 @@ class GoParser {
         return end;
       }
       const body = this.context.source.slice(this.tokens[cursor + 1].start, this.tokens[close].end);
-      const members = this.interfaceMembers(body, nameToken.value, exported, this.tokens[cursor + 1].start);
+      const extendsTypes: string[] = [];
+      const members = this.interfaceMembers(body, nameToken.value, exported, this.tokens[cursor + 1].start, extendsTypes);
       this.context.drafts.push({
         name: nameToken.value,
         kind: "interface",
-        shape: { kind: "interface", typeParams: typeParams.text, members },
+        shape: { kind: "interface", typeParams: typeParams.text, extends: extendsTypes, members },
         start: nameToken.start,
         body,
         enabled: exported,
@@ -284,6 +284,72 @@ class GoParser {
       exported,
     });
     return Math.max(lineEnd, cursor + 1);
+  }
+
+  private parseTypeBlock(body: string, offset: number): void {
+    const lines = body.split(/\r?\n/u);
+    const offsets: number[] = [];
+    let cursor = offset;
+    for (const line of lines) {
+      offsets.push(cursor);
+      cursor += line.length + 1;
+    }
+    let index = 0;
+    while (index < lines.length) {
+      const raw = lines[index];
+      const line = raw.trim();
+      if (!line || line.startsWith("//")) {
+        index += 1;
+        continue;
+      }
+      const match = /^([A-Za-z_]\w*)\s*(?:\[([^\]]*)\])?\s+(struct|interface)\s*\{/u.exec(line);
+      if (!match?.[1] || !match[3]) {
+        this.parseTypeLine(raw, offsets[index]);
+        index += 1;
+        continue;
+      }
+      const name = match[1];
+      const typeParams = normalizeType(match[2] ?? "");
+      const kind = match[3];
+      let block = line.slice(line.indexOf("{") + 1);
+      let depth = 1 + (block.match(/\{/gu)?.length ?? 0) - (block.match(/\}/gu)?.length ?? 0);
+      let consumed = 1;
+      while (depth > 0 && index + consumed < lines.length) {
+        const next = lines[index + consumed] ?? "";
+        block += `\n${next}`;
+        depth += (next.match(/\{/gu)?.length ?? 0) - (next.match(/\}/gu)?.length ?? 0);
+        consumed += 1;
+      }
+      const closing = block.lastIndexOf("}");
+      if (closing >= 0) block = block.slice(0, closing);
+      const bodyStart = offsets[index] + raw.indexOf("{") + 1;
+      const exported = isExportedGo(name);
+      if (kind === "struct") {
+        const members = this.structFields(block, name, exported, bodyStart);
+        this.context.drafts.push({
+          name,
+          kind: "class",
+          shape: { kind: "class", typeParams: typeParams || undefined, members },
+          start: offsets[index] + raw.indexOf(name),
+          body: block,
+          enabled: exported,
+          exported,
+        });
+      } else {
+        const extendsTypes: string[] = [];
+        const members = this.interfaceMembers(block, name, exported, bodyStart, extendsTypes);
+        this.context.drafts.push({
+          name,
+          kind: "interface",
+          shape: { kind: "interface", typeParams: typeParams || undefined, extends: extendsTypes, members },
+          start: offsets[index] + raw.indexOf(name),
+          body: block,
+          enabled: exported,
+          exported,
+        });
+      }
+      index += consumed;
+    }
   }
 
   private parseTypeLine(line: string, offset: number): void {
@@ -376,7 +442,13 @@ class GoParser {
     });
   }
 
-  private interfaceMembers(body: string, parentName: string, parentExported: boolean, bodyOffset: number): MemberShape[] {
+  private interfaceMembers(
+    body: string,
+    parentName: string,
+    parentExported: boolean,
+    bodyOffset: number,
+    extendsTypes?: string[],
+  ): MemberShape[] {
     const members: MemberShape[] = [];
     let offset = bodyOffset;
     for (const rawLine of body.split(/\r?\n/u)) {
@@ -387,6 +459,11 @@ class GoParser {
       }
       const lineTokens = lex(line, "go").tokens;
       const nameToken = lineTokens[0];
+      if (nameToken && lineTokens[1]?.value !== "(" && extendsTypes) {
+        extendsTypes.push(normalizeType(line));
+        offset += rawLine.length + 1;
+        continue;
+      }
       if (nameToken && lineTokens[1]?.value === "(") {
         const close = findMatching(lineTokens, 1, "(", ")");
         const returnType = close >= 0

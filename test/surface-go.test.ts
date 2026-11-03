@@ -92,7 +92,7 @@ describe("Go surface", () => {
     expect(fetch?.shape.typeParams).toBe("T any");
     expect(fetch?.shape.returnType).toBe("User,error");
     const rename = result.symbols.find((symbol) => symbol.name === "Rename");
-    expect(rename?.shape.params?.[0]).toMatchObject({ name: "receiver", type: "User" });
+    expect(rename?.shape.params?.[0]).toMatchObject({ name: "receiver", type: "*User" });
     expect(rename?.shape.params?.[1]).toMatchObject({ name: "name", type: "string" });
   });
 

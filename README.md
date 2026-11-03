@@ -221,11 +221,11 @@ Measured on the 0.1.0 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 224 passing |
-| Statements | 98.96% |
-| Branches | 95.07% |
+| Tests | 225 passing |
+| Statements | 98.94% |
+| Branches | 95.01% |
 | Functions | 100% |
-| Lines | 99.62% |
+| Lines | 99.63% |
 | Changed-line coverage, feature diff | 99.88% |
 | Structure gate | 68 of 68 checks |
 | Docs build | `mkdocs build --strict` passes |

@@ -20,6 +20,17 @@ func Named(a, b int, c *User, d []string, e map[string]int, f chan int, g func(i
 type (
     Alias2 = User
     Number int
+    Group[T any] struct {
+        Name string
+    }
+    Plain struct {
+        X int
+    }
+    Single struct { A int }
+    Waiter interface {
+        io.Reader
+        Wait() error
+    }
 )
 
 type Box[T any] struct {
@@ -68,7 +79,7 @@ describe("Go surface edge cases", () => {
     const names = result.symbols.map((symbol) => symbol.name);
     expect(names).toEqual(expect.arrayContaining([
       "NoBody", "NoParams", "Named", "Alias2", "Number", "Box", "Reader",
-      "A", "B", "C", "D", "E", "F", "G", "H", "ValueOf",
+      "Group", "Plain", "Single", "Waiter", "A", "B", "C", "D", "E", "F", "G", "H", "ValueOf",
     ]));
     const named = result.symbols.find((symbol) => symbol.name === "Named");
     expect(named?.shape.params?.map((param) => param.name)).toEqual(expect.arrayContaining([
@@ -77,6 +88,12 @@ describe("Go surface edge cases", () => {
     expect(named?.shape.returnType).toContain("result");
     expect(result.symbols.find((symbol) => symbol.name === "Box")?.shape.typeParams).toBe("T any");
     expect(result.symbols.find((symbol) => symbol.name === "ValueOf")?.parentId).toContain("Box");
+    expect(result.symbols.find((symbol) => symbol.name === "Group")?.shape.typeParams).toBe("T any");
+    expect(result.symbols.find((symbol) => symbol.name === "Group")?.shape.members?.map((member) => member.name)).toEqual(["Name"]);
+    expect(result.symbols.find((symbol) => symbol.name === "Waiter")?.shape.extends).toContain("io.Reader");
+    expect(result.symbols.find((symbol) => symbol.name === "Waiter")?.shape.members?.map((member) => member.name)).toEqual(["Wait"]);
+    expect(result.symbols.find((symbol) => symbol.name === "Plain")?.shape.typeParams).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "Single")?.shape.members?.map((member) => member.name)).toEqual(["A"]);
   });
 
   it("handles empty files and syntax errors", () => {

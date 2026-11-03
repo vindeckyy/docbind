@@ -8,6 +8,9 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 
 - Rust and Go signature fences. Fenced declarations now compare against the real symbol shape.
 - Signature pairing for Rust methods and Go receiver methods.
+- Go type blocks with struct and interface declarations.
+- Go interface embedding in shape comparison.
+- Go receiver mutability in method shapes.
 
 ## [0.1.0] - 2026-11-03
 

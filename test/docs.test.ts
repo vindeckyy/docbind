@@ -104,6 +104,11 @@ describe("markdown parsing", () => {
     expect(go.anchors[0].signatureShape?.kind).toBe("function");
     const goMethod = parseDoc("docs/api.md", "```go\nfunc (u *User) Rename(name string) error\n```\n");
     expect(goMethod.anchors[0].signatureShape?.kind).toBe("method");
+    const rustMethod = parseDoc("docs/api.md", "```rust\nfn rename(&mut self, name: String)\n```\n");
+    expect(rustMethod.anchors[0].signatureShape?.kind).toBe("method");
+    const indented = parseDoc("docs/api.md", "```rust\n  fn find(\n    id: &str\n  ) -> Option<User>\n```\n");
+    expect(indented.anchors[0]).toMatchObject({ token: "find", surface: "signatureFence" });
+    expect(indented.anchors[0].line).toBe(2);
   });
 
   it("marks fragment fences", () => {

@@ -397,6 +397,18 @@ describe("check pipeline", () => {
     expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
   });
 
+  it("detects Go receiver mutability changes", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "pkg/users.go": "package users\ntype User struct {}\nfunc (u *User) Rename(name string) {}\n",
+      "docs/api.md": "Call `User.Rename(name)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    lockNow(root, goConfig);
+    writeFileSync(join(root, "pkg/users.go"), "package users\ntype User struct {}\nfunc (u User) Rename(name string) {}\n");
+    expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
+  });
+
   it("checks Rust symbols", () => {
     const root = tempProject({
       "Cargo.toml": '[package]\nname = "rsapp"\n',
