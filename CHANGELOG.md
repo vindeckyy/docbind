@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.33] - 2026-11-03
+
+### Added
+
+- The opt-in rustdoc extractor resolves impl targets from `resolved_path.path`, so proc-macro-generated trait impl methods attach to their generated type.
+- Proc-macro fixture covers a generated trait impl method with a mutation.
+
+### Improved
+
+- Proc-macro fixture grew from 2 to 3 bound anchors and from 0 to 1 detected mutation.
+- Corpus now detects 53 of 53 seeded mutations with zero collateral findings.
+
+### Limits
+
+- General proc-macro output still requires the opt-in rustdoc extractor.
+- npm publication remains unresolved.
+
 ## [0.1.32] - 2026-11-03
 
 ### Added
@@ -617,3 +634,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.30]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.30
 [0.1.31]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.31
 [0.1.32]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.32
+[0.1.33]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.33

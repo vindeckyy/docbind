@@ -101,6 +101,7 @@ export function typeName(value: unknown): string | undefined {
   if (typeof record.resolved_path === "object" && record.resolved_path) {
     const path = record.resolved_path as Record<string, unknown>;
     if (typeof path.name === "string") return path.name.split("::").pop();
+    if (typeof path.path === "string") return path.path.split("::").pop();
   }
   if (typeof record.generic === "string") return record.generic;
   return undefined;

@@ -136,7 +136,7 @@
       "go": false,
       "rustdoc": true
     },
-    "mutations": 1
+    "mutations": 3
   },
   {
     "name": "go-package-fixture",

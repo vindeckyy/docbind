@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:57:01.351Z",
+  "generatedAt": "2026-11-03T20:01:43.823Z",
   "report": [
     {
       "name": "slugify",
@@ -412,15 +412,27 @@
       "repo": "local/proc-macro-crate",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 2,
-      "bound": 2,
+      "anchors": 3,
+      "bound": 3,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
-      "mutations": [],
-      "hits": 0,
+      "mutations": [
+        {
+          "symbol": "generated_method",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 1,
       "misses": 0,
       "collateral": 0
     },

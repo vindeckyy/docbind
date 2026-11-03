@@ -18,7 +18,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
-| proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
+| proc-macro-fixture (local) | Rust | 1 | 3 | 3 | 0 | 1 | 1 | 0 | 0 |
 | go-package-fixture (local) | Go | 1 | 33 | 33 | 0 | 23 | 23 | 0 | 0 |
 | go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 
@@ -85,7 +85,7 @@ Python fences then gained local type inference. Source return annotations feed a
 
 - thiserror is a real proc-macro crate. Its derive name is recognized through `#[proc_macro_derive]`, not expanded.
 - macro-fixture and proc-macro-fixture are local. They exercise generated items, not external project coverage.
-- proc-macro-fixture enables the opt-in rustdoc JSON extractor. It requires `cargo +nightly` and executes a proc macro during extraction.
+- proc-macro-fixture enables the opt-in rustdoc JSON extractor. It requires `cargo +nightly` and executes a proc macro during extraction. Its generated trait impl method is captured through rustdoc's `resolved_path.path` field and is mutated successfully.
 - Standard derives such as `Clone`, `Default`, `Debug`, `PartialEq`, `PartialOrd`, `Ord`, and `Hash` are synthesized for public Rust types.
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
 - `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, `?`, nested repetition with independent capture groups, separate top-level repetition lists, cross-file `#[macro_export]` macros, and non-exported sibling-module macros. It does not expand general proc-macro output.

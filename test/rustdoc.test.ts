@@ -30,6 +30,26 @@ describe("rustdoc JSON extraction", () => {
             impl: { for: { resolved_path: { name: "Existing" } }, items: [3] },
           },
         },
+        "4": {
+          inner: {
+            impl: {
+              for: { resolved_path: { path: "Thing" } },
+              items: [5],
+            },
+          },
+        },
+        "5": {
+          name: "fmt",
+          visibility: "default",
+          span: { filename: "app/src/lib.rs", begin: [3, 1] },
+          inner: {
+            function: {
+              sig: { inputs: [], output: { primitive: "()" } },
+              generics: { params: [] },
+              header: { is_async: false, is_unsafe: false },
+            },
+          },
+        },
         "3": {
           name: "clone",
           visibility: "default",
@@ -50,6 +70,8 @@ describe("rustdoc JSON extraction", () => {
     expect(symbols.find((symbol) => symbol.name === "clone")?.kind).toBe("method");
     expect(symbols.find((symbol) => symbol.name === "clone")?.aliases).toContain("Existing.clone");
     expect(symbols.find((symbol) => symbol.name === "clone")?.shape.flags).toContain("unsafe");
+    expect(symbols.find((symbol) => symbol.name === "fmt")?.kind).toBe("method");
+    expect(symbols.find((symbol) => symbol.name === "fmt")?.aliases).toContain("Thing.fmt");
   });
 
   it("handles empty and malformed indexes", () => {
@@ -89,6 +111,7 @@ describe("rustdoc type rendering", () => {
 
   it("extracts type names", () => {
     expect(typeName({ resolved_path: { name: "a::Thing" } })).toBe("Thing");
+    expect(typeName({ resolved_path: { path: "a::Generated" } })).toBe("Generated");
     expect(typeName({ generic: "T" })).toBe("T");
     expect(typeName(null)).toBeUndefined();
     expect(typeName({})).toBeUndefined();
