@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a crash, false positive, or missed stale reference.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include private code. Reduce the case to a small fixture when possible.
+  - type: input
+    id: version
+    attributes:
+      label: docbind version
+      description: Output of `npx docbind --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Code surface
+      options:
+        - TypeScript or JavaScript
+        - Python
+        - Rust
+        - Go
+        - Mixed
+        - Not language specific
+    validations:
+      required: true
+  - type: textarea
+    id: doc
+    attributes:
+      label: Doc line
+      description: The markdown span and surrounding sentence.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Code declaration
+      description: The exported symbol the doc refers to.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: explain
+    attributes:
+      label: Explain output
+      description: Run `npx docbind explain <doc>:<line>` and paste the result.
+      render: text
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      description: Output of `node --version`.

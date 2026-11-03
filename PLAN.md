@@ -25,7 +25,7 @@ Current gate results:
 
 - Test coverage: 98.95% statements, 95.33% branches, 100% functions, 99.62% lines.
 - Changed-line coverage: 99.88% on the M7 diff (849/850 lines), 99.62% across all executable lines.
-- Structure gate: 59 of 59 checks.
+- Structure gate: 69 of 69 checks.
 - Docs site: MkDocs build passes with `--strict`; source in `docs/`, config in `mkdocs.yml`, workflow in `.github/workflows/docs.yml`.
 
 Implementation notes:
