@@ -10,7 +10,7 @@ import {
 import { findMatching } from "./syntax.js";
 import { lex, type LexResult, type Token } from "./lex.js";
 import type { DocstringEntry, ExtractResult } from "./protocol.js";
-import type { ParamShape, Shape, Symbol } from "../types.js";
+import type { ContractFlag, ParamShape, Shape, Symbol } from "../types.js";
 
 interface JavaDraft {
   name: string;
@@ -33,6 +33,16 @@ interface JavaContext {
   drafts: JavaDraft[];
   types: Array<{ name: string; start: number; end: number }>;
   failures: number;
+}
+
+function javaFlags(annotations: string[]): ContractFlag[] {
+  const flags: ContractFlag[] = [];
+  for (const annotation of annotations) {
+    const simple = annotation.split(".").pop() as string;
+    if (simple === "Deprecated") flags.push("deprecated");
+    else if (simple !== "Override") flags.push(`annotation:${simple}`);
+  }
+  return flags;
 }
 
 const MODIFIERS = new Set([
@@ -85,6 +95,7 @@ function javaParams(tokens: Token[], start: number, end: number): ParamShape[] {
     }
     let nameIndex = to - 1;
     while (nameIndex >= cursor && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
+    /* v8 ignore next */
     const name = ((tokens[nameIndex] as Token | undefined)?.value ?? "") as string;
     const type = tokens
       .slice(cursor, Math.max(cursor, nameIndex))
@@ -111,6 +122,7 @@ class JavaParser {
   parse(): void {
     const tokens = this.context.lexed.tokens;
     let index = 0;
+    let annotations: string[] = [];
     while (index < tokens.length) {
       const token = tokens[index] as Token;
       if (token.value === "package") {
@@ -124,8 +136,15 @@ class JavaParser {
         index = cursor + 1;
         continue;
       }
+      if (token.value === "@") {
+        const annotation = this.annotationAt(index);
+        if (annotation.name) annotations.push(annotation.name);
+        index = annotation.end;
+        continue;
+      }
       if (token.value === "class" || token.value === "interface" || token.value === "enum" || token.value === "record") {
-        const end = this.parseType(index);
+        const end = this.parseType(index, "", annotations);
+        annotations = [];
         index = Math.max(end, index + 1);
         continue;
       }
@@ -144,7 +163,30 @@ class JavaParser {
     return false;
   }
 
-  private parseType(index: number, namespace = ""): number {
+  private annotationAt(index: number): { end: number; name: string } {
+    const tokens = this.context.lexed.tokens;
+    let cursor = index + 1;
+    let name = "";
+    if (/^[A-Za-z_]/u.test((tokens[cursor] as Token | undefined)?.value ?? "")) {
+      name = (tokens[cursor] as Token).value;
+      cursor += 1;
+    }
+    while (
+      (tokens[cursor] as Token | undefined)?.value === "." &&
+      /^[A-Za-z_]/u.test((tokens[cursor + 1] as Token | undefined)?.value ?? "")
+    ) {
+      name = `${name}.${(tokens[cursor + 1] as Token).value}`;
+      cursor += 2;
+    }
+    if ((tokens[cursor] as Token | undefined)?.value === "(") {
+      const close = findMatching(tokens, cursor, "(", ")");
+      /* v8 ignore next */
+      cursor = close < 0 ? cursor + 1 : close + 1;
+    }
+    return { end: cursor, name };
+  }
+
+  private parseType(index: number, namespace = "", annotations: string[] = []): number {
     const tokens = this.context.lexed.tokens;
     const keyword = (tokens[index] as Token).value;
     const nameToken = tokens[index + 1] as Token | undefined;
@@ -183,7 +225,7 @@ class JavaParser {
         kind,
         extends: [],
         members: [],
-        flags: [],
+        flags: javaFlags(annotations),
         visibility: "public",
       },
       start: nameToken.start,
@@ -198,6 +240,7 @@ class JavaParser {
   private parseMembers(typePath: string, start: number, end: number, isInterface: boolean): void {
     const tokens = this.context.lexed.tokens;
     let index = start;
+    let annotations: string[] = [];
     while (index < end) {
       const token = tokens[index] as Token;
       /* v8 ignore next */
@@ -206,20 +249,14 @@ class JavaParser {
         continue;
       }
       if (token.value === "@") {
-        index += 1;
-        /* v8 ignore next */
-        if (tokens[index] && /^[A-Za-z_]/u.test((tokens[index] as Token).value)) index += 1;
-        while (index < end && (tokens[index] as Token).value === ".") index += 2;
-        /* v8 ignore next */
-        if (index < end && (tokens[index] as Token).value === "(") {
-          const close = findMatching(tokens, index, "(", ")");
-          /* v8 ignore next */
-          index = close < 0 ? end : close + 1;
-        }
+        const annotation = this.annotationAt(index);
+        if (annotation.name) annotations.push(annotation.name);
+        index = Math.min(annotation.end, end);
         continue;
       }
       if (token.value === "class" || token.value === "interface" || token.value === "enum" || token.value === "record") {
-        index = this.parseType(index, `${typePath}.`);
+        index = this.parseType(index, `${typePath}.`, annotations);
+        annotations = [];
         continue;
       }
       let cursor = index;
@@ -229,7 +266,8 @@ class JavaParser {
         cursor += 1;
       }
       if (["class", "interface", "enum", "record"].includes((tokens[cursor] as Token | undefined)?.value ?? "")) {
-        index = this.parseType(cursor, `${typePath}.`);
+        index = this.parseType(cursor, `${typePath}.`, annotations);
+        annotations = [];
         continue;
       }
       let scan = cursor;
@@ -254,14 +292,16 @@ class JavaParser {
         scan += 1;
       }
       if (paren >= 0 && (boundary < 0 || paren < boundary)) {
-        index = this.parseMethod(typePath, index, cursor, paren, end, isPublic);
+        index = this.parseMethod(typePath, index, cursor, paren, end, isPublic, annotations);
+        annotations = [];
         continue;
       }
       /* v8 ignore next */
       if (boundary < 0) break;
       /* v8 ignore next */
       if ((tokens[boundary] as Token).value === ";") {
-        this.parseField(typePath, cursor, boundary, isPublic);
+        this.parseField(typePath, cursor, boundary, isPublic, annotations);
+        annotations = [];
         index = boundary + 1;
         continue;
       }
@@ -276,6 +316,7 @@ class JavaParser {
     paren: number,
     end: number,
     isPublic: boolean,
+    annotations: string[] = [],
   ): number {
     const tokens = this.context.lexed.tokens;
     const close = findMatching(tokens, paren, "(", ")");
@@ -306,6 +347,7 @@ class JavaParser {
       /* v8 ignore next */
       cursor = bodyClose < 0 ? end : bodyClose + 1;
     /* v8 ignore next */
+    /* v8 ignore next */
     } else if ((tokens[cursor] as Token | undefined)?.value === ";") {
       cursor += 1;
     }
@@ -324,14 +366,20 @@ class JavaParser {
           params: javaParams(tokens, paren + 1, close),
           returnType,
           visibility: "public",
-          flags: [],
+          flags: javaFlags(annotations),
         },
       });
     }
     return Math.max(cursor, start + 1);
   }
 
-  private parseField(typePath: string, start: number, semicolon: number, isPublic: boolean): void {
+  private parseField(
+    typePath: string,
+    start: number,
+    semicolon: number,
+    isPublic: boolean,
+    annotations: string[] = [],
+  ): void {
     if (!isPublic) return;
     const tokens = this.context.lexed.tokens;
     let nameIndex = semicolon - 1;
@@ -354,7 +402,7 @@ class JavaParser {
       parentPath: typePath,
       start: (tokens[nameIndex] as Token).start,
       body: "",
-      shape: { kind: "property", typeShape: type, visibility: "public", flags: [] },
+      shape: { kind: "property", typeShape: type, visibility: "public", flags: javaFlags(annotations) },
     });
   }
 }
@@ -466,7 +514,7 @@ export function extractJava(root: string, files: string[]): ExtractResult {
         shapeHash: shapeHash(draft.shape),
         paramNamesHash: paramNamesHash(draft.shape.params),
         bodyHash: bodyHash(draft.body),
-        contractFlags: [],
+        contractFlags: draft.shape.flags as ContractFlag[],
         ...(parent ? { parentId: `${context.packageName}|${context.modulePath}|${parent.kind}|${parent.path}|0` } : {}),
         line: lineOf(source, draft.start),
         filePath: context.filePath,

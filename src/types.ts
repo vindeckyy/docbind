@@ -11,6 +11,7 @@ export type SymbolKind =
   | "module";
 
 export type ContractFlag =
+  | `annotation:${string}`
   | "deprecated"
   | "async"
   | "generator"

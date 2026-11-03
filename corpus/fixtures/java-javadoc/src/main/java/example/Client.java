@@ -10,6 +10,10 @@ public class Client {
         return label;
     }
 
+    /** Legacy call: {@link #legacy()}. */
+    @Deprecated
+    public void legacy() {}
+
     /** Inner entry point: {@link #run()}. */
     public class Inner {
         public String run() {
@@ -25,6 +29,10 @@ public class Other {
     public String get(int id, String label) {
         return label;
     }
+
+    /** Legacy call: {@link #legacy()}. */
+    @Deprecated
+    public void legacy() {}
 
     /** Inner entry point: {@link #run()}. */
     public class Inner {

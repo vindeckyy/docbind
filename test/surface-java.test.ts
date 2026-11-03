@@ -9,9 +9,13 @@ describe("Java surface", () => {
         "package example;",
         "",
         "/** Use {@link Client#status} and {@code Client#get}. */",
+        "@Entity",
         "public class Client {",
+        "    @Inject",
         "    public int status;",
         "",
+        "    @Override",
+        "    @Deprecated",
         "    public String get(int id, String label) throws Exception {",
         "        return label;",
         "    }",
@@ -33,6 +37,10 @@ describe("Java surface", () => {
     expect(get?.shape.returnType).toBe("String");
     expect(get?.aliases).toEqual(expect.arrayContaining(["Client.get", "example.Client.get"]));
     expect(result.symbols.find((symbol) => symbol.name === "status")?.kind).toBe("property");
+    expect(get?.contractFlags).toEqual(expect.arrayContaining(["deprecated"]));
+    expect(get?.contractFlags.some((flag) => flag.startsWith("annotation:"))).toBe(false);
+    expect(result.symbols.find((symbol) => symbol.name === "status")?.contractFlags).toContain("annotation:Inject");
+    expect(result.symbols.find((symbol) => symbol.name === "Client")?.contractFlags).toContain("annotation:Entity");
     expect(result.javadocs?.[0]?.text).toContain("Client#status");
     expect(result.javadocs?.[0]?.owner).toBe("Client");
     expect(result.parseFailures).toBe(0);
@@ -134,6 +142,28 @@ describe("Java surface", () => {
     expect(run?.parentId).toBe(inner?.id);
     expect(run?.aliases).toEqual(expect.arrayContaining(["Outer.Inner.run", "Outer.Inner#run"]));
     expect(result.symbols.find((symbol) => symbol.name === "Nested")?.kind).toBe("interface");
+  });
+
+  it("captures dotted and parameterized annotations", () => {
+    const root = tempProject({
+      "src/Annotated.java": [
+        "@com.example.Audited",
+        "@SuppressWarnings(\"unused\")",
+        "public class Annotated {",
+        "    @Deprecated",
+        "    public void old() {}",
+        "}",
+        "",
+        "/** trailing comment */",
+        "",
+      ].join("\n"),
+    });
+    const result = extractJava(root, ["src/Annotated.java"]);
+    const type = result.symbols.find((symbol) => symbol.name === "Annotated");
+    expect(type?.contractFlags).toContain("annotation:Audited");
+    expect(result.symbols.find((symbol) => symbol.name === "old")?.contractFlags).toContain("deprecated");
+    expect(result.javadocs?.some((entry) => entry.owner === undefined)).toBe(true);
+    expect(() => extractJava(tempProject({ "src/Odd.java": "@123\npublic class Odd {}" }), ["src/Odd.java"])).not.toThrow();
   });
 
   it("survives malformed files", () => {

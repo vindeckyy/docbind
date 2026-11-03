@@ -2,6 +2,22 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.51] - 2026-11-03
+
+### Added
+
+- Java declarations carry annotations in `contractFlags`.
+- `@Deprecated` maps to the `deprecated` flag and drives S1 findings.
+- Other annotations map to `annotation:<SimpleName>`; `@Override` is skipped.
+- Annotations on types, methods, fields, and nested types are captured.
+- `java-javadoc-fixture` adds a deprecated annotated method and now detects 6 of 6 mutations.
+
+### Limits
+
+- Java extraction still skips non-public members.
+- Annotation arguments are ignored; only the annotation name is recorded.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.50] - 2026-11-03
 
 ### Added
@@ -945,3 +961,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.48]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.48
 [0.1.49]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.49
 [0.1.50]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.50
+[0.1.51]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.51
