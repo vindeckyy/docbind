@@ -152,15 +152,15 @@ class JavaParser {
     }
   }
 
-  private publicBefore(index: number): boolean {
+  private visibilityBefore(index: number): string {
     const tokens = this.context.lexed.tokens;
     for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
       const value = (tokens[cursor] as Token).value;
-      if (value === "public") return true;
+      if (value === "public" || value === "protected" || value === "private") return value;
       /* v8 ignore next */
-      if ([";", "}", "{"].includes(value)) return false;
+      if ([";", "}", "{"].includes(value)) break;
     }
-    return false;
+    return "package";
   }
 
   private annotationAt(index: number): { end: number; name: string } {
@@ -191,7 +191,7 @@ class JavaParser {
     const keyword = (tokens[index] as Token).value;
     const nameToken = tokens[index + 1] as Token | undefined;
     if (!nameToken || !/^[A-Za-z_]/u.test(nameToken.value)) return index + 1;
-    if (!this.publicBefore(index)) return index + 1;
+    const visibility = this.visibilityBefore(index);
     let cursor = index + 2;
     let brace = -1;
     while (cursor < tokens.length) {
@@ -226,7 +226,7 @@ class JavaParser {
         extends: [],
         members: [],
         flags: javaFlags(annotations),
-        visibility: "public",
+        visibility,
       },
       start: nameToken.start,
       body: tokensText(this.context.source, tokens, brace, close + 1),
@@ -281,11 +281,7 @@ class JavaParser {
         const value = (tokens[scan] as Token).value;
         if (["<", "[", "{"].includes(value)) depth += 1;
         else if ([">", "]"].includes(value)) depth = Math.max(0, depth - 1);
-        /* v8 ignore next */
-        else if (value === "}" && depth === 0) {
-          boundary = scan;
-          break;
-        } else if (value === ";" && depth === 0) {
+        else if (value === ";" && depth === 0) {
           boundary = scan;
           break;
         } else if (value === "(" && depth === 0) {

@@ -38,7 +38,7 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "hidden")?.shape.visibility).toBe("private");
     expect(result.symbols.find((symbol) => symbol.name === "guarded")?.shape.visibility).toBe("protected");
     expect(result.symbols.find((symbol) => symbol.name === "local")?.shape.visibility).toBe("package");
-    expect(names).not.toContain("Internal");
+    expect(result.symbols.find((symbol) => symbol.name === "Internal")?.shape.visibility).toBe("package");
     const get = result.symbols.find((symbol) => symbol.name === "get");
     expect(get?.shape.params?.map((param) => [param.name, param.type])).toEqual([["id", "int"], ["label", "String"]]);
     expect(get?.shape.returnType).toBe("String");
@@ -96,7 +96,7 @@ describe("Java surface", () => {
       true,
     ]);
     expect(result.symbols.find((symbol) => symbol.name === "hidden")?.shape.visibility).toBe("private");
-    expect(names).not.toContain("Inner");
+    expect(result.symbols.find((symbol) => symbol.name === "Inner")?.shape.visibility).toBe("package");
   });
 
   it("handles generics, annotations, and missing packages", () => {
@@ -136,6 +136,13 @@ describe("Java surface", () => {
         "    public interface Nested {",
         "        void handle();",
         "    }",
+        "",
+        "    private class HiddenInner {",
+        "        public void hiddenRun() {}",
+        "    }",
+        "",
+        "    protected class ProtectedInner {}",
+
         "}",
         "",
       ].join("\n"),
@@ -149,6 +156,9 @@ describe("Java surface", () => {
     expect(run?.parentId).toBe(inner?.id);
     expect(run?.aliases).toEqual(expect.arrayContaining(["Outer.Inner.run", "Outer.Inner#run"]));
     expect(result.symbols.find((symbol) => symbol.name === "Nested")?.kind).toBe("interface");
+    expect(result.symbols.find((symbol) => symbol.name === "HiddenInner")?.shape.visibility).toBe("private");
+    expect(result.symbols.some((symbol) => symbol.name === "hiddenRun")).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "ProtectedInner")?.shape.visibility).toBe("protected");
   });
 
   it("captures dotted and parameterized annotations", () => {

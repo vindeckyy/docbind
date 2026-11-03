@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.53] - 2026-11-03
+
+### Added
+
+- Java extraction includes non-public top-level and nested types.
+- Type shapes record `public`, `protected`, `private`, or `package` visibility.
+- `java-javadoc-fixture` adds a package-private top-level type referenced from Javadoc and detects 10 of 10 mutations.
+
+### Limits
+
+- Annotation arguments are ignored; only the annotation name is recorded.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.52] - 2026-11-03
 
 ### Added
@@ -977,3 +990,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.50]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.50
 [0.1.51]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.51
 [0.1.52]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.52
+[0.1.53]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.53

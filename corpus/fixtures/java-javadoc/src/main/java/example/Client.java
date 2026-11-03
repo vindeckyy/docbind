@@ -30,7 +30,7 @@ public class Client {
 /**
  * Other entry point: {@link #get(int, String)}.
  */
-public class Other {
+class Other {
     public String get(int id, String label) {
         return label;
     }
@@ -50,4 +50,11 @@ public class Other {
             return "";
         }
     }
+}
+
+/**
+ * Internal entry point: {@link #check()}.
+ */
+class Internal {
+    public void check() {}
 }
