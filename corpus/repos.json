@@ -341,6 +341,14 @@
         "to": 4,
         "symbol": "intDiv",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "castDiv",
+        "from": 2,
+        "to": 4,
+        "symbol": "castDiv",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

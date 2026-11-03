@@ -389,6 +389,11 @@ describe("Java surface", () => {
         "    int limit() default Constants.LIMIT;",
         "    int halfConstant() default Constants.HALF;",
         "    double widened() default Constants.WIDENED;",
+        "    double castDiv() default (double) 7 / 2;",
+        "    int castTrunc() default (int) 3.9;",
+        "    int castGroup() default (int) (7.0 / 2.0);",
+        "    double castIntDiv() default (double) (7 / 2);",
+        "    int castBad() default (int) \"x\";",
         "    double wdiv() default 7 / 2;",
         "    double floatDiv() default Constants.FLOAT_DIV;",
         "    long longHalfConstant() default Constants.LONG_HALF;",
@@ -459,6 +464,11 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "widened")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "wdiv")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "floatDiv")?.shape.evaluatedDefault).toBe(3.5);
+    expect(result.symbols.find((symbol) => symbol.name === "castDiv")?.shape.evaluatedDefault).toBe(3.5);
+    expect(result.symbols.find((symbol) => symbol.name === "castTrunc")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "castGroup")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "castIntDiv")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "castBad")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "longHalfConstant")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "negHalfConstant")?.shape.evaluatedDefault).toBe(-3);
     expect(result.symbols.find((symbol) => symbol.name === "on")?.shape.evaluatedDefault).toBe(true);

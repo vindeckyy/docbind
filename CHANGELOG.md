@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.78] - 2026-11-03
+
+### Added
+
+- Java default expressions parse casts to `int`, `long`, `short`, `byte`, `double`, and `float`.
+- Integral casts truncate toward zero, so `(int) 3.9` evaluates to `3`.
+- Floating casts widen and keep later division floating, so `(double) 7 / 2` evaluates to `3.5`.
+- Casts compose with grouped expressions and constants.
+- Corpus adds `Marker.castDiv()` with default `(double) 7 / 2`; editing `2` to `4` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 103 to 104; `java-javadoc-fixture` runs 32 mutations with 27 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.7%; line coverage stays at 99.24%.
+
+### Limits
+
+- Only primitive numeric casts are supported; casts to boxed types, chars, and reference types stay unevaluated.
+- Function calls and bitwise operators stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.77] - 2026-11-03
 
 ### Fixed
@@ -1410,3 +1431,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.75]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.75
 [0.1.76]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.76
 [0.1.77]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.77
+[0.1.78]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.78

@@ -236,6 +236,8 @@ interface EvaluatedConstant {
   integral: boolean;
 }
 
+const CAST_TYPES = new Set(["int", "long", "short", "byte", "double", "float"]);
+
 function isIntegralLiteral(text: string): boolean {
   return /^(?:0[xX][0-9a-fA-F]+|\d+)[lL]?$/u.test(text);
 }
@@ -268,6 +270,15 @@ function evaluateExpression(
       return constants?.get(token.value);
     }
     if (token.type === "op" && token.value === "(") {
+      const type = tokens[position + 1];
+      const close = tokens[position + 2];
+      if (type?.type === "ident" && CAST_TYPES.has(type.value) && close?.value === ")") {
+        position += 3;
+        const operand = parsePrimary();
+        if (typeof operand?.value !== "number") return undefined;
+        const integral = type.value !== "double" && type.value !== "float";
+        return { value: integral ? Math.trunc(operand.value) : operand.value, integral };
+      }
       position += 1;
       const value = parseAdd();
       if (value === undefined || tokens[position]?.value !== ")") return undefined;
