@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.17] - 2026-11-03
+
+### Added
+
+- Go type aliases resolve cross-package re-exports, exposing target methods under the re-exporting package selector.
+- Local Go fixture covers `viper.Client.Perform()` through `type Client = client.Client`.
+
+### Fixed
+
+- Go methods attach to types in their own package directory, so same-named types in different packages no longer collide.
+
+### Improved
+
+- Go fixture grew from 2 to 3 bound anchors and from 2 to 3 detected mutations.
+- Corpus now detects 30 of 30 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go re-exports are followed through type aliases. Variable, constant, and wrapper-function re-exports are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.16] - 2026-11-03
 
 ### Added
@@ -309,3 +330,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.14]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.14
 [0.1.15]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.15
 [0.1.16]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.16
+[0.1.17]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.17

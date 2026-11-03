@@ -484,6 +484,19 @@ describe("check pipeline", () => {
     );
   });
 
+  it("binds Go re-exported selectors", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/client/client.go": "package client\ntype Client struct{}\nfunc (c *Client) Do() error { return nil }\n",
+      "root.go": "package app\nimport \"example.com/app/internal/client\"\ntype Client = client.Client\n",
+      "docs/api.md": "Call `app.Client.Do()`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("Do");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

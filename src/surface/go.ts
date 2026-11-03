@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { findPackageRoot, modulePathFor } from "../discover.js";
 import {
   bodyHash,
@@ -620,7 +620,7 @@ function buildGoChildren(context: GoContext, parents: Map<string, Symbol>): Symb
   const childCounts = new Map<string, number>();
   for (const draft of context.drafts) {
     if (!draft.enabled || !draft.exported || !draft.parentName) continue;
-    const parent = parents.get(`${context.packageName}\0${draft.parentName}`);
+    const parent = parents.get(`${context.packageName}\0${dirname(context.modulePath)}\0${draft.parentName}`);
     if (!parent) continue;
     const key = `${draft.parentName}.${draft.name}`;
     const index = childCounts.get(key) ?? 0;
@@ -634,7 +634,7 @@ function buildGoChildren(context: GoContext, parents: Map<string, Symbol>): Symb
       packageName: parent.packageName,
       packageRoot: parent.packageRoot,
       qualifiedName: `${parent.qualifiedName}.${draft.name}`,
-      aliases: [key],
+      aliases: [...new Set([key, `${context.packageClause}.${key}`])],
       shape: draft.shape,
       shapeText,
       shapeHash: shapeHash(draft.shape),
@@ -647,6 +647,33 @@ function buildGoChildren(context: GoContext, parents: Map<string, Symbol>): Symb
     });
   }
   return result;
+}
+
+function applyGoReexports(symbols: Symbol[]): void {
+  const top = symbols.filter((symbol) => !symbol.parentId);
+  for (const reexport of top) {
+    if (reexport.kind !== "type") continue;
+    const match = /^(?:\*|\[\])?([A-Za-z_]\w*)\.([A-Za-z_]\w*)/u.exec(reexport.shape.typeShape ?? "");
+    if (!match?.[1] || !match[2]) continue;
+    const packageName = match[1];
+    const typeName = match[2];
+    const targets = top.filter((symbol) =>
+      symbol.id !== reexport.id &&
+      symbol.name === typeName &&
+      symbol.aliases.includes(`${packageName}.${typeName}`)
+    );
+    if (targets.length !== 1) continue;
+    const target = targets[0] as Symbol;
+    const moduleAlias = `${reexport.modulePath}.${reexport.name}`;
+    const prefix = reexport.aliases.find((alias) =>
+      alias.endsWith(`.${reexport.name}`) && alias !== moduleAlias
+    ) ?? moduleAlias;
+    for (const child of symbols) {
+      if (child.parentId !== target.id) continue;
+      const alias = `${prefix}.${child.name}`;
+      if (!child.aliases.includes(alias)) child.aliases.push(alias);
+    }
+  }
 }
 
 export function extractGo(root: string, files: string[]): ExtractResult {
@@ -682,9 +709,13 @@ export function extractGo(root: string, files: string[]): ExtractResult {
   }
   const symbols = contexts.flatMap(buildGoTopSymbols);
   const parents = new Map(
-    symbols.map((symbol) => [`${symbol.packageName}\0${symbol.name}`, symbol]),
+    symbols.map((symbol) => [
+      `${symbol.packageName}\0${dirname(symbol.modulePath)}\0${symbol.name}`,
+      symbol,
+    ]),
   );
   symbols.push(...contexts.flatMap((context) => buildGoChildren(context, parents)));
+  applyGoReexports(symbols);
   return { symbols, parseFailures, filesScanned };
 }
 

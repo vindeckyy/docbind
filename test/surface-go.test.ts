@@ -100,6 +100,40 @@ describe("Go surface", () => {
     expect(rename?.shape.params?.[1]).toMatchObject({ name: "name", type: "string" });
   });
 
+  it("resolves cross-package re-exports", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/client/client.go": "package client\ntype Client struct{}\nfunc (c *Client) Do() error { return nil }\n",
+      "root.go": "package app\nimport \"example.com/app/internal/client\"\ntype Client = client.Client\n",
+    });
+    const result = extractGo(root, ["internal/client/client.go", "root.go"]);
+    const method = result.symbols.find((symbol) => symbol.name === "Do");
+    expect(method?.aliases).toEqual(expect.arrayContaining(["client.Client.Do", "app.Client.Do"]));
+  });
+
+  it("falls back when the re-export file matches the package name", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/client/client.go": "package client\ntype Client struct{}\nfunc (c *Client) Do() error { return nil }\n",
+      "app.go": "package app\nimport \"example.com/app/internal/client\"\ntype Client = client.Client\n",
+    });
+    const result = extractGo(root, ["internal/client/client.go", "app.go"]);
+    const method = result.symbols.find((symbol) => symbol.name === "Do");
+    expect(method?.aliases).toContain("app.Client.Do");
+  });
+
+  it("ignores re-exports without a local target", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "root.go": "package app\nimport \"example.com/other/client\"\ntype Client = client.Client\n",
+    });
+    const result = extractGo(root, ["root.go"]);
+    expect(result.symbols.map((symbol) => symbol.name)).toContain("Client");
+    expect(result.symbols.find((symbol) => symbol.name === "Client")?.aliases).toEqual(
+      expect.arrayContaining(["root.Client", "app.Client"]),
+    );
+  });
+
   it("attaches methods declared in another file", () => {
     const root = goProject();
     const result = extractGo(root, ["pkg/types.go", "pkg/team_methods.go"]);

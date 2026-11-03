@@ -3,8 +3,15 @@
   "repo": "local/go-package",
   "commit": "fixture-v1",
   "local": "corpus/fixtures/go-package",
-  "docs": ["docs/**/*.md"],
+  "docs": [
+    "docs/**/*.md"
+  ],
   "exclude": [],
-  "languages": { "typescript": false, "python": false, "rust": false, "go": true },
-  "mutations": 2
+  "languages": {
+    "typescript": false,
+    "python": false,
+    "rust": false,
+    "go": true
+  },
+  "mutations": 3
 }
