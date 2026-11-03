@@ -2,7 +2,7 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
-## [Unreleased]
+## [0.1.1] - 2026-11-03
 
 ### Added
 
@@ -44,3 +44,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 - Extraction parses source. It does not build or execute project code.
 
 [0.1.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.0
+[0.1.1]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.1
