@@ -142,6 +142,8 @@ describe("Java surface", () => {
         "        String value();",
         "    }",
         "",
+        "    @interface Plain {}",
+        "",
         "    private class HiddenInner {",
         "        public void hiddenRun() {}",
         "    }",
@@ -162,6 +164,7 @@ describe("Java surface", () => {
     expect(run?.aliases).toEqual(expect.arrayContaining(["Outer.Inner.run", "Outer.Inner#run"]));
     expect(result.symbols.find((symbol) => symbol.name === "Nested")?.kind).toBe("interface");
     expect(result.symbols.find((symbol) => symbol.name === "NestedMarker")?.contractFlags).toContain("annotation-type");
+    expect(result.symbols.find((symbol) => symbol.name === "Plain")?.contractFlags).toContain("annotation-type");
     expect(result.symbols.find((symbol) => symbol.name === "HiddenInner")?.shape.visibility).toBe("private");
     expect(result.symbols.some((symbol) => symbol.name === "hiddenRun")).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "ProtectedInner")?.shape.visibility).toBe("protected");
@@ -383,6 +386,16 @@ describe("Java surface", () => {
       "src/BadString.java": 'public class BadString { String value = "unterminated;',
       "src/Unclosed.java": "public class Unclosed { public void run() {",
       "src/UnclosedEnum.java": "public enum UnclosedEnum { A(param {",
+      "src/UnclosedEnumArgs.java": "public enum UnclosedEnumArgs { A(1, 2 }",
+      "src/UnclosedEnumBody.java": "public enum UnclosedEnumBody { A {",
+      "src/UnclosedEnumAnnotation.java": "public enum UnclosedEnumAnnotation { @Marker(\"x\" A }",
+      "src/MissingAnnotation.java": "@123 public class MissingAnnotation { @456 public void run() {} }",
+      "src/UnclosedAnnotation.java": "@Marker(value = \"x\" public class UnclosedAnnotation {}",
+      "src/UnclosedMethod.java": "public class UnclosedMethod { public void run( }",
+      "src/UnclosedBody.java": "public class UnclosedBody { public void run() {",
+      "src/EndTokens.java": "public class EndTokens { public }",
+      "src/NoSemiDefault.java": "public @interface NoSemiDefault { int count() default 42 }",
+      "src/TrailingEnum.java": "public enum TrailingEnum { A, @Trailing; }",
     });
     expect(() =>
       extractJava(root, [
@@ -392,6 +405,16 @@ describe("Java surface", () => {
         "src/BadString.java",
         "src/Unclosed.java",
         "src/UnclosedEnum.java",
+        "src/UnclosedEnumArgs.java",
+        "src/UnclosedEnumBody.java",
+        "src/UnclosedEnumAnnotation.java",
+        "src/MissingAnnotation.java",
+        "src/UnclosedAnnotation.java",
+        "src/UnclosedMethod.java",
+        "src/UnclosedBody.java",
+        "src/EndTokens.java",
+        "src/NoSemiDefault.java",
+        "src/TrailingEnum.java",
       ])
     ).not.toThrow();
   });

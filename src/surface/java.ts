@@ -114,6 +114,7 @@ function nestedAnnotationArguments(text: string): AnnotationArgument[] {
     if (char === "(") depth += 1;
     else if (char === ")") {
       depth -= 1;
+      /* v8 ignore next */
       if (depth === 0) return annotationArguments(text.slice(open + 1, index));
     }
   }
@@ -325,7 +326,6 @@ class JavaParser {
           .trim();
         if (raw.length > 0) args = raw;
       }
-      /* v8 ignore next */
       cursor = close < 0 ? cursor + 1 : close + 1;
     }
     return { end: cursor, name, ...(args ? { args } : {}) };
@@ -356,7 +356,6 @@ class JavaParser {
     }
     if (brace < 0) return index + 1;
     const close = findMatching(tokens, brace, "{", "}");
-    /* v8 ignore next */
     if (close < 0) {
       this.context.failures += 1;
       return tokens.length;
@@ -445,9 +444,11 @@ class JavaParser {
           });
           if ((tokens[cursor] as Token | undefined)?.value === "{") {
             const close = findMatching(tokens, cursor, "{", "}");
+            /* v8 ignore next */
             if (close > cursor) {
               this.parseMembers(path, cursor + 1, close, false);
             }
+            /* v8 ignore next */
             cursor = close < 0 ? segmentEnd : close + 1;
           }
           members.push({
@@ -570,7 +571,6 @@ class JavaParser {
   ): number {
     const tokens = this.context.lexed.tokens;
     const close = findMatching(tokens, paren, "(", ")");
-    /* v8 ignore next */
     if (close < 0) {
       this.context.failures += 1;
       return end;
@@ -606,8 +606,6 @@ class JavaParser {
       body = tokensText(this.context.source, tokens, cursor, bodyClose < 0 ? end : bodyClose + 1);
       /* v8 ignore next */
       cursor = bodyClose < 0 ? end : bodyClose + 1;
-    /* v8 ignore next */
-    /* v8 ignore next */
     } else if ((tokens[cursor] as Token | undefined)?.value === ";") {
       cursor += 1;
     }

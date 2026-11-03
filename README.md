@@ -247,15 +247,15 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.62 tree:
+Measured on the 0.1.63 tree:
 
 | Gate | Result |
 |---|---|
 | Tests | 353 passing |
-| Statements | 98.5% |
-| Branches | 95.03% |
+| Statements | 98.56% |
+| Branches | 95.32% |
 | Functions | 99.0% |
-| Lines | 99.18% |
+| Lines | 99.26% |
 | Changed-line coverage, feature diff | 99.31% |
 | Structure gate | 82 of 82 checks |
 | Docs build | `mkdocs build --strict` passes |

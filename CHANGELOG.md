@@ -2,6 +2,22 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.63] - 2026-11-03
+
+### Changed
+
+- Added malformed-input tests for unclosed enum argument lists, unclosed enum constant bodies, unterminated annotations, unterminated methods, missing annotation names, and trailing enum annotations.
+- Removed five `v8 ignore` markers that now have real coverage and restored three on paths the parser cannot reach while the enclosing type still parses.
+- Branch coverage rose from 95.03% to 95.32%; line coverage from 99.18% to 99.26%.
+
+### Added
+
+- Nested `@interface` declarations without modifiers now extract.
+
+### Limits
+
+- The unscoped npm package remains unavailable.
+
 ## [0.1.62] - 2026-11-03
 
 ### Added
@@ -1122,3 +1138,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.60]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.60
 [0.1.61]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.61
 [0.1.62]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.62
+[0.1.63]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.63
