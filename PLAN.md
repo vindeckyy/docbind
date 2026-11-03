@@ -24,9 +24,9 @@ Milestone status:
 Current gate results:
 
 - Test coverage: 98.95% statements, 95.33% branches, 100% functions, 99.62% lines.
-- Changed-line coverage: 95% gate, currently above threshold on all code.
-- Structure gate: all checks.
-- Docs site: MkDocs source in `docs/`, `mkdocs.yml`, build workflow.
+- Changed-line coverage: 99.88% on the M7 diff (849/850 lines), 99.62% across all executable lines.
+- Structure gate: 59 of 59 checks.
+- Docs site: MkDocs build passes with `--strict`; source in `docs/`, config in `mkdocs.yml`, workflow in `.github/workflows/docs.yml`.
 
 Implementation notes:
 
