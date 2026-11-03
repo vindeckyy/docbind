@@ -433,6 +433,11 @@ function lexFenceAnchors(
     }
   }
   const localTypes = new Map<string, string>();
+  const inferGoValue = (expression: string): string | undefined => {
+    const alias = /^([A-Za-z_]\w*)$/u.exec(expression.trim());
+    if (alias?.[1]) return localTypes.get(alias[1]);
+    return inferGoExpression(expression, goHints as GoTypeHints);
+  };
   const setGoType = (name: string, type: string | undefined): void => {
     if (type) localTypes.set(name, type);
     else localTypes.delete(name);
@@ -448,7 +453,7 @@ function lexFenceAnchors(
           const expression = rest.slice(equal + 1).trim();
           setGoType(
             declaration[1],
-            goAnnotationType(annotation) ?? inferGoExpression(expression, goHints),
+            goAnnotationType(annotation) ?? inferGoValue(expression),
           );
         } else {
           setGoType(declaration[1], goAnnotationType(rest));
@@ -457,12 +462,12 @@ function lexFenceAnchors(
       }
       const short = /^\s*([A-Za-z_]\w*)\s*:=\s*(.+)$/u.exec(line);
       if (short?.[1]) {
-        setGoType(short[1], inferGoExpression(short[2] as string, goHints));
+        setGoType(short[1], inferGoValue(short[2] as string));
         continue;
       }
       const assignment = /^\s*([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/u.exec(line);
       if (assignment?.[1]) {
-        setGoType(assignment[1], inferGoExpression(assignment[2] as string, goHints));
+        setGoType(assignment[1], inferGoValue(assignment[2] as string));
       }
     }
   }

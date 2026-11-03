@@ -22,6 +22,8 @@ v.Get("key")
 ```go
 var r *Viper
 r.Reload("key")
+w := r
+w.Copied("key")
 var s *Viper
 s = viper.New()
 s.Swap("key")

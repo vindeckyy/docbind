@@ -8,4 +8,6 @@ func (v *Viper) Reload(key string) any { return nil }
 
 func (v *Viper) Swap(key string) any { return nil }
 
+func (v *Viper) Copied(key string) any { return nil }
+
 func New() *Viper { return &Viper{} }

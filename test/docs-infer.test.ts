@@ -156,6 +156,10 @@ describe("Go fence inference", () => {
           "w.Get(\"other\")",
           "var annotated *Viper",
           "annotated.Get(\"typed\")",
+          "alias := annotated",
+          "alias.Get(\"alias\")",
+          "var copied = alias",
+          "copied.Get(\"copied\")",
           "var changed *Viper",
           "changed = load()",
           "changed.Get(\"stale\")",
@@ -178,7 +182,7 @@ describe("Go fence inference", () => {
     );
     const tokens = result.anchors.map((anchor) => anchor.token);
     expect(tokens).toContain("viper.New");
-    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(6);
+    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(8);
   });
 
   it("drops conflicting Go constructor return types", () => {

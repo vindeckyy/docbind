@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.26] - 2026-11-03
+
+### Added
+
+- Go fence alias copies such as `w := v` inherit the current local type, so `w.Copied()` resolves through `Viper.Copied`.
+- Local Go fixture covers an alias-copied method with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 17 to 18 bound anchors and from 14 to 15 detected mutations.
+- Corpus now detects 44 of 44 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go fence inference does not type function parameters or externally supplied values.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.25] - 2026-11-03
 
 ### Added
@@ -485,3 +502,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.23]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.23
 [0.1.24]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.24
 [0.1.25]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.25
+[0.1.26]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.26

@@ -19,7 +19,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| go-package-fixture (local) | Go | 1 | 17 | 17 | 0 | 14 | 14 | 0 | 0 |
+| go-package-fixture (local) | Go | 1 | 18 | 18 | 0 | 15 | 15 | 0 | 0 |
 | go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
@@ -51,7 +51,7 @@ Method-valued aliases and direct method-call wrappers are followed too. `var Met
 
 Instance-method wrappers infer the receiver parameter type. `func WrapInstance(c *client.Client, value int) error { return c.Instance(value) }` attaches `viper.WrapInstance` to `client.Client.Instance`.
 
-Go fences infer local values from constructor calls and composite literals. `v := viper.New()` types `v` as `Viper`, so `v.Get("key")` emits `Viper.Get`. Annotated declarations such as `var v *Viper` and reassignments update the local type; an unknown reassignment clears it. Go keywords are filtered as anchors. Untyped local attribute tokens are skipped instead of emitted as unrelated bare names. The fixture binds 17 of 17 anchors and detects 14 of 14 mutations. Viper anchors fell from 293 to 196 through these precision changes, while its 94 bound symbols stayed the same.
+Go fences infer local values from constructor calls and composite literals. `v := viper.New()` types `v` as `Viper`, so `v.Get("key")` emits `Viper.Get`. Annotated declarations such as `var v *Viper` and reassignments update the local type; an unknown reassignment clears it. Alias copies such as `w := v` inherit the current type, so `w.Copied("key")` emits `Viper.Copied`. Go keywords are filtered as anchors. Untyped local attribute tokens are skipped instead of emitted as unrelated bare names. The fixture binds 18 of 18 anchors and detects 15 of 15 mutations. Viper anchors fell from 293 to 196 through these precision changes, while its 94 bound symbols stayed the same.
 
 Re-export cycles terminate without cross-linking symbols. A two-package fixture has `a.CycleAValue = b.CycleBValue` and `b.CycleBValue = a.CycleAValue`, plus a type cycle. Both local symbols remain, no `b.*` alias leaks onto `a`, no `a.*` alias leaks onto `b`, and each mutation is detected. The cycle case binds 2 of 2 anchors and detects 2 of 2 mutations.
 
