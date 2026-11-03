@@ -2,6 +2,28 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.10] - 2026-11-03
+
+### Added
+
+- Python local type inference in fenced examples. Constructor assignments, annotations, `with ... as` blocks, and source return annotations resolve instance calls such as `response.json()`.
+- `pycon` fence support for Python REPL examples.
+- Python dotted fence chains stay whole, so `httpx.get` and `Client.get` remain qualified.
+
+### Fixed
+
+- Corpus mutation attribution now relates class-member findings to the mutated class.
+
+### Improved
+
+- httpx corpus bind rate rose from 65 to 379 anchors with zero baseline and zero doc-edit findings.
+
+### Limits
+
+- Python inference is assignment-local and return-type based. It does not perform control-flow analysis.
+- Nested repetition with independent capture trees and non-exported cross-file macros remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.9] - 2026-11-03
 
 ### Added
@@ -169,3 +191,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.7
 [0.1.8]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.8
 [0.1.9]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.9
+[0.1.10]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.10

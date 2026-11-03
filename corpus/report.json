@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T17:43:27.242Z",
+  "generatedAt": "2026-11-03T17:57:36.823Z",
   "report": [
     {
       "name": "slugify",
@@ -137,38 +137,39 @@
       "repo": "encode/httpx",
       "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
       "docs": 23,
-      "anchors": 2541,
-      "bound": 65,
-      "bindRate": 0.02558048012593467,
+      "anchors": 2972,
+      "bound": 379,
+      "bindRate": 0.1275235531628533,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
         {
+          "symbol": "NetRCAuth",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 3,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Client",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 34,
+          "relatedRules": [
+            "L1-broken",
+            "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Auth",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L1-broken"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "BasicAuth",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L1-broken"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "DigestAuth",
           "rule": "L1-broken",
           "hit": true,
           "findings": 1,

@@ -15,7 +15,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
 | dtolnay/anyhow | Rust | 1 | 79 | 5 | 0 | 2 | 2 | 0 | 0 |
 | spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
-| encode/httpx | Python | 23 | 2541 | 65 | 0 | 3 | 3 | 0 | 0 |
+| encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 5 | 5 | 0 | 3 | 3 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
@@ -37,7 +37,9 @@ The first anyhow run bound 0 of 90 anchors. Rust docs write `anyhow::Result`, wh
 
 The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`, and the fence parser was splitting it into `viper` and `SetConfigName`. Capturing qualified chains raised viper to 53 bound anchors and exposed three mutations, all detected.
 
-The first httpx run bound 34 of 2541 anchors. Class-qualified calls such as `Response.json()` were vetoed as file paths, and package-qualified names such as `httpx.Client` had no aliases. Exempting class-qualified calls from the path veto and adding package and class aliases raised httpx to 65 bound anchors. Most of its docs use instance names such as `response.json()`, which still need local type inference.
+The first httpx run bound 34 of 2541 anchors. Class-qualified calls such as `Response.json()` were vetoed as file paths, and package-qualified names such as `httpx.Client` had no aliases. Exempting class-qualified calls from the path veto and adding package and class aliases raised httpx to 65 bound anchors.
+
+Python fences then gained local type inference. Source return annotations feed a type map, so `response = client.get(...)` resolves through `Client.get -> Response` and `response.json()` becomes `Response.json`. Annotations, `with ... as` blocks, REPL prompts, and `pycon` fences are handled. Dotted chains stay whole instead of splitting into unrelated identifiers. This raised httpx to 379 bound anchors on 2972 anchors with zero baseline findings.
 
 ## Limits
 
@@ -48,7 +50,7 @@ The first httpx run bound 34 of 2541 anchors. Class-qualified calls such as `Res
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
 - `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, one level of nested repetition over a shared metavariable, and cross-file `#[macro_export]` macros. It does not handle nested repetition, non-exported cross-file macros, or general proc-macro output.
 - anyhow binds five anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name.
-- httpx docs rely on instance variables and prose, so most anchors stay unbound even after class-qualified resolution.
+- httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
 - The corpus uses five external repositories and two local fixtures. It is evidence, not a benchmark.
 

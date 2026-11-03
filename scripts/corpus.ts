@@ -198,17 +198,16 @@ for (const entry of selected) {
     if (!restore) continue;
     try {
       const findings = findingsFor(checkout, config);
-      const relatedIds = new Set(
-        lock.anchors
-          .filter((anchor) =>
-            anchor.symbolId === symbol.id ||
-            anchor.qualifiedName === symbol.qualifiedName ||
-            anchor.qualifiedName.startsWith(`${symbol.qualifiedName}.`)
-          )
-          .map((anchor) => anchor.symbolId),
+      const relatedAnchors = lock.anchors.filter((anchor) =>
+        anchor.symbolId === symbol.id ||
+        anchor.qualifiedName === symbol.qualifiedName ||
+        anchor.qualifiedName.startsWith(`${symbol.qualifiedName}.`)
       );
+      const relatedIds = new Set(relatedAnchors.map((anchor) => anchor.symbolId));
+      const relatedNames = new Set(relatedAnchors.map((anchor) => anchor.name));
       const relatedFindings = findings.filter((finding) =>
         (finding.code && relatedIds.has(finding.code.symbolId)) ||
+        [...relatedNames].some((name) => finding.message.includes(name)) ||
         finding.message.includes(symbol.name)
       );
       const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));

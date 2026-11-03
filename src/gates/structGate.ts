@@ -32,6 +32,7 @@ export const REQUIRED_FILES = [
   "src/surface/go.ts",
   "src/surface/lex.ts",
   "src/shape/compat.ts",
+  "src/docs/infer.ts",
   "src/resolve/score.ts",
   "src/report/sarif.ts",
   "src/gates/changedCoverage.ts",
@@ -75,6 +76,7 @@ const REQUIRED_EXPORTS: Array<{ file: string; marker: string }> = [
   { file: "src/lock/schema.ts", marker: "export function writeLock" },
   { file: "src/fix.ts", marker: "export function applyFixes" },
   { file: "src/explain.ts", marker: "export function explain" },
+  { file: "src/docs/infer.ts", marker: "export function buildPythonTypeHints" },
   { file: "src/report/sarif.ts", marker: "export function formatSarif" },
 ];
 

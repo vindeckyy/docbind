@@ -1,4 +1,5 @@
 import { parseDocs } from "./docs/parse.js";
+import { buildPythonTypeHints } from "./docs/infer.js";
 import { discoverCode, discoverDocs } from "./discover.js";
 import { buildIndex, resolveAnchor } from "./resolve/resolve.js";
 import { parseToken } from "./resolve/score.js";
@@ -17,7 +18,8 @@ export function explain(root: string, config: Config, target: ExplainTarget): st
   const docs = discoverDocs(root, config);
   const doc = docs.find((candidate) => candidate === target.docPath);
   if (!doc) return `${target.docPath}: not found in configured docs`;
-  const parsed = parseDocs(root, [doc]);
+  const surface = extractSurface(root, discoverCode(root, config), config);
+  const parsed = parseDocs(root, [doc], buildPythonTypeHints(surface.symbols));
   const anchors = parsed.anchors.filter((anchor) =>
     anchor.line === target.line &&
     (target.column === undefined || anchor.column === target.column)
@@ -26,7 +28,6 @@ export function explain(root: string, config: Config, target: ExplainTarget): st
     return `${target.docPath}:${target.line}: no bindable anchor`;
   }
   const anchor = anchors[0];
-  const surface = extractSurface(root, discoverCode(root, config), config);
   const index = buildIndex(surface.symbols);
   const base = parseToken(anchor.token).base;
   const repeated = parsed.anchors.filter((candidate) => parseToken(candidate.token).base === base).length > 1;

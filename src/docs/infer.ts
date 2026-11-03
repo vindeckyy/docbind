@@ -1,0 +1,55 @@
+import type { Symbol } from "../types.js";
+
+export interface PythonTypeHints {
+  classes: Set<string>;
+  returns: Map<string, string>;
+}
+
+function returnTypeName(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  const first = raw.split("|")[0]?.trim() ?? "";
+  if (!first) return undefined;
+  const names = first.replace(/^typing\./u, "").match(/[A-Za-z_]\w*/gu) ?? [];
+  return names[names.length - 1];
+}
+
+export function buildPythonTypeHints(symbols: Symbol[]): PythonTypeHints {
+  const classes = new Set(
+    symbols
+      .filter((symbol) => ["class", "interface", "enum", "type"].includes(symbol.kind))
+      .map((symbol) => symbol.name),
+  );
+  const byId = new Map(symbols.map((symbol) => [symbol.id, symbol]));
+  const returns = new Map<string, Set<string>>();
+  const add = (key: string, type: string): void => {
+    const values = returns.get(key) ?? new Set<string>();
+    values.add(type);
+    returns.set(key, values);
+  };
+
+  for (const symbol of symbols) {
+    if (!symbol.shape.returnType) continue;
+    const type = returnTypeName(symbol.shape.returnType);
+    if (!type || !classes.has(type)) continue;
+    const parent = symbol.parentId ? byId.get(symbol.parentId) : undefined;
+    const keys = new Set<string>();
+    if (parent) {
+      keys.add(`${parent.name}.${symbol.name}`);
+      keys.add(`${symbol.packageName}.${parent.name}.${symbol.name}`);
+      keys.add(`${parent.qualifiedName}.${symbol.name}`);
+    } else {
+      keys.add(symbol.name);
+      keys.add(`${symbol.packageName}.${symbol.name}`);
+    }
+    for (const alias of symbol.aliases) {
+      if (alias.includes(".")) keys.add(alias);
+    }
+    for (const key of keys) add(key, type);
+  }
+
+  const resolved = new Map<string, string>();
+  for (const [key, values] of returns) {
+    if (values.size === 1) resolved.set(key, [...values][0] as string);
+  }
+  return { classes, returns: resolved };
+}

@@ -6,9 +6,10 @@ import { snippetSignature } from "../surface/typescript.js";
 import { snippetSignatureRust } from "../surface/rust.js";
 import { snippetSignatureGo } from "../surface/go.js";
 import { lex } from "../surface/lex.js";
+import type { PythonTypeHints } from "./infer.js";
 
 const TS_LANGS = new Set(["ts", "typescript", "tsx", "js", "javascript", "jsx", "mjs", "cjs"]);
-const PY_LANGS = new Set(["py", "python"]);
+const PY_LANGS = new Set(["py", "python", "pycon"]);
 const RUST_LANGS = new Set(["rs", "rust"]);
 const GO_LANGS = new Set(["go", "golang"]);
 const PY_KEYWORDS = new Set([
@@ -239,7 +240,53 @@ function tsFenceAnchors(node: Code, docPath: string, heading: string): FenceResu
   return { anchors, imports };
 }
 
-function pyFenceAnchors(node: Code, docPath: string, heading: string): FenceResult {
+function inferPythonTypes(lines: string[], hints?: PythonTypeHints): Map<string, string> {
+  const types = new Map<string, string>();
+  if (!hints) return types;
+  const inferCall = (source: string): string | undefined => {
+    const expr = source.replace(/^\s*await\s+/u, "").trim();
+    const call = /^([A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*)*)\s*\(/u.exec(expr);
+    if (!call?.[1]) return undefined;
+    const parts = call[1].replace(/\s*\.\s*/gu, ".").split(".");
+    const tail = parts[parts.length - 1];
+    if (tail && hints.classes.has(tail)) return tail;
+    const method = parts.pop() as string;
+    const receiver = parts.join(".");
+    const receiverType = types.get(receiver);
+    return hints.returns.get(`${receiverType ?? receiver}.${method}`) ??
+      hints.returns.get(`${receiver}.${method}`);
+  };
+  for (const raw of lines) {
+    const line = raw.replace(/^\s*(?:>>>|\.\.\.)\s?/u, "").trim();
+    const withMatch = /^(?:async\s+)?with\s+(.+?)\s+as\s+([A-Za-z_]\w*)\s*:/u.exec(line);
+    if (withMatch) {
+      const type = inferCall(withMatch[1] as string);
+      if (type) types.set(withMatch[2] as string, type);
+      continue;
+    }
+    const annotated = /^([A-Za-z_]\w*)\s*:\s*([^=]+)=/u.exec(line);
+    if (annotated) {
+      const first = (annotated[2] as string).split("|")[0] as string;
+      const names = first.match(/[A-Za-z_]\w*/gu) ?? [];
+      const type = names[names.length - 1];
+      if (type && hints.classes.has(type)) types.set(annotated[1] as string, type);
+      continue;
+    }
+    const assignment = /^([A-Za-z_]\w*)\s*=\s*(.+)$/u.exec(line);
+    if (assignment) {
+      const type = inferCall(assignment[2] as string);
+      if (type) types.set(assignment[1] as string, type);
+    }
+  }
+  return types;
+}
+
+function pyFenceAnchors(
+  node: Code,
+  docPath: string,
+  heading: string,
+  hints?: PythonTypeHints,
+): FenceResult {
   const lang = node.lang ?? "";
   const value = node.value;
   const imports: Record<string, ImportRef> = {};
@@ -262,24 +309,52 @@ function pyFenceAnchors(node: Code, docPath: string, heading: string): FenceResu
   }
   const locals = new Set<string>();
   for (const line of value.split("\n")) {
-    const declaration = /^\s*(?:async\s+)?(?:def|class)\s+([A-Za-z_]\w*)/u.exec(line);
+    const cleaned = line.replace(/^\s*(?:>>>|\.\.\.)\s?/u, "");
+    const declaration = /^\s*(?:async\s+)?(?:def|class)\s+([A-Za-z_]\w*)/u.exec(cleaned);
     if (declaration?.[1]) locals.add(declaration[1]);
-    const assignment = /^\s*([A-Za-z_]\w*)\s*=/u.exec(line);
+    const assignment = /^\s*([A-Za-z_]\w*)\s*=/u.exec(cleaned);
     if (assignment?.[1]) locals.add(assignment[1]);
   }
+  const localTypes = inferPythonTypes(value.split("\n"), hints);
   const anchors: DocAnchor[] = [];
   const seen = new Set<string>();
   const startLine = node.position?.start.line ?? 1;
   const lines = value.split("\n");
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
-    const line = lines[lineIndex] ?? "";
-    for (const match of line.matchAll(/[A-Za-z_]\w*/gu)) {
-      const token = match[0];
-      const column = (match.index ?? 0) + 1;
+    const line = lines[lineIndex] as string;
+    for (const chainMatch of line.matchAll(/[A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*)+/gu)) {
+      const chain = chainMatch[0].replace(/\s*\.\s*/gu, ".");
+      const root = chain.split(".")[0] as string;
+      const type = localTypes.get(root);
+      if (!type) continue;
+      const token = `${type}.${chain.split(".").slice(1).join(".")}`;
+      const column = (chainMatch.index as number) + 1;
+      anchors.push(
+        makeAnchor(
+          docPath,
+          token,
+          startLine + 1 + lineIndex,
+          column,
+          "fenceToken",
+          [heading, line],
+          imports,
+          [...locals],
+          /\.\.\.|…/u.test(value),
+          lang,
+        ),
+      );
+    }
+  }
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex] as string;
+    for (const chainMatch of line.matchAll(/[A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*)*/gu)) {
+      const token = chainMatch[0].replace(/\s*\.\s*/gu, ".");
+      const root = token.split(".")[0] as string;
+      const column = (chainMatch.index as number) + 1;
       if (
         token.length < 2 ||
-        PY_KEYWORDS.has(token) ||
-        locals.has(token) ||
+        PY_KEYWORDS.has(root) ||
+        locals.has(root) ||
         seen.has(`${lineIndex}:${column}:${token}`)
       ) {
         continue;
@@ -400,10 +475,15 @@ function lexFenceAnchors(
   return { anchors, imports };
 }
 
-export function fenceAnchors(node: Code, docPath: string, heading: string): FenceResult {
+export function fenceAnchors(
+  node: Code,
+  docPath: string,
+  heading: string,
+  pythonHints?: PythonTypeHints,
+): FenceResult {
   const lang = (node.lang ?? "").toLowerCase();
   if (TS_LANGS.has(lang)) return tsFenceAnchors(node, docPath, heading);
-  if (PY_LANGS.has(lang)) return pyFenceAnchors(node, docPath, heading);
+  if (PY_LANGS.has(lang)) return pyFenceAnchors(node, docPath, heading, pythonHints);
   if (RUST_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "rust");
   if (GO_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "go");
   return { anchors: [], imports: {} };

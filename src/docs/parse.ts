@@ -8,6 +8,7 @@ import { toString as mdastToString } from "mdast-util-to-string";
 import { assignOccurrences } from "./anchors.js";
 import { contextFingerprint, hasNegativeCue } from "./context.js";
 import { fenceAnchors, isSupportedFence } from "./fences.js";
+import type { PythonTypeHints } from "./infer.js";
 import type { DocAnchor, ImportRef } from "../types.js";
 
 interface WalkContext {
@@ -17,6 +18,7 @@ interface WalkContext {
   inHeading: boolean;
   inTableCell: boolean;
   inBlockquote: boolean;
+  pythonHints?: PythonTypeHints;
 }
 
 interface WalkState {
@@ -73,7 +75,7 @@ function walk(
       state.ranges.push([position.start.offset, position.end.offset]);
     }
     if (!isSupportedFence(node.lang)) return;
-    const result = fenceAnchors(node, docPath, context.heading);
+    const result = fenceAnchors(node, docPath, context.heading, context.pythonHints);
     state.anchors.push(...result.anchors);
     mergeImports(context.imports, result.imports);
     return;
@@ -196,7 +198,11 @@ export interface DocParseResult {
   parseFailures: number;
 }
 
-export function parseDoc(docPath: string, text: string): DocParseResult {
+export function parseDoc(
+  docPath: string,
+  text: string,
+  pythonHints?: PythonTypeHints,
+): DocParseResult {
   let root: Root;
   try {
     root = fromMarkdown(text, {
@@ -213,6 +219,7 @@ export function parseDoc(docPath: string, text: string): DocParseResult {
     inHeading: false,
     inTableCell: false,
     inBlockquote: false,
+    ...(pythonHints ? { pythonHints } : {}),
   };
   const state: WalkState = { anchors: [], ranges: [], inlineRanges: [] };
   for (const child of root.children) {
@@ -234,7 +241,11 @@ export interface DocsParseResult {
   docsScanned: number;
 }
 
-export function parseDocs(root: string, docs: string[]): DocsParseResult {
+export function parseDocs(
+  root: string,
+  docs: string[],
+  pythonHints?: PythonTypeHints,
+): DocsParseResult {
   const anchors: DocAnchor[] = [];
   let parseFailures = 0;
   let docsScanned = 0;
@@ -247,7 +258,7 @@ export function parseDocs(root: string, docs: string[]): DocsParseResult {
       continue;
     }
     docsScanned += 1;
-    const result = parseDoc(doc, text);
+    const result = parseDoc(doc, text, pythonHints);
     anchors.push(...result.anchors);
     parseFailures += result.parseFailures;
   }

@@ -435,6 +435,20 @@ describe("check pipeline", () => {
     expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
   });
 
+  it("infers Python fence local types from assignments", () => {
+    const root = tempProject({
+      "pyproject.toml": '[project]\nname = "httpx"\n',
+      "httpx/__init__.py": "",
+      "httpx/_client.py": "class Client:\n    def get(self, url: str) -> Response:\n        return Response()\n",
+      "httpx/_models.py": "class Response:\n    def json(self) -> dict:\n        return {}\n",
+      "docs/api.md": "```pycon\n>>> import httpx\n>>> client = httpx.Client()\n>>> response = client.get(\"/\")\n>>> response.json()\n```\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("json");
+    expect(result.pending.find((binding) => binding.symbol.name === "json")?.anchor.token).toBe("Response.json");
+  });
+
   it("binds Python class-qualified methods and attributes", () => {
     const root = tempProject({
       "pyproject.toml": '[project]\nname = "httpx"\n',

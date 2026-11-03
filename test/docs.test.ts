@@ -96,6 +96,11 @@ describe("markdown parsing", () => {
     expect(result.anchors[0].importTable.fetch_user).toEqual({ source: "users", imported: "get_user" });
   });
 
+  it("parses pycon fences", () => {
+    const result = parseDoc("docs/quickstart.md", "```pycon\n>>> import httpx\n>>> httpx.get(url)\n```\n");
+    expect(result.anchors.map((anchor) => anchor.token)).toEqual(expect.arrayContaining(["httpx.get"]));
+  });
+
   it("detects signature fences", () => {
     const text = "```ts\nfunction getUser(id: string): User\n```\n";
     const result = parseDoc("docs/api.md", text);
