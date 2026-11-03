@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.22] - 2026-11-03
+
+### Added
+
+- Go instance-method wrappers infer the receiver parameter type and attach the wrapper selector to the target method.
+- Local Go fixture covers `viper.WrapInstance` through `func WrapInstance(c *client.Client, value int) { return c.Instance(value) }`.
+
+### Improved
+
+- Go fixture grew from 9 to 10 bound anchors and from 9 to 10 detected mutations.
+- Corpus now detects 37 of 37 seeded mutations with zero collateral findings.
+- Branch coverage rose from 95.05% to 95.06%.
+
+### Limits
+
+- Go arbitrary arithmetic, composite expressions, and re-export cycles are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.21] - 2026-11-03
 
 ### Added
@@ -407,3 +425,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.19]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.19
 [0.1.20]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.20
 [0.1.21]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.21
+[0.1.22]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.22

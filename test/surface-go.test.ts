@@ -190,6 +190,17 @@ describe("Go surface", () => {
     expect(result.symbols.some((symbol) => ["MethodValue", "WrapComputed"].includes(symbol.name))).toBe(false);
   });
 
+  it("resolves instance-method wrapper re-exports", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "lib/lib.go": "package lib\ntype Client struct{}\nfunc (c *Client) Instance(value int) error { return nil }\n",
+      "root.go": "package app\nimport \"example.com/app/lib\"\nfunc WrapInstance(c *lib.Client, value int) error { return c.Instance(value) }\n",
+    });
+    const result = extractGo(root, ["lib/lib.go", "root.go"]);
+    expect(result.symbols.find((symbol) => symbol.name === "Instance")?.aliases).toContain("app.WrapInstance");
+    expect(result.symbols.some((symbol) => symbol.name === "WrapInstance")).toBe(false);
+  });
+
   it("falls back when the re-export file matches the package name", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

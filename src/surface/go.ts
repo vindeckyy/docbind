@@ -44,16 +44,23 @@ interface GoContext {
   failures: { count: number };
 }
 
-function wrapperReexport(body: string): { packageName: string; receiver?: string; name: string } | undefined {
+function wrapperReexport(
+  body: string,
+  params: ParamShape[],
+): { packageName: string; receiver?: string; name: string } | undefined {
   const inner = body.trim().replace(/^\{/u, "").replace(/\}$/u, "").trim();
   const method = /^return\s+([A-Za-z_]\w*)\.([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(([\s\S]*)\)\s*$/u.exec(inner);
   if (method?.[1] && method[2] && method[3]) {
     return { packageName: method[1], receiver: method[2], name: method[3] };
   }
   const plain = /^return\s+([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(([\s\S]*)\)\s*$/u.exec(inner);
-  return plain?.[1] && plain[2]
-    ? { packageName: plain[1], name: plain[2] }
-    : undefined;
+  if (!plain?.[1] || !plain[2]) return undefined;
+  const parameter = params.find((param) => param.name === plain[1])?.type;
+  const instance = /^\*?([A-Za-z_]\w*)\.([A-Za-z_]\w*)$/u.exec(parameter ?? "");
+  if (instance?.[1] && instance[2]) {
+    return { packageName: instance[1], receiver: instance[2], name: plain[2] };
+  }
+  return { packageName: plain[1], name: plain[2] };
 }
 
 function goParams(tokens: Token[], start: number, end: number, masked: string): ParamShape[] {
@@ -207,7 +214,7 @@ class GoParser {
         kind: "receiver",
       });
     }
-    const wrapper = receiver ? undefined : wrapperReexport(body);
+    const wrapper = receiver ? undefined : wrapperReexport(body, params);
     this.context.drafts.push({
       name: nameToken.value,
       kind: receiver ? "method" : "function",

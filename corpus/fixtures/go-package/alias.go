@@ -20,3 +20,7 @@ var MethodValue = client.Client.Computed
 func WrapComputed(c *client.Client, value int) error {
 	return client.Client.Wrapped(c, value)
 }
+
+func WrapInstance(c *client.Client, value int) error {
+	return c.Instance(value)
+}

@@ -538,6 +538,19 @@ describe("check pipeline", () => {
     expect(result.pending.map((binding) => binding.symbol.name)).toEqual(["Computed", "Wrapped"]);
   });
 
+  it("binds Go instance-method wrappers", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "lib/lib.go": "package lib\ntype Client struct{}\nfunc (c *Client) Instance(value int) error { return nil }\n",
+      "root.go": "package app\nimport \"example.com/app/lib\"\nfunc WrapInstance(c *lib.Client, value int) error { return c.Instance(value) }\n",
+      "docs/api.md": "Call `app.WrapInstance(client, 1)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("Instance");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

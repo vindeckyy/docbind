@@ -19,7 +19,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| go-package-fixture (local) | Go | 1 | 9 | 9 | 0 | 9 | 9 | 0 | 0 |
+| go-package-fixture (local) | Go | 1 | 10 | 10 | 0 | 10 | 10 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -46,7 +46,9 @@ Wrapper functions such as `func Wrap(value int) int { return client.Target(value
 
 Re-export aliases propagate through multiple hops. A middle package can alias a type or value, and the outermost package adds its selector to the original target. The fixture resolves `viper.AppClient.Special()` through `app.AppClient -> middle.MidClient -> client.Client`.
 
-Method-valued aliases and direct method-call wrappers are followed too. `var MethodValue = client.Client.Computed` attaches `viper.MethodValue` to the target method, and `func WrapComputed(...) { return client.Client.Wrapped(...) }` attaches `viper.WrapComputed` to `Wrapped`. The fixture binds 9 of 9 anchors and detects 9 of 9 mutations.
+Method-valued aliases and direct method-call wrappers are followed too. `var MethodValue = client.Client.Computed` attaches `viper.MethodValue` to the target method, and `func WrapComputed(...) { return client.Client.Wrapped(...) }` attaches `viper.WrapComputed` to `Wrapped`.
+
+Instance-method wrappers infer the receiver parameter type. `func WrapInstance(c *client.Client, value int) error { return c.Instance(value) }` attaches `viper.WrapInstance` to `client.Client.Instance`. The fixture binds 10 of 10 anchors and detects 10 of 10 mutations.
 
 ## Crate macros and generic aliases
 
