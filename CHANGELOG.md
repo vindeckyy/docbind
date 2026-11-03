@@ -2,6 +2,21 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.49] - 2026-11-03
+
+### Fixed
+
+- Javadoc links with parameter lists that contain spaces, such as `{@link #get(int, String)}`, no longer truncate at the first space. The parser captures the full target and strips the parameter list.
+- Links with labels, such as `{@link Client#get(int) the getter}`, resolve to `Client#get`.
+
+### Improved
+
+- `java-javadoc-fixture` uses a spaced parameter list and stays at 3 of 3 anchors bound and 2 of 2 mutations.
+
+### Limits
+
+- The unscoped npm package remains unavailable.
+
 ## [0.1.48] - 2026-11-03
 
 ### Added
@@ -910,3 +925,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.46]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.46
 [0.1.47]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.47
 [0.1.48]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.48
+[0.1.49]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.49

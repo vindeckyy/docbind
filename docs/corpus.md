@@ -51,7 +51,7 @@ httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclare
 
 ## Javadoc
 
-Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type. The local `java-javadoc-fixture` binds 2 of 2 anchors and detects 2 of 2 mutations.
+Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` binds 2 of 2 anchors and detects 2 of 2 mutations.
 
 ## AsciiDoc
 

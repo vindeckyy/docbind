@@ -403,7 +403,15 @@ function parseAdocDoc(
   return { anchors: assignOccurrences(kept), parseFailures: 0 };
 }
 
-const JAVADOC_LINK_RE = /\{@(?:link|linkplain)\s+([^\s}]+)[^}]*\}/gu;
+const JAVADOC_LINK_RE = /\{@(?:link|linkplain)\s+([^}]+)\}/gu;
+
+function javadocTarget(source: string): string {
+  const text = source.trim();
+  const open = text.indexOf("(");
+  if (open >= 0) return text.slice(0, open).trim();
+  const space = text.search(/\s/u);
+  return (space < 0 ? text : text.slice(0, space)).trim();
+}
 const JAVADOC_CODE_RE = /\{@code\s+([^}]+)\}/gu;
 
 export function parseJavadoc(
@@ -439,7 +447,7 @@ export function parseJavadoc(
     for (const match of line.matchAll(JAVADOC_LINK_RE)) {
       const index = match.index as number;
       used.push([index, index + match[0].length]);
-      const link = (match[1] as string).trim();
+      const link = javadocTarget(match[1] as string);
       add(owner && link.startsWith("#") ? `${owner}${link}` : link, lineIndex, index + 1, "explicitRef");
     }
     for (const match of line.matchAll(JAVADOC_CODE_RE)) {

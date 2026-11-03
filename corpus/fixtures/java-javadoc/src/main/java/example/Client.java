@@ -12,7 +12,7 @@ public class Client {
 }
 
 /**
- * Other entry point: {@link #get}.
+ * Other entry point: {@link #get(int, String)}.
  */
 public class Other {
     public String get(int id, String label) {
