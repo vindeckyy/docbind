@@ -1,0 +1,35 @@
+name: Feature request
+description: Propose a new language, rule, or workflow.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What stale doc case is not covered today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should the tool do?
+    validations:
+      required: true
+  - type: textarea
+    id: false-positive
+    attributes:
+      label: Precision risk
+      description: What could this rule flag incorrectly?
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - New language extractor
+        - New finding rule
+        - CLI or reporting
+        - Documentation
+        - Performance
+        - Other

@@ -1,43 +1,101 @@
-# docbind
+<p align="center">
+  <img src="assets/mark.svg" width="92" height="92" alt="docbind mark">
+</p>
 
-Symbol-level documentation staleness detection for markdown.
+<h1 align="center">docbind</h1>
 
-`docbind` binds symbol-shaped inline code in markdown to exported code symbols. It stores each binding in `docbind.lock.json`. Later runs compare the current code shape against the shape the doc claimed. A finding means the code changed and the sentence did not.
+<p align="center">Catch stale symbol references in markdown.</p>
 
-This is static analysis, not a docs generator. No build, no execution of project code, no network.
+<p align="center">
+  <a href="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml/badge.svg"></a>
+  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.62%25-brightgreen">
+  <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white">
+  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
+</p>
 
-## Install
+Markdown docs name symbols. Code renames them. `docbind` reports the mismatch.
 
-```sh
-npm install --save-dev docbind
-npx docbind init
-```
+It binds symbol-shaped inline code to exported code symbols, stores the contract shape in `docbind.lock.json`, and reports only cases where the code changed and the sentence did not.
 
-Or run without installing:
-
-```sh
-npx docbind check
-```
-
-## Commands
+This is static analysis. It does not run project code, build the project, or generate docs.
 
 ```text
-docbind init
-docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed-only] [--base <rev>]
-docbind lock [--check] [--refresh]
-docbind fix [--write]
-docbind explain <doc>:<line>[:<column>]
-docbind stats
+docs/api.md:42  error  L4  `getUser` was renamed to `get_user`
+  code: src/users.ts:88
+  fix:  docbind fix --write
+
+docs/api.md:77  error  L3  `createUser(name, email)` no longer accepts `email`
+  code: src/users.ts:14
 ```
 
-Exit codes:
+## Contents
 
-| Code | Meaning |
+- [The problem](#the-problem)
+- [How it works](#how-it-works)
+- [Demo](#demo)
+- [What it checks](#what-it-checks)
+- [Supported languages](#supported-languages)
+- [Precision model](#precision-model)
+- [Install](#install)
+- [CLI](#cli)
+- [CI](#ci)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Gate results](#gate-results)
+- [Prior art](#prior-art)
+- [License](#license)
+
+## The problem
+
+Documentation tools move from code to docs. Link checkers verify URLs. Prose linters check style. Snippet runners execute examples.
+
+None of them answer this question:
+
+> This inline code span named an exported symbol last month. The symbol's contract changed. Did the sentence change?
+
+A name lookup is not enough. `getUser` can still exist while its return type, required parameters, or module path changed. `docbind` compares the contract the doc last claimed with the contract the code has now.
+
+## How it works
+
+```text
+markdown ──> anchors ──┐
+                       ├──> resolve ──> diff(lock, code, docs) ──> findings
+code ──────> symbols ──┘
+```
+
+1. Extract exported symbols from source.
+2. Parse markdown and collect inline code, headings, tables, fenced code, signature fences, and explicit references.
+3. Resolve tokens with import, qualified-name, alias, arity, and API-context evidence.
+4. Store confirmed bindings with the shape the doc last asserted.
+5. Compare current code with the stored shape on later runs.
+6. Report breaking changes where the doc anchor did not move.
+
+The lock keeps the doc's baseline, not the latest shape seen. Adding an optional parameter does not churn the lock. Removing that parameter later restores the doc's original claim, so the tool stays silent.
+
+A token that never bound cannot become a finding. Brokenness comes from tombstones or explicit reference syntax, not from a missing-name lookup.
+
+## Demo
+
+```sh
+npm run demo
+```
+
+The demo copies [`examples/basic`](examples/basic) to a temporary directory, renames a symbol, reports the stale line, fixes it, and checks again. The transcript is in [docs/demo.md](docs/demo.md).
+
+## What it checks
+
+| Rule | Finding |
 |---|---|
-| 0 | clean |
-| 1 | findings at or above the configured severity |
-| 2 | config, IO, or parse failure that prevents a trustworthy run |
-| 3 | lock is out of date |
+| L1 | Referenced symbol no longer exists |
+| L2 | Qualified path moved and no longer resolves |
+| L3 | Signature or member contract changed |
+| L4 | Symbol was renamed, with a conservative fix |
+| S1 | Symbol is deprecated and the doc does not say so, opt-in |
+
+Additive changes stay silent: a new optional parameter, an added overload, an optional field, a new enum variant, or a widened return union.
+
+Ignored by default: plain prose names without backticks, unlabeled fences, historical docs such as `CHANGELOG.md`, migration guides, and tokens that never bound to a tracked symbol.
 
 ## Supported languages
 
@@ -50,48 +108,72 @@ Exit codes:
 
 Go is opt-in. Set `"go": true` in `docbind.json`.
 
-## What it catches
+Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or generated bindings.
 
-- Removed exported symbols referenced by a doc.
-- Renamed symbols, with a conservative auto-fix.
-- Moved qualified paths, with a path fix.
-- Changed signatures: required parameters, return types, async, member removal.
-- Signature fences that no longer match the real declaration.
-- Deprecation, when `S1-deprecated` is enabled.
+## Precision model
 
-## What it ignores
+The tool errs toward silence. A wrong finding costs more trust than a missed one.
 
-- Plain prose names without backticks.
-- Unlabeled and non-code fences.
-- Tokens that never bound to a tracked symbol, unless they match a tombstone or use `{@link}` style syntax.
-- Historical docs such as `CHANGELOG.md` and migration guides.
-- Additive changes such as a new optional parameter or an added enum variant.
+- Binding needs a confidence score of at least 0.70.
+- Ambiguous symbols never fail CI.
+- Prose words, URLs, paths, versions, flags, globs, and regexes are vetoed before scoring.
+- Historical context cues such as "removed", "renamed", and "migration" withdraw a claim.
+- The lock freezes confidence. Low-confidence bindings never enter it.
+- `docbind explain` shows every candidate, score, and veto.
 
-The precision rule is simple: a token that never bound cannot become a finding. Brokenness comes from the lock history, not from a name lookup.
+The full design is in [docs/architecture.md](docs/architecture.md).
 
-## Precision and coverage
-
-The tool targets 95% line coverage on its own source, 95% changed-line coverage, and a 95% structure gate.
+## Install
 
 ```sh
-npm test
-npm run coverage
-npm run gate:changed -- --all
-npm run gate:struct
-npm run gate
+npm install --save-dev docbind
+npx docbind init
+npx docbind check
 ```
 
-Changed-line mode compares `coverage/lcov.info` against a git diff:
+Commit `docbind.lock.json`. Run `docbind lock` after changing docs.
+
+Without installing:
 
 ```sh
-npm run gate:changed -- --base origin/HEAD
+npx docbind check
 ```
 
-The structure gate checks required files, exports, scripts, forbidden test markers, per-file coverage, and the extractor entry points.
+## CLI
+
+```text
+docbind init
+docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed-only] [--base <rev>]
+docbind lock [--check] [--refresh]
+docbind fix [--write]
+docbind explain <doc>:<line>[:<column>]
+docbind stats
+```
+
+| Exit code | Meaning |
+|---|---|
+| 0 | clean |
+| 1 | findings at or above the configured severity |
+| 2 | config, IO, or parse failure that prevents a trustworthy run |
+| 3 | lock is out of date |
+
+`check` is read-only. `lock` updates the baseline. `fix` rewrites safe renames and moved paths only.
+
+## CI
+
+```yaml
+- run: npx docbind check --sarif docbind.sarif
+- uses: github/codeql-action/upload-sarif@v3
+  if: always()
+  with:
+    sarif_file: docbind.sarif
+```
+
+The repository also ships a composite action in [`action/action.yml`](action/action.yml).
 
 ## Configuration
 
-`docbind.json` is optional. Defaults work for most repositories.
+`docbind.json` is optional.
 
 ```json
 {
@@ -109,37 +191,53 @@ The structure gate checks required files, exports, scripts, forbidden test marke
 }
 ```
 
-Thresholds and scoring weights are fixed in the engine. Per-repo tuning makes published precision numbers meaningless.
+Thresholds and scoring weights are fixed in the engine. Per-repo tuning would make precision claims meaningless.
 
-## How it works
+## Development
 
-1. Extract exported symbols from TypeScript, JavaScript, Python, Rust, and Go.
-2. Parse markdown and collect inline code, fenced code, signature fences, and explicit references.
-3. Resolve tokens with import, qualified-name, alias, and score evidence.
-4. Store confirmed bindings with the code shape at claim time.
-5. On later runs, compare the current shape with the stored shape.
-6. Report only breaking changes where the doc anchor did not move.
-
-The lock keeps the shape the doc last asserted, not the latest shape seen. Additive code changes therefore do not churn the lock.
-
-## Limitations
-
-- Shape comparison is syntactic. It does not type-check or evaluate generics.
-- Illustrative snippets with elisions get a confidence penalty.
-- Python support uses a bundled `ast` worker and requires `python3` on PATH.
-- Rust and Go support is syntactic. Generic bounds and macro-generated items are not expanded.
-- Go extraction is opt-in. Enable it with `"go": true`.
-- A doc that was rewritten loses its old binding. Tombstones cover recent removals, not ancient history.
-
-## Documentation
-
-The docs site source lives in `docs/`, built with MkDocs.
+Requirements: Node 20 or newer, `python3` for the Python extractor, and MkDocs for the docs site.
 
 ```sh
-pip install -r requirements-docs.txt
-mkdocs build --strict
+npm ci
+npm run typecheck
+npm test
+npm run coverage
+npm run gate
 ```
+
+`npm run gate` runs the coverage thresholds, changed-line coverage, and the structure gate.
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-docs.txt
+.venv/bin/mkdocs serve
+```
+
+Architecture notes live in [docs/architecture.md](docs/architecture.md). Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Gate results
+
+Measured on the 0.1.0 tree:
+
+| Gate | Result |
+|---|---|
+| Tests | 221 passing |
+| Statements | 98.95% |
+| Branches | 95.33% |
+| Functions | 100% |
+| Lines | 99.62% |
+| Changed-line coverage, feature diff | 99.88% |
+| Structure gate | 69 of 69 checks |
+| Docs build | `mkdocs build --strict` passes |
+
+These are repository gates, not benchmark claims. They will change as the code changes.
+
+## Prior art
+
+Tan, Wagner, and Treude published a detector for outdated code element references in 2022. It targets references that survive after source definitions disappear. `docbind` adds contract shapes, rename inference, a binding lock, and CI-grade precision for handwritten markdown.
+
+See [docs/prior-art.md](docs/prior-art.md) for the honest comparison.
 
 ## License
 
-MIT.
+MIT. See [LICENSE](LICENSE).
