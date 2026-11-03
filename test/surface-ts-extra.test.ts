@@ -44,6 +44,7 @@ function getSomething(): unknown { return 1; }
     "src/reexport.ts": 'export { other as alias } from "./other";\nexport { missing } from "./nope";\nexport { localConst as broken };\nexport { ghost };\nexport { external } from "pkg";\nexport * as ns from "./other";',
     "src/other.ts": "export function other(): void {}",
     "src/barrel.ts": 'export * from "./dir";\nexport { other } from "./other.js";',
+    "src/namespace.ts": 'export * as api from "./other";\nexport * as missing from "./nope";',
     "src/dir/index.ts": "export const nested = 1;",
     "src/cycle-a.ts": 'export * from "./cycle-b";\nexport const a = 1;',
     "src/cycle-b.ts": 'export * from "./cycle-a";\nexport const b = 1;',
@@ -60,7 +61,7 @@ describe("TypeScript surface edge cases", () => {
     const root = extraProject();
     const files = [
       "src/extra.ts", "src/anon-fn.ts", "src/anon-class.ts", "src/exporteq.ts",
-      "src/reexport.ts", "src/other.ts", "src/barrel.ts", "src/dir/index.ts",
+      "src/reexport.ts", "src/other.ts", "src/barrel.ts", "src/namespace.ts", "src/dir/index.ts",
       "src/cycle-a.ts", "src/cycle-b.ts", "src/exportnum.ts", "src/comp.tsx", "src/comp.jsx",
       "src/mod.mjs", "src/mod.cjs",
     ];
@@ -92,9 +93,10 @@ describe("TypeScript surface edge cases", () => {
 
   it("resolves re-exports, cycles and missing targets", () => {
     const root = extraProject();
-    const result = extractTypescript(root, ["src/reexport.ts", "src/other.ts", "src/barrel.ts", "src/dir/index.ts", "src/cycle-a.ts", "src/cycle-b.ts"]);
+    const result = extractTypescript(root, ["src/reexport.ts", "src/other.ts", "src/barrel.ts", "src/namespace.ts", "src/dir/index.ts", "src/cycle-a.ts", "src/cycle-b.ts"]);
     expect(result.symbols.find((symbol) => symbol.name === "other")?.aliases).toContain("alias");
     expect(result.symbols.find((symbol) => symbol.name === "nested")?.aliases).toContain("dir.nested");
+    expect(result.symbols.find((symbol) => symbol.name === "other")?.aliases).toContain("api.other");
     expect(result.symbols.map((symbol) => symbol.name)).toEqual(expect.arrayContaining(["a", "b"]));
   });
 });

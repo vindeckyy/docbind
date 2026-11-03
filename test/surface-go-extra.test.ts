@@ -26,6 +26,7 @@ type (
     Plain struct {
         X int
     }
+    // grouped note
     Single struct { A int }
     Waiter interface {
         io.Reader

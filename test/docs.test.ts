@@ -109,6 +109,8 @@ describe("markdown parsing", () => {
     const indented = parseDoc("docs/api.md", "```rust\n  fn find(\n    id: &str\n  ) -> Option<User>\n```\n");
     expect(indented.anchors[0]).toMatchObject({ token: "find", surface: "signatureFence" });
     expect(indented.anchors[0].line).toBe(2);
+    const unnamedReceiver = parseDoc("docs/api.md", "```go\nfunc (User) Ping()\n```\n");
+    expect(unnamedReceiver.anchors[0].signatureShape?.kind).toBe("method");
   });
 
   it("marks fragment fences", () => {

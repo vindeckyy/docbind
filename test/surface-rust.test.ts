@@ -68,8 +68,11 @@ mod tests {
 }
 macro_rules! ignored { () => {}; }
 pub use User as Account;
+pub use users::User as GlobalAccount;
+pub use users::{User as GroupAccount, Account};
 `,
     "src/users.rs": `
+pub struct User;
 pub struct Account {
     pub name: String,
 }
@@ -95,7 +98,9 @@ describe("Rust surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "old")?.contractFlags).toContain("deprecated");
     expect(result.symbols.find((symbol) => symbol.name === "fetch_user")?.shape.async).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "dangerous")?.contractFlags).toContain("unsafe");
-    expect(result.symbols.find((symbol) => symbol.name === "User")?.aliases).toContain("Account");
+    expect(result.symbols.find((symbol) => symbol.name === "User")?.aliases).toEqual(
+      expect.arrayContaining(["Account", "GlobalAccount", "GroupAccount"]),
+    );
     expect(result.symbols.find((symbol) => symbol.name === "User")?.modulePath).toBe("src/lib");
   });
 
@@ -113,7 +118,9 @@ describe("Rust surface", () => {
   it("adds aliases from use declarations and nested modules", () => {
     const root = rustProject();
     const result = extractRust(root, ["src/lib.rs"]);
-    expect(result.symbols.find((symbol) => symbol.name === "User")?.aliases).toContain("Account");
+    expect(result.symbols.find((symbol) => symbol.name === "User")?.aliases).toEqual(
+      expect.arrayContaining(["Account", "GlobalAccount", "GroupAccount"]),
+    );
     expect(result.symbols.find((symbol) => symbol.name === "nested")?.qualifiedName).toContain("inner.nested");
   });
 

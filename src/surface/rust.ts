@@ -37,6 +37,7 @@ interface Draft {
 interface UseAlias {
   alias: string;
   target: string;
+  packageName: string;
 }
 
 interface ParserContext {
@@ -574,7 +575,23 @@ class RustParser {
         alias = this.tokens[cursor + 1]?.value;
         aliasAt = cursor;
       }
-      if (this.tokens[cursor].value === "{") return this.skipBraces(cursor);
+      if (this.tokens[cursor].value === "{") {
+        const close = findMatching(this.tokens, cursor, "{", "}");
+        if (close < 0) return this.tokens.length;
+        if (enabled) {
+          for (const [from, to] of splitTopLevel(this.tokens, cursor + 1, close, ",")) {
+            const values = this.tokens.slice(from, to).map((token) => token.value);
+            if (values.length < 2) continue;
+            const asIndex = values.indexOf("as");
+            const target = asIndex > 0 ? values[asIndex - 1] : values[values.length - 1];
+            const alias = asIndex > 0 ? values[asIndex + 1] : target;
+            if (target && alias && target !== "*" && alias !== "*") {
+              this.context.aliases.push({ alias, target, packageName: this.context.packageName });
+            }
+          }
+        }
+        return close + 1;
+      }
       cursor += 1;
     }
     if (enabled && alias) {
@@ -582,7 +599,9 @@ class RustParser {
         .slice(start, aliasAt >= 0 ? aliasAt : cursor)
         .filter((token) => /^[A-Za-z_]/u.test(token.value));
       const target = names[names.length - 1]?.value;
-      if (target && target !== alias) this.context.aliases.push({ alias, target });
+      if (target && target !== alias) {
+        this.context.aliases.push({ alias, target, packageName: this.context.packageName });
+      }
     }
     return cursor + 1;
   }
@@ -671,6 +690,7 @@ function buildSymbols(context: ParserContext): Symbol[] {
 
 export function extractRust(root: string, files: string[]): ExtractResult {
   const symbols: Symbol[] = [];
+  const globalAliases: UseAlias[] = [];
   let parseFailures = 0;
   let filesScanned = 0;
   for (const rel of files) {
@@ -698,8 +718,16 @@ export function extractRust(root: string, files: string[]): ExtractResult {
     const parser = new RustParser(context);
     parser.parseRange(0, lexed.tokens.length, "", true);
     parseFailures += context.failures.count;
+    globalAliases.push(...context.aliases);
     symbols.push(...buildSymbols(context));
     filesScanned += 1;
+  }
+  for (const alias of globalAliases) {
+    for (const symbol of symbols) {
+      if (symbol.packageName === alias.packageName && symbol.name === alias.target && !symbol.aliases.includes(alias.alias)) {
+        symbol.aliases.push(alias.alias);
+      }
+    }
   }
   return { symbols, parseFailures, filesScanned };
 }

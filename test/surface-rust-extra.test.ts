@@ -70,6 +70,7 @@ pub struct Old;
 pub fn test_only() {}
 macro_rules! noop { () => {}; }
 pub fn text(value: &str) -> &str { value }
+pub fn empty_generic<>() {}
 pub const fn const_fn() {}
 struct Hidden;
 impl Hidden { pub fn lost(&self) {} }
@@ -113,6 +114,7 @@ pub use crate::x::Y as A;
     "src/bad34.rs": "pub type",
     "src/bad35.rs": "pub const",
     "src/bad36.rs": "pub mod",
+    "src/bad37.rs": "macro_rules! noop;",
   });
 }
 
@@ -144,6 +146,7 @@ describe("Rust surface edge cases", () => {
     expect(result.symbols.find((symbol) => symbol.name === "Bounds")?.shape.extends).toEqual(expect.arrayContaining(["A", "B"]));
     expect(result.symbols.find((symbol) => symbol.name === "Z")).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "text")?.shape.returnType).toBe("&str");
+    expect(result.symbols.find((symbol) => symbol.name === "empty_generic")?.shape.typeParams).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "const_fn")?.shape.async).toBe(false);
     expect(result.symbols.find((symbol) => symbol.name === "lost")).toBeUndefined();
   });
@@ -160,7 +163,7 @@ describe("Rust surface edge cases", () => {
       "src/bad21.rs", "src/bad22.rs", "src/bad23.rs", "src/bad24.rs", "src/bad25.rs",
       "src/bad26.rs", "src/bad27.rs", "src/bad28.rs", "src/bad29.rs", "src/bad30.rs",
       "src/bad31.rs", "src/bad32.rs", "src/bad33.rs", "src/bad34.rs", "src/bad35.rs",
-      "src/bad36.rs",
+      "src/bad36.rs", "src/bad37.rs",
     ]).parseFailures).toBeGreaterThan(0);
   });
 });

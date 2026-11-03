@@ -32,6 +32,7 @@ interface DeclInfo {
 type ExportRecord =
   | { type: "local"; exported: string; local: string }
   | { type: "reexport"; exported: string; source: string; imported: string }
+  | { type: "namespace"; exported: string; source: string }
   | { type: "star"; source: string };
 
 interface ParsedFile {
@@ -403,7 +404,13 @@ function collectDeclarations(file: ParsedFile): void {
         }
       }
     } else if (ts.isExportDeclaration(statement) && statement.exportClause) {
-      if (ts.isNamedExports(statement.exportClause)) {
+      if (ts.isNamespaceExport(statement.exportClause) && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) {
+        file.exports.push({
+          type: "namespace",
+          exported: statement.exportClause.name.text,
+          source: statement.moduleSpecifier.text,
+        });
+      } else if (ts.isNamedExports(statement.exportClause)) {
         for (const element of statement.exportClause.elements) {
           const exported = element.name.text;
           const local = element.propertyName?.text ?? exported;
@@ -475,7 +482,7 @@ function collectExportNames(
   if (visited.has(file.rel)) return new Set();
   visited.add(file.rel);
   const names = new Set(
-    file.exports.flatMap((record) => record.type === "star" ? [] : [record.exported]),
+    file.exports.flatMap((record) => record.type === "star" || record.type === "namespace" ? [] : [record.exported]),
   );
   for (const source of file.stars) {
     const target = resolveModule(files, file.rel, source);
@@ -590,6 +597,22 @@ export function extractTypescript(root: string, files: string[]): ExtractResult 
         if (exported === "default") aliases.add("default");
         if (symbol.name !== exported) aliases.add(exported);
         aliasesById.set(symbol.id, aliases);
+      }
+    }
+  }
+
+  for (const file of parsed.values()) {
+    for (const record of file.exports) {
+      if (record.type !== "namespace") continue;
+      const target = resolveModule(parsed, file.rel, record.source);
+      if (!target) continue;
+      for (const exported of collectExportNames(parsed, target, new Set())) {
+        for (const symbol of resolveExport(parsed, target, exported, new Set())) {
+          exportedIds.add(symbol.id);
+          const aliases = aliasesById.get(symbol.id) ?? new Set<string>();
+          aliases.add(`${record.exported}.${exported}`);
+          aliasesById.set(symbol.id, aliases);
+        }
       }
     }
   }

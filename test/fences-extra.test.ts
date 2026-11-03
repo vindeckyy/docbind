@@ -85,6 +85,10 @@ x = 1
     expect(result.anchors.map((item) => item.token)).toContain("gu");
     const shadow = { type: "code", lang: "ts", value: "getUser()" } as unknown as Code;
     expect(fenceAnchors(shadow, "docs/api.md", "API").anchors[0].line).toBe(2);
+    const rustShadow = { type: "code", lang: "rust", value: "getUser()" } as unknown as Code;
+    expect(fenceAnchors(rustShadow, "docs/api.md", "API").anchors[0].line).toBe(2);
+    const goShadow = { type: "code", lang: "go", value: "GetUser()" } as unknown as Code;
+    expect(fenceAnchors(goShadow, "docs/api.md", "API").anchors[0].line).toBe(2);
   });
 
   it("extracts rust and go fence references", () => {

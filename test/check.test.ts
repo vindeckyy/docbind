@@ -374,6 +374,21 @@ describe("check pipeline", () => {
     expect(checkProject(tombstone, off).findings).toEqual([]);
   });
 
+  it("binds TypeScript namespace re-exports", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": "export function getUser(id: string): { id: string } { return { id }; }\n",
+      "src/api.ts": 'export * as app from "./users";\n',
+      "docs/api.md": "Call `app.getUser(id)`.\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("getUser");
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), "export function get_user(id: string): { id: string } { return { id }; }\n");
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L4-renamed");
+  });
+
   it("checks Rust signature fences", () => {
     const root = tempProject({
       "Cargo.toml": '[package]\nname = "rsapp"\n',
