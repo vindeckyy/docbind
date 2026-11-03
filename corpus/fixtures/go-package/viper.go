@@ -6,6 +6,10 @@ type Config struct {
 	Viper *Viper
 }
 
+type Handler interface {
+	Handled(key string) any
+}
+
 func (v *Viper) Get(key string) any { return nil }
 
 func (v *Viper) Reload(key string) any { return nil }

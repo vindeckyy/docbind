@@ -233,10 +233,27 @@ export function checkProject(root: string, config: Config, options: CheckProject
         }
       }
     }
-    if (!anchor) continue;
-    byKey.delete(matchedKey);
     const symbol = index.byId.get(entry.symbolId);
     if (!symbol) {
+      if (!anchor && entry.line !== undefined) {
+        const sameLine = [...byKey.entries()].filter(([candidateKey, candidate]) =>
+          !exactKeys.has(candidateKey) &&
+          candidate.docPath === entry.docPath &&
+          candidate.line === entry.line
+        );
+        if (sameLine.length === 1) {
+          const candidate = sameLine[0][1];
+          const resolved = resolveAnchor(candidate, index, {
+            repeated: repeated.has(parseToken(candidate.token).base),
+          });
+          if (!resolved.binding) {
+            matchedKey = sameLine[0][0] as string;
+            anchor = candidate;
+          }
+        }
+      }
+      if (!anchor) continue;
+      byKey.delete(matchedKey);
       const rename = renameFinding(entry, anchor, surface.symbols, config);
       if (rename.finding) findings.push(rename.finding);
       if (!rename.finding) {
@@ -253,10 +270,13 @@ export function checkProject(root: string, config: Config, options: CheckProject
       freshTombstones.push(tombstoneFromEntry(entry, lock.generation, rename.renamedTo?.id));
       continue;
     }
+    if (!anchor) continue;
+    byKey.delete(matchedKey);
 
     referenced.add(symbol.id);
     retained.push({
       ...entry,
+      line: anchor.line,
       contextFp: anchor.contextFp,
       occurrence: anchor.occurrence,
       token: anchor.token,

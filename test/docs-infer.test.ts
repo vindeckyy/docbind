@@ -321,6 +321,54 @@ describe("Go fence inference", () => {
     expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
   });
 
+  it("resolves inline interface parameters", () => {
+    const handler = symbol("Handler", {
+      id: "handler", kind: "interface", packageName: "viper",
+      qualifiedName: "viper.Handler", aliases: ["viper.Handler"],
+      shape: {
+        kind: "interface",
+        members: [{
+          name: "Handle",
+          kind: "method",
+          optional: false,
+          shape: { kind: "method", params: [], returnType: "any" },
+        }],
+      },
+    });
+    const hints = buildGoTypeHints([handler]);
+    const result = fenceAnchors(
+      { ...code("func f(h interface{ Handle() }) {\n    h.Handle()\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+      undefined,
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Handler.Handle");
+  });
+
+  it("handles receiver methods and nested parameter signatures", () => {
+    const receiver = fenceAnchors(
+      { ...code("func (r *Receiver) init(v *Viper) {\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    expect(receiver.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+    const nested = fenceAnchors(
+      { ...code("func init(cb func(int) string, v *Viper) {\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    expect(nested.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+    expect(() => fenceAnchors(
+      {
+        ...code("func broken(\nfunc 123()\nfunc (r *T\nfunc (r *T) f {}\nfunc f(v)\nfunc f(h interface{})\n"),
+        lang: "go",
+      } as unknown as Code,
+      "docs/api.md",
+      "API",
+    )).not.toThrow();
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

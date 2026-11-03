@@ -10,6 +10,7 @@ export interface GoTypeHints {
   returns: Map<string, string>;
   values: Map<string, string>;
   fields: Map<string, string>;
+  interfaces: Map<string, Set<string>>;
 }
 
 function returnTypeName(raw: string | undefined): string | undefined {
@@ -62,7 +63,7 @@ export function buildPythonTypeHints(symbols: Symbol[]): PythonTypeHints {
 }
 
 function goTypeName(raw: string): string | undefined {
-  const first = raw.replace(/^\(/u, "").split(",")[0] ?? "";
+  const first = raw.replace(/^\(/u, "").split(",")[0] as string;
   const names = first.replace(/^\*+/u, "").replace(/^\[\]/u, "").match(/[A-Za-z_]\w*/gu) ?? [];
   return names[names.length - 1];
 }
@@ -148,5 +149,14 @@ export function buildGoTypeHints(symbols: Symbol[]): GoTypeHints {
   for (const [key, found] of fieldTypes) {
     if (found.size === 1) fields.set(key, [...found][0] as string);
   }
-  return { types, returns: resolved, values, fields };
+
+  const interfaces = new Map<string, Set<string>>();
+  for (const symbol of symbols) {
+    if (symbol.kind !== "interface") continue;
+    interfaces.set(
+      symbol.name,
+      new Set((symbol.shape.members ?? []).map((member) => member.name)),
+    );
+  }
+  return { types, returns: resolved, values, fields, interfaces };
 }

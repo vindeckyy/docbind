@@ -671,6 +671,30 @@ describe("check pipeline", () => {
     expect(result.pending.map((binding) => binding.symbol.name)).toContain("Get");
   });
 
+  it("binds Go inline interface parameters", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/viper\n",
+      "pkg/viper.go": "package viper\ntype Handler interface {\n    Handle(key string) any\n}\n",
+      "docs/api.md": "```go\nfunc f(h interface{ Handle(string) any }) {\n    h.Handle(\"key\")\n}\n```\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("Handle");
+  });
+
+  it("detects renamed inline interface methods", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/viper\n",
+      "pkg/viper.go": "package viper\ntype Handler interface {\n    Handled(key string) any\n}\n",
+      "docs/api.md": "```go\nfunc f(h interface{ Handled(string) any }) {\n    h.Handled(\"key\")\n}\n```\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    lockNow(root, goConfig);
+    writeFileSync(join(root, "pkg/viper.go"), "package viper\ntype Handler interface {\n    HandledMutation(key string) any\n}\n");
+    expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L4-renamed");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

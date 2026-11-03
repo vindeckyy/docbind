@@ -20,6 +20,7 @@ const symbolKindSchema = z.enum([
 const anchorSchema = z
   .object({
     docPath: z.string(),
+    line: z.number().optional(),
     contextFp: z.string(),
     token: z.string(),
     occurrence: z.number().int().nonnegative(),
@@ -113,6 +114,7 @@ export function entryFromBinding(binding: Binding): LockEntry {
   const { anchor, symbol } = binding;
   return {
     docPath: anchor.docPath,
+    line: anchor.line,
     contextFp: anchor.contextFp,
     token: anchor.token,
     occurrence: anchor.occurrence,

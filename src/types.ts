@@ -114,6 +114,7 @@ export interface DocAnchor {
 
 export interface LockEntry {
   docPath: string;
+  line?: number;
   contextFp: string;
   token: string;
   occurrence: number;

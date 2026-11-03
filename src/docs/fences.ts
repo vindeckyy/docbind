@@ -409,6 +409,73 @@ function goAnnotationType(annotation: string): string | undefined {
   return names[names.length - 1];
 }
 
+function goParameterLists(value: string): string[] {
+  const lists: string[] = [];
+  const isSpace = (char: string | undefined): boolean =>
+    char === " " || char === "\t" || char === "\n" || char === "\r";
+  const matcher = /\bfunc\b/gu;
+  let start = matcher.exec(value);
+  while (start) {
+    let index = start.index + 4;
+    while (isSpace(value[index])) index += 1;
+    const closeAt = (open: number): number => {
+      let depth = 1;
+      for (let cursor = open + 1; cursor < value.length; cursor += 1) {
+        if (value[cursor] === "(") depth += 1;
+        else if (value[cursor] === ")") {
+          depth -= 1;
+          if (depth === 0) return cursor;
+        }
+      }
+      return -1;
+    };
+    if (value[index] === "(") {
+      const close = closeAt(index);
+      /* v8 ignore next */
+      if (close < 0) break;
+      let lookahead = close + 1;
+      while (isSpace(value[lookahead])) lookahead += 1;
+      const name = /^[A-Za-z_]\w*/u.exec(value.slice(lookahead));
+      let receiver = false;
+      if (name) {
+        let after = lookahead + name[0].length;
+        while (isSpace(value[after])) after += 1;
+        /* v8 ignore next */
+        if (value[after] === "(") {
+          receiver = true;
+          index = after;
+        }
+      }
+      if (!receiver) {
+        lists.push(value.slice(index + 1, close));
+        matcher.lastIndex = close + 1;
+        start = matcher.exec(value);
+        continue;
+      }
+    } else {
+      const name = /^[A-Za-z_]\w*/u.exec(value.slice(index));
+      /* v8 ignore next */
+      if (!name) {
+        start = matcher.exec(value);
+        continue;
+      }
+      index += name[0].length;
+      while (isSpace(value[index])) index += 1;
+    }
+    /* v8 ignore next */
+    if (value[index] !== "(") {
+      start = matcher.exec(value);
+      continue;
+    }
+    const close = closeAt(index);
+    if (close < 0) break;
+    lists.push(value.slice(index + 1, close));
+    matcher.lastIndex = close + 1;
+    start = matcher.exec(value);
+  }
+  return lists;
+}
+
 function goFunctionReturns(value: string): Map<string, string> {
   const result = new Map<string, string>();
   for (const match of value.matchAll(/\bfunc\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)\s*\(([\s\S]*?)\)\s*([^{;]*?)\{/gu)) {
@@ -421,11 +488,10 @@ function goFunctionReturns(value: string): Map<string, string> {
 
 function goFunctionParameters(value: string): Map<string, string> {
   const result = new Map<string, string>();
-  for (const match of value.matchAll(/\bfunc\s*(?:\([^)]*\)\s*)?(?:[A-Za-z_]\w*\s*)?\(([\s\S]*?)\)/gu)) {
+  for (const source of goParameterLists(value)) {
     const parts: string[] = [];
     let depth = 0;
     let start = 0;
-    const source = match[1] as string;
     for (let index = 0; index < source.length; index += 1) {
       const char = source[index];
       if (char === "(" || char === "[" || char === "{") depth += 1;
@@ -441,12 +507,46 @@ function goFunctionParameters(value: string): Map<string, string> {
       const part = (parts[index] as string).trim();
       const named = /^([A-Za-z_]\w*)\s+(.+)$/u.exec(part);
       if (named) {
+        if (/^interface\b/u.test((named[2] as string).trim())) {
+          current = undefined;
+          continue;
+        }
         current = goAnnotationType(named[2] as string);
+        /* v8 ignore next */
         if (current) result.set(named[1] as string, current);
         continue;
       }
       const bare = /^([A-Za-z_]\w*)$/u.exec(part);
       if (bare && current) result.set(bare[1] as string, current);
+    }
+  }
+  return result;
+}
+
+function goInterfaceParameters(value: string): Map<string, Set<string>> {
+  const result = new Map<string, Set<string>>();
+  for (const source of goParameterLists(value)) {
+    const parts: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let index = 0; index < source.length; index += 1) {
+      const char = source[index];
+      if (char === "(" || char === "[" || char === "{") depth += 1;
+      else if (char === ")" || char === "]" || char === "}") depth = Math.max(0, depth - 1);
+      else if (char === "," && depth === 0) {
+        parts.push(source.slice(start, index));
+        start = index + 1;
+      }
+    }
+    if (start < source.length) parts.push(source.slice(start));
+    for (const part of parts) {
+      const named = /^([A-Za-z_]\w*)\s+interface\s*\{([\s\S]*)\}$/u.exec(part.trim());
+      if (!named?.[1] || !named[2]) continue;
+      const methods = new Set<string>();
+      for (const method of named[2].matchAll(/\b([A-Za-z_]\w*)\s*\(/gu)) {
+        if (method[1] && method[1] !== "interface") methods.add(method[1]);
+      }
+      if (methods.size > 0) result.set(named[1], methods);
     }
   }
   return result;
@@ -464,6 +564,7 @@ function lexFenceAnchors(
   const imports: Record<string, ImportRef> = {};
   const locals = new Set<string>();
   const parameters = language === "go" ? goFunctionParameters(value) : new Map<string, string>();
+  const interfaceParameters = language === "go" ? goInterfaceParameters(value) : new Map<string, Set<string>>();
   const helperReturns = language === "go" ? goFunctionReturns(value) : new Map<string, string>();
   for (const line of value.split("\n")) {
     if (language === "rust") {
@@ -489,12 +590,14 @@ function lexFenceAnchors(
     }
   }
   for (const name of parameters.keys()) locals.add(name);
+  for (const name of interfaceParameters.keys()) locals.add(name);
   const localTypes = new Map<string, string>(parameters);
   const goFallback: GoTypeHints = {
     types: new Set(),
     returns: new Map(),
     values: new Map(),
     fields: new Map(),
+    interfaces: new Map(),
   };
   const inferGoValue = (expression: string): string | undefined => {
     const alias = /^([A-Za-z_]\w*)$/u.exec(expression.trim());
@@ -565,7 +668,11 @@ function lexFenceAnchors(
     const token = lexed.tokens[index];
     if (!/^[A-Za-z_]/u.test(token.value)) continue;
     if (language === "go" && GO_KEYWORDS.has(token.value)) continue;
-    if (token.value.length < 2 && !localTypes.has(token.value)) continue;
+    if (language === "go") {
+      const lineNumber = lexed.masked.slice(0, token.start).split("\n").length - 1;
+      if (/\binterface\s*\{/u.test(contextLine(value, lineNumber))) continue;
+    }
+    if (token.value.length < 2 && !localTypes.has(token.value) && !interfaceParameters.has(token.value)) continue;
     let chain = token.value;
     let chainEnd = index;
     while (
@@ -580,11 +687,34 @@ function lexFenceAnchors(
     let anchorToken = chain;
     if (locals.has(token.value)) {
       const type = localTypes.get(token.value);
+      const interfaceMethods = interfaceParameters.get(token.value);
+      const parts = chain.split(".");
+      if (!type && interfaceMethods && parts.length === 2 && parts[1] && interfaceMethods.has(parts[1])) {
+        const match = [...(goHints?.interfaces.entries() ?? [])].find(([, methods]) =>
+          methods.size === interfaceMethods.size &&
+          [...interfaceMethods].every((method) => methods.has(method))
+        )?.[0];
+        anchors.push(
+          makeAnchor(
+            docPath,
+            match ? `${match}.${parts[1]}` : parts[1],
+            startLine + 1 + lexed.masked.slice(0, token.start).split("\n").length - 1,
+            token.start - lexed.masked.lastIndexOf("\n", token.start - 1),
+            "fenceToken",
+            [heading, contextLine(value, lexed.masked.slice(0, token.start).split("\n").length - 1)],
+            imports,
+            [...locals],
+            lexed.error || /\.\.\./u.test(value),
+            node.lang ?? undefined,
+          ),
+        );
+        index = chainEnd;
+        continue;
+      }
       if (!type || !chain.includes(".")) {
         index = chainEnd;
         continue;
       }
-      const parts = chain.split(".");
       let resolvedType = type;
       let partIndex = 1;
       while (partIndex < parts.length - 1) {

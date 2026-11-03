@@ -77,3 +77,9 @@ func useAnonymous() {
     apply(New())
 }
 ```
+
+```go
+func useHandler(h interface{ Handled(string) any }) {
+    h.Handled("key")
+}
+```
