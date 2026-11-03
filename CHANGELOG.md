@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.56] - 2026-11-03
+
+### Added
+
+- Java annotation arguments carry literal kinds: string, number, boolean, enum, class, array, annotation, or expression.
+- Parsed literal values are stored when a safe scalar exists: unquoted strings, numbers, and booleans.
+- Quoted strings are decoded with JSON semantics; character literals and unusual escapes fall back safely.
+- `java-javadoc-fixture` adds an array-argument route method and detects 13 of 13 mutations.
+
+### Limits
+
+- Arrays and nested annotations keep only their kind and raw value; their elements are not expanded.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.55] - 2026-11-03
 
 ### Added
@@ -1020,3 +1034,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.53]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.53
 [0.1.54]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.54
 [0.1.55]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.55
+[0.1.56]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.56

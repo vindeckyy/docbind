@@ -171,6 +171,7 @@ describe("Java surface", () => {
         "@Empty()",
         "@Named(value = \"x\", count = 2)",
         "@Values({\"a,b\", \"c\"})",
+        "@Typed(number = 42, flag = true, mode = Mode.FAST, type = Client.class)",
         "public class Annotated {",
         "    @Deprecated",
         "    public void old() {}",
@@ -187,14 +188,20 @@ describe("Java surface", () => {
     expect(type?.contractFlags).toContain("annotation:NoArgs");
     const annotations = type?.shape.annotations ?? [];
     expect(annotations.find((annotation) => annotation.name === "SuppressWarnings")?.args).toEqual([
-      { value: '"unused"' },
+      { value: '"unused"', kind: "string", literal: "unused" },
     ]);
     expect(annotations.find((annotation) => annotation.name === "Named")?.args).toEqual([
-      { name: "value", value: '"x"' },
-      { name: "count", value: "2" },
+      { name: "value", value: '"x"', kind: "string", literal: "x" },
+      { name: "count", value: "2", kind: "number", literal: 2 },
     ]);
     expect(annotations.find((annotation) => annotation.name === "Values")?.args).toEqual([
-      { value: '{"a,b", "c"}' },
+      { value: '{"a,b", "c"}', kind: "array" },
+    ]);
+    expect(annotations.find((annotation) => annotation.name === "Typed")?.args).toEqual([
+      { name: "number", value: "42", kind: "number", literal: 42 },
+      { name: "flag", value: "true", kind: "boolean", literal: true },
+      { name: "mode", value: "Mode.FAST", kind: "enum", literal: "Mode.FAST" },
+      { name: "type", value: "Client.class", kind: "class", literal: "Client" },
     ]);
     expect(type?.contractFlags).toContain("annotation:Empty");
     expect(result.symbols.find((symbol) => symbol.name === "old")?.contractFlags).toContain("deprecated");
@@ -207,7 +214,21 @@ describe("Java surface", () => {
     const result = extractJava(root, ["src/main/java/example/Client.java"]);
     const helper = result.symbols.find((symbol) => symbol.name === "helper");
     expect(helper?.shape.annotations).toEqual([
-      { name: "SuppressWarnings", args: [{ value: '"unused"' }] },
+      { name: "SuppressWarnings", args: [{ value: '"unused"', kind: "string", literal: "unused" }] },
+    ]);
+    const command = result.symbols.find((symbol) => symbol.name === "command");
+    expect(command?.shape.annotations).toEqual([
+      {
+        name: "Command",
+        args: [
+          { name: "value", value: '"run"', kind: "string", literal: "run" },
+          { name: "retries", value: "2", kind: "number", literal: 2 },
+        ],
+      },
+    ]);
+    const routes = result.symbols.find((symbol) => symbol.name === "routes");
+    expect(routes?.shape.annotations).toEqual([
+      { name: "Routes", args: [{ value: '{"/a", "/b"}', kind: "array" }] },
     ]);
   });
 

@@ -47,6 +47,30 @@ interface JavaAnnotation {
   args?: string;
 }
 
+function annotationLiteral(raw: string): Pick<AnnotationArgument, "kind" | "literal"> {
+  const text = raw.trim();
+  if (text.startsWith("{") && text.endsWith("}")) return { kind: "array" };
+  if (text.startsWith("@")) return { kind: "annotation" };
+  if (text.startsWith("\"") && text.endsWith("\"")) {
+    try {
+      return { kind: "string", literal: JSON.parse(text) as string };
+    } catch {
+      return { kind: "string", literal: text.slice(1, -1) };
+    }
+  }
+  if (text.startsWith("'") && text.endsWith("'")) {
+    return { kind: "string", literal: text.slice(1, -1) };
+  }
+  if (text === "true" || text === "false") return { kind: "boolean", literal: text === "true" };
+  if (/^[-+]?(?:0x[0-9a-f]+|\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?[fFdDlL]?$/iu.test(text)) {
+    const numeric = Number(text.replace(/[fFdDlL]$/u, ""));
+    if (Number.isFinite(numeric)) return { kind: "number", literal: numeric };
+  }
+  if (/\.class$/u.test(text)) return { kind: "class", literal: text.slice(0, -6) };
+  if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/u.test(text)) return { kind: "enum", literal: text };
+  return { kind: "expression" };
+}
+
 function annotationArguments(raw: string): AnnotationArgument[] {
   const parts: string[] = [];
   let depth = 0;
@@ -89,10 +113,11 @@ function annotationArguments(raw: string): AnnotationArgument[] {
         if (["(", "[", "{"].includes(char)) nested += 1;
         else if ([")", "]", "}"].includes(char)) nested = Math.max(0, nested - 1);
         else if (char === "=" && nested === 0) {
-          return { name: part.slice(0, index).trim(), value: part.slice(index + 1).trim() };
+          const value = part.slice(index + 1).trim();
+          return { name: part.slice(0, index).trim(), value, ...annotationLiteral(value) };
         }
       }
-      return { value: part };
+      return { value: part, ...annotationLiteral(part) };
     });
 }
 

@@ -23,6 +23,10 @@ public class Client {
     @Command(value = "run", retries = 2)
     public void command() {}
 
+    /** Routes: {@link #routes()}. */
+    @Routes({"/a", "/b"})
+    public void routes() {}
+
     /** Legacy call: {@link #legacy()}. */
     @Deprecated
     public void legacy() {}

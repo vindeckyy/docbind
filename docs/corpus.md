@@ -26,9 +26,9 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/rst-fixture (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/python-asciidoc (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
-| local/java-javadoc (local) | Java | 1 | 12 | 12 | 100.0% | 0 | 12 | 12 | 0 | 0 |
+| local/java-javadoc (local) | Java | 1 | 13 | 13 | 100.0% | 0 | 13 | 13 | 0 | 0 |
 
-Overall: 812 of 3379 anchors bound, or 24.0%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
+Overall: 813 of 3380 anchors bound, or 24.1%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -51,7 +51,7 @@ httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclare
 
 ## Javadoc
 
-Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 12 of 12 anchors with 12 of 12 mutations.
+Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 13 of 13 anchors with 13 of 13 mutations.
 
 ## AsciiDoc
 

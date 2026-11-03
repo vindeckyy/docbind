@@ -41,9 +41,21 @@ export interface EnumMemberShape {
   value: string;
 }
 
+export type AnnotationArgumentKind =
+  | "string"
+  | "number"
+  | "boolean"
+  | "enum"
+  | "class"
+  | "array"
+  | "annotation"
+  | "expression";
+
 export interface AnnotationArgument {
   name?: string;
   value: string;
+  kind: AnnotationArgumentKind;
+  literal?: string | number | boolean;
 }
 
 export interface AnnotationShape {

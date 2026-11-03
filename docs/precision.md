@@ -37,17 +37,17 @@ A binding also fails when the best score is within `0.05` of the second candidat
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.30 | 90 | 91 | 98.9% | 0 | 64/64 | 0 |
-| 0.40 | 90 | 91 | 98.9% | 0 | 64/64 | 0 |
-| 0.50 | 90 | 91 | 98.9% | 0 | 64/64 | 0 |
-| 0.55 | 90 | 91 | 98.9% | 0 | 64/64 | 0 |
-| **0.60** | **90** | **91** | **98.9%** | **0** | **64/64** | **0** |
-| 0.65 | 88 | 91 | 96.7% | 0 | 62/62 | 0 |
-| 0.70 | 88 | 91 | 96.7% | 0 | 62/62 | 0 |
-| 0.75 | 88 | 91 | 96.7% | 0 | 62/62 | 0 |
-| 0.80 | 82 | 91 | 90.1% | 0 | 56/56 | 0 |
-| 0.85 | 80 | 91 | 87.9% | 0 | 56/56 | 0 |
-| 0.90 | 80 | 91 | 87.9% | 0 | 56/56 | 0 |
+| 0.30 | 91 | 92 | 98.9% | 0 | 65/65 | 0 |
+| 0.40 | 91 | 92 | 98.9% | 0 | 65/65 | 0 |
+| 0.50 | 91 | 92 | 98.9% | 0 | 65/65 | 0 |
+| 0.55 | 91 | 92 | 98.9% | 0 | 65/65 | 0 |
+| **0.60** | **91** | **92** | **98.9%** | **0** | **65/65** | **0** |
+| 0.65 | 89 | 92 | 96.7% | 0 | 63/63 | 0 |
+| 0.70 | 89 | 92 | 96.7% | 0 | 63/63 | 0 |
+| 0.75 | 89 | 92 | 96.7% | 0 | 63/63 | 0 |
+| 0.80 | 83 | 92 | 90.2% | 0 | 57/57 | 0 |
+| 0.85 | 81 | 92 | 88.0% | 0 | 57/57 | 0 |
+| 0.90 | 81 | 92 | 88.0% | 0 | 57/57 | 0 |
 
 Recall is 100% at every local floor. The floors separate on coverage: 0.65 drops one bound anchor and its mutation target; 0.80 drops seven.
 
@@ -57,12 +57,12 @@ The same sweep over all twelve corpus cases gives a sharper coverage edge. Floor
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.40 | 829 | 3379 | 24.5% | 0 | 84/84 | 0 |
-| 0.50 | 829 | 3379 | 24.5% | 0 | 84/84 | 0 |
-| 0.55 | 813 | 3379 | 24.1% | 0 | 84/84 | 0 |
-| **0.60** | **812** | **3379** | **24.0%** | 0 | **84/84** | 0 |
-| 0.70 | 653 | 3379 | 19.3% | 0 | 82/82 | 0 |
-| 0.80 | 612 | 3379 | 18.1% | 0 | 75/75 | 0 |
+| 0.40 | 830 | 3380 | 24.6% | 0 | 85/85 | 0 |
+| 0.50 | 830 | 3380 | 24.6% | 0 | 85/85 | 0 |
+| 0.55 | 814 | 3380 | 24.1% | 0 | 85/85 | 0 |
+| **0.60** | **813** | **3380** | **24.1%** | 0 | **85/85** | 0 |
+| 0.70 | 654 | 3380 | 19.3% | 0 | 83/83 | 0 |
+| 0.80 | 613 | 3380 | 18.1% | 0 | 76/76 | 0 |
 
 The default stays at 0.60. Lowering to 0.50 would add 17 anchors, but each is a bare name with no import, qualification, signature, or API-doc context. The precision model treats name-only matches in prose as noise, and the test suite pins that rule. The 17 extra anchors are not evidence that the floor should move; they are the class of binding the floor exists to reject.
 
@@ -74,6 +74,6 @@ Raw rows are in `corpus/precision.json` for the local sweep and `corpus/precisio
 
 ## Caveats
 
-- The local sweep covers 91 anchors across eight fixtures. The full sweep covers all 3360 anchors but only five floors.
+- The local sweep covers 92 anchors across eight fixtures. The full sweep covers all 3360 anchors but only five floors.
 - Recall here means detecting a seeded rename of a symbol that floor locked. It says nothing about symbols the floor did not bind.
 - The full sweep samples five floors. A finer scan between 0.50 and 0.70 could locate a tighter edge.
