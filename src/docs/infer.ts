@@ -61,7 +61,8 @@ export function buildPythonTypeHints(symbols: Symbol[]): PythonTypeHints {
 }
 
 function goTypeName(raw: string): string | undefined {
-  const names = raw.replace(/^\*+/u, "").replace(/^\[\]/u, "").match(/[A-Za-z_]\w*/gu) ?? [];
+  const first = raw.replace(/^\(/u, "").split(",")[0] ?? "";
+  const names = first.replace(/^\*+/u, "").replace(/^\[\]/u, "").match(/[A-Za-z_]\w*/gu) ?? [];
   return names[names.length - 1];
 }
 

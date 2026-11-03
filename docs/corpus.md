@@ -14,12 +14,12 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
 | dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
-| spf13/viper | Go | 2 | 194 | 94 | 0 | 8 | 8 | 0 | 0 |
+| spf13/viper | Go | 2 | 189 | 94 | 0 | 8 | 8 | 0 | 0 |
 | encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| go-package-fixture (local) | Go | 1 | 25 | 25 | 0 | 19 | 19 | 0 | 0 |
+| go-package-fixture (local) | Go | 1 | 27 | 27 | 0 | 21 | 21 | 0 | 0 |
 | go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
@@ -51,7 +51,7 @@ Method-valued aliases and direct method-call wrappers are followed too. `var Met
 
 Instance-method wrappers infer the receiver parameter type. `func WrapInstance(c *client.Client, value int) error { return c.Instance(value) }` attaches `viper.WrapInstance` to `client.Client.Instance`.
 
-Go fences infer local values from constructor calls and composite literals. `v := viper.New()` types `v` as `Viper`, so `v.Get("key")` emits `Viper.Get`. Annotated declarations such as `var v *Viper` and reassignments update the local type; an unknown reassignment clears it. Alias copies such as `w := v` inherit the current type, so `w.Copied("key")` emits `Viper.Copied`. Typed function parameters such as `func f(v *Viper)` are typed as well, including grouped parameters. Package-level exported variables infer their types from constructor calls or composite literals, so `var Default = New()` lets `v := viper.Default` type `v` as `Viper`. Fence-local helper functions also contribute return types, so `v := loadViper()` works when `func loadViper() *Viper` appears in the same fence. Go keywords are filtered as anchors. Untyped local attribute tokens are skipped instead of emitted as unrelated bare names. The fixture binds 25 of 25 anchors and detects 19 of 19 mutations. Viper anchors fell from 293 to 194 through these precision changes, while its 94 bound symbols stayed the same.
+Go fences infer local values from constructor calls and composite literals. `v := viper.New()` types `v` as `Viper`, so `v.Get("key")` emits `Viper.Get`. Annotated declarations such as `var v *Viper` and reassignments update the local type; an unknown reassignment clears it. Alias copies such as `w := v` inherit the current type, so `w.Copied("key")` emits `Viper.Copied`. Typed function parameters such as `func f(v *Viper)` are typed as well, including grouped parameters. Package-level exported variables infer their types from constructor calls or composite literals, so `var Default = New()` lets `v := viper.Default` type `v` as `Viper`. Fence-local helper functions also contribute return types, so `v := loadViper()` works when `func loadViper() *Viper` appears in the same fence. Multi-return calls such as `v, err := loadViper()` type the first result and treat the rest as locals. Go keywords are filtered as anchors. Untyped local attribute tokens are skipped instead of emitted as unrelated bare names. The fixture binds 27 of 27 anchors and detects 21 of 21 mutations. Viper anchors fell from 293 to 189 through these precision changes, while its 94 bound symbols stayed the same.
 
 Re-export cycles terminate without cross-linking symbols. A two-package fixture has `a.CycleAValue = b.CycleBValue` and `b.CycleBValue = a.CycleAValue`, plus a type cycle. Both local symbols remain, no `b.*` alias leaks onto `a`, no `a.*` alias leaks onto `b`, and each mutation is detected. The cycle case binds 2 of 2 anchors and detects 2 of 2 mutations.
 

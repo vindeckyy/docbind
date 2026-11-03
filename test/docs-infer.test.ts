@@ -235,6 +235,15 @@ describe("Go fence inference", () => {
     expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
   });
 
+  it("types multi-return helper assignments", () => {
+    const result = fenceAnchors(
+      { ...code("func load() (*Viper, error) { return New(), nil }\nfunc use() {\n    v, err := load()\n    if err != nil { return }\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

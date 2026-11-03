@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:42:24.960Z",
+  "generatedAt": "2026-11-03T19:46:46.760Z",
   "report": [
     {
       "name": "slugify",
@@ -97,9 +97,9 @@
       "repo": "spf13/viper",
       "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
       "docs": 2,
-      "anchors": 194,
+      "anchors": 189,
       "bound": 94,
-      "bindRate": 0.4845360824742268,
+      "bindRate": 0.4973544973544973,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -429,14 +429,25 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 25,
-      "bound": 25,
+      "anchors": 27,
+      "bound": 27,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
+        {
+          "symbol": "Multi",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
         {
           "symbol": "Helper",
           "rule": "L4-renamed",
@@ -615,6 +626,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "Load",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "SupportedExts",
           "rule": "L4-renamed",
           "hit": true,
@@ -648,7 +670,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 19,
+      "hits": 21,
       "misses": 0,
       "collateral": 0
     },

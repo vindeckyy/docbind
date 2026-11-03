@@ -477,8 +477,10 @@ function lexFenceAnchors(
       }
       const local = /\b(?:func|type|var|const)\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/u.exec(line);
       if (local?.[1]) locals.add(local[1]);
-      const short = /^\s*([A-Za-z_]\w*)\s*:=/u.exec(line);
-      if (short?.[1]) locals.add(short[1]);
+      const short = /^\s*([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)\s*:=/u.exec(line);
+      if (short?.[1]) {
+        for (const name of short[1].split(",")) locals.add(name.trim());
+      }
     }
   }
   for (const name of parameters.keys()) locals.add(name);
@@ -511,12 +513,12 @@ function lexFenceAnchors(
         }
         continue;
       }
-      const short = /^\s*([A-Za-z_]\w*)\s*:=\s*(.+)$/u.exec(line);
+      const short = /^\s*([A-Za-z_]\w*)(?:\s*,\s*[A-Za-z_]\w*)*\s*:=\s*(.+)$/u.exec(line);
       if (short?.[1]) {
         setGoType(short[1], inferGoValue(short[2] as string));
         continue;
       }
-      const assignment = /^\s*([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/u.exec(line);
+      const assignment = /^\s*([A-Za-z_]\w*)(?:\s*,\s*[A-Za-z_]\w*)*\s*=(?!=)\s*(.+)$/u.exec(line);
       if (assignment?.[1]) {
         setGoType(assignment[1], inferGoValue(assignment[2] as string));
       }

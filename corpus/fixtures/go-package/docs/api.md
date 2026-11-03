@@ -47,3 +47,9 @@ func useHelper() {
     v.Helper("key")
 }
 ```
+
+```go
+v, err := viper.Load()
+if err != nil { return }
+v.Multi("key")
+```

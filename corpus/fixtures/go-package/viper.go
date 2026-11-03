@@ -16,6 +16,10 @@ func (v *Viper) FromDefault(key string) any { return nil }
 
 func (v *Viper) Helper(key string) any { return nil }
 
+func (v *Viper) Multi(key string) any { return nil }
+
 func New() *Viper { return &Viper{} }
 
 var Default = New()
+
+func Load() (*Viper, error) { return New(), nil }
