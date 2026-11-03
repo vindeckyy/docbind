@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.58] - 2026-11-03
+
+### Added
+
+- Java `@interface` declarations are indexed as annotation types with the `annotation-type` flag.
+- Annotation type methods keep their `defaultValue` source text.
+- Nested annotation types are supported through the same path rules as other nested types.
+- `java-javadoc-fixture` adds a marker annotation with two methods and detects 15 of 15 mutations.
+
+### Limits
+
+- Default values are stored as source text, not evaluated or typed.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.57] - 2026-11-03
 
 ### Added
@@ -1050,3 +1064,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.55]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.55
 [0.1.56]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.56
 [0.1.57]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.57
+[0.1.58]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.58

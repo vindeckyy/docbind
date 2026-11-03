@@ -18,7 +18,8 @@ export type ContractFlag =
   | "abstract"
   | "readonly"
   | "static"
-  | "unsafe";
+  | "unsafe"
+  | "annotation-type";
 
 export interface ParamShape {
   name?: string;
@@ -81,6 +82,7 @@ export interface Shape {
   literalKind?: string;
   enumMembers?: EnumMemberShape[];
   annotations?: AnnotationShape[];
+  defaultValue?: string;
   overload?: number;
 }
 

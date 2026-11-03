@@ -266,6 +266,12 @@ class JavaParser {
         index = cursor + 1;
         continue;
       }
+      if (token.value === "@" && (tokens[index + 1] as Token | undefined)?.value === "interface") {
+        const end = this.parseType(index + 1, "", annotations, true);
+        annotations = [];
+        index = Math.max(end, index + 2);
+        continue;
+      }
       if (token.value === "@") {
         const annotation = this.annotationAt(index);
         if (annotation.name) annotations.push(annotation);
@@ -324,7 +330,12 @@ class JavaParser {
     return { end: cursor, name, ...(args ? { args } : {}) };
   }
 
-  private parseType(index: number, namespace = "", annotations: JavaAnnotation[] = []): number {
+  private parseType(
+    index: number,
+    namespace = "",
+    annotations: JavaAnnotation[] = [],
+    annotationType = false,
+  ): number {
     const tokens = this.context.lexed.tokens;
     const keyword = (tokens[index] as Token).value;
     const nameToken = tokens[index + 1] as Token | undefined;
@@ -363,7 +374,7 @@ class JavaParser {
         kind,
         extends: [],
         members: [],
-        flags: javaFlags(annotations),
+        flags: [...javaFlags(annotations), ...(annotationType ? ["annotation-type" as ContractFlag] : [])],
         visibility,
         ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
       },
@@ -385,6 +396,11 @@ class JavaParser {
       /* v8 ignore next */
       if (token.value === ";" || token.value === "}") {
         index += 1;
+        continue;
+      }
+      if (token.value === "@" && (tokens[index + 1] as Token | undefined)?.value === "interface") {
+        index = this.parseType(index + 1, `${typePath}.`, annotations, true);
+        annotations = [];
         continue;
       }
       if (token.value === "@") {
@@ -477,6 +493,14 @@ class JavaParser {
     if ((tokens[cursor] as Token | undefined)?.value === "throws") {
       while (cursor < end && !["{", ";"].includes((tokens[cursor] as Token).value)) cursor += 1;
     }
+    let defaultValue: string | undefined;
+    if ((tokens[cursor] as Token | undefined)?.value === "default") {
+      const startOffset = (tokens[cursor] as Token).end;
+      cursor += 1;
+      while (cursor < end && (tokens[cursor] as Token).value !== ";") cursor += 1;
+      const endOffset = cursor < end ? (tokens[cursor] as Token).start : (tokens[end - 1] as Token).end;
+      defaultValue = this.context.source.slice(startOffset, endOffset).trim();
+    }
     let body = "";
     if ((tokens[cursor] as Token | undefined)?.value === "{") {
       const bodyClose = findMatching(tokens, cursor, "{", "}");
@@ -505,6 +529,7 @@ class JavaParser {
           returnType,
           visibility,
           flags: javaFlags(annotations),
+          ...(defaultValue !== undefined ? { defaultValue } : {}),
           ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
         },
       });

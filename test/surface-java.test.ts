@@ -289,6 +289,29 @@ describe("Java surface", () => {
     ]);
   });
 
+  it("extracts annotation types and default values", () => {
+    const root = tempProject({
+      "src/Marker.java": [
+        "package example;",
+        "",
+        "public @interface Marker {",
+        "    String value() default \"x\";",
+        "    int count() default 0;",
+        "    String required();",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    const result = extractJava(root, ["src/Marker.java"]);
+    const marker = result.symbols.find((symbol) => symbol.name === "Marker");
+    expect(marker?.kind).toBe("interface");
+    expect(marker?.contractFlags).toContain("annotation-type");
+    const value = result.symbols.find((symbol) => symbol.name === "value");
+    expect(value?.shape.defaultValue).toBe('"x"');
+    expect(result.symbols.find((symbol) => symbol.name === "count")?.shape.defaultValue).toBe("0");
+    expect(result.symbols.find((symbol) => symbol.name === "required")?.shape.defaultValue).toBeUndefined();
+  });
+
   it("survives malformed files", () => {
     const root = tempProject({
       "src/Broken.java": "public class Broken { public void run( {",

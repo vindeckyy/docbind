@@ -70,3 +70,12 @@ class Other {
 class Internal {
     public void check() {}
 }
+
+/**
+ * Marker docs: {@link Marker#value()} and {@code Marker#count}.
+ */
+public @interface Marker {
+    String value() default "default";
+
+    int count() default 0;
+}
