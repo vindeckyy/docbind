@@ -108,6 +108,34 @@ describe("Java surface", () => {
     expect(result.symbols.some((symbol) => symbol.name === "hiddenField")).toBe(false);
   });
 
+  it("extracts public nested types with qualified aliases", () => {
+    const root = tempProject({
+      "src/main/java/example/Outer.java": [
+        "package example;",
+        "",
+        "public class Outer {",
+        "    public class Inner {",
+        "        public String run() { return \"\"; }",
+        "    }",
+        "",
+        "    public interface Nested {",
+        "        void handle();",
+        "    }",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    const result = extractJava(root, ["src/main/java/example/Outer.java"]);
+    const outer = result.symbols.find((symbol) => symbol.name === "Outer");
+    const inner = result.symbols.find((symbol) => symbol.name === "Inner");
+    const run = result.symbols.find((symbol) => symbol.name === "run");
+    expect(inner?.parentId).toBe(outer?.id);
+    expect(inner?.aliases).toEqual(expect.arrayContaining(["Outer.Inner", "example.Outer.Inner"]));
+    expect(run?.parentId).toBe(inner?.id);
+    expect(run?.aliases).toEqual(expect.arrayContaining(["Outer.Inner.run", "Outer.Inner#run"]));
+    expect(result.symbols.find((symbol) => symbol.name === "Nested")?.kind).toBe("interface");
+  });
+
   it("survives malformed files", () => {
     const root = tempProject({
       "src/Broken.java": "public class Broken { public void run( {",

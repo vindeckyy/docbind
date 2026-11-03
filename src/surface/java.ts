@@ -18,7 +18,8 @@ interface JavaDraft {
   shape: Shape;
   start: number;
   body: string;
-  parentName?: string;
+  path: string;
+  parentPath?: string;
 }
 
 interface JavaContext {
@@ -143,7 +144,7 @@ class JavaParser {
     return false;
   }
 
-  private parseType(index: number): number {
+  private parseType(index: number, namespace = ""): number {
     const tokens = this.context.lexed.tokens;
     const keyword = (tokens[index] as Token).value;
     const nameToken = tokens[index + 1] as Token | undefined;
@@ -169,8 +170,9 @@ class JavaParser {
       return tokens.length;
     }
     const kind = keyword === "interface" ? "interface" : "class";
+    const path = `${namespace}${nameToken.value}`;
     this.context.types.push({
-      name: nameToken.value,
+      name: path,
       start: (tokens[index] as Token).start,
       end: (tokens[close] as Token).end,
     });
@@ -186,12 +188,14 @@ class JavaParser {
       },
       start: nameToken.start,
       body: tokensText(this.context.source, tokens, brace, close + 1),
+      path,
+      ...(namespace ? { parentPath: namespace.slice(0, -1) } : {}),
     });
-    this.parseMembers(nameToken.value, brace + 1, close, kind === "interface");
+    this.parseMembers(path, brace + 1, close, kind === "interface");
     return close + 1;
   }
 
-  private parseMembers(typeName: string, start: number, end: number, isInterface: boolean): void {
+  private parseMembers(typePath: string, start: number, end: number, isInterface: boolean): void {
     const tokens = this.context.lexed.tokens;
     let index = start;
     while (index < end) {
@@ -215,9 +219,7 @@ class JavaParser {
         continue;
       }
       if (token.value === "class" || token.value === "interface" || token.value === "enum" || token.value === "record") {
-        const close = findMatching(tokens, index, "{", "}");
-        /* v8 ignore next */
-        index = close < 0 ? end : close + 1;
+        index = this.parseType(index, `${typePath}.`);
         continue;
       }
       let cursor = index;
@@ -225,6 +227,10 @@ class JavaParser {
       while (cursor < end && MODIFIERS.has((tokens[cursor] as Token).value)) {
         if ((tokens[cursor] as Token).value === "public") isPublic = true;
         cursor += 1;
+      }
+      if (["class", "interface", "enum", "record"].includes((tokens[cursor] as Token | undefined)?.value ?? "")) {
+        index = this.parseType(cursor, `${typePath}.`);
+        continue;
       }
       let scan = cursor;
       let depth = 0;
@@ -248,14 +254,14 @@ class JavaParser {
         scan += 1;
       }
       if (paren >= 0 && (boundary < 0 || paren < boundary)) {
-        index = this.parseMethod(typeName, index, cursor, paren, end, isPublic);
+        index = this.parseMethod(typePath, index, cursor, paren, end, isPublic);
         continue;
       }
       /* v8 ignore next */
       if (boundary < 0) break;
       /* v8 ignore next */
       if ((tokens[boundary] as Token).value === ";") {
-        this.parseField(typeName, cursor, boundary, isPublic);
+        this.parseField(typePath, cursor, boundary, isPublic);
         index = boundary + 1;
         continue;
       }
@@ -264,7 +270,7 @@ class JavaParser {
   }
 
   private parseMethod(
-    typeName: string,
+    typePath: string,
     start: number,
     bodyStart: number,
     paren: number,
@@ -283,10 +289,10 @@ class JavaParser {
     const name = ((tokens[nameIndex] as Token | undefined)?.value ?? "") as string;
     /* v8 ignore next */
     if (!name) return close + 1;
-    const constructor = name === typeName;
+    const constructor = name === typePath.split(".").pop();
     const returnTokens = tokens.slice(bodyStart, Math.max(bodyStart, nameIndex));
     const returnType = constructor
-      ? typeName
+      ? (typePath.split(".").pop() as string)
       : returnTokens.map((token) => token.value).join(" ").replace(/\s*<\s*/gu, "<").replace(/\s*>\s*/gu, ">").trim();
     let cursor = close + 1;
     if ((tokens[cursor] as Token | undefined)?.value === "throws") {
@@ -307,7 +313,8 @@ class JavaParser {
       this.context.drafts.push({
         name,
         kind: "method",
-        parentName: typeName,
+        path: `${typePath}.${name}`,
+        parentPath: typePath,
         start: (tokens[nameIndex] as Token).start,
         body,
         shape: {
@@ -324,7 +331,7 @@ class JavaParser {
     return Math.max(cursor, start + 1);
   }
 
-  private parseField(typeName: string, start: number, semicolon: number, isPublic: boolean): void {
+  private parseField(typePath: string, start: number, semicolon: number, isPublic: boolean): void {
     if (!isPublic) return;
     const tokens = this.context.lexed.tokens;
     let nameIndex = semicolon - 1;
@@ -343,7 +350,8 @@ class JavaParser {
     this.context.drafts.push({
       name,
       kind: "property",
-      parentName: typeName,
+      path: `${typePath}.${name}`,
+      parentPath: typePath,
       start: (tokens[nameIndex] as Token).start,
       body: "",
       shape: { kind: "property", typeShape: type, visibility: "public", flags: [] },
@@ -362,10 +370,14 @@ function collectJavadocs(
     const containing = types
       .filter((type) => offset >= type.start && offset < type.end)
       .sort((left, right) => (left.end - left.start) - (right.end - right.start));
-    const owner = containing[0]?.name ??
-      types
-        .filter((type) => type.start > offset)
-        .sort((left, right) => left.start - right.start)[0]?.name;
+    const following = types
+      .filter((type) => type.start > offset)
+      .sort((left, right) => left.start - right.start)[0];
+    const gap = following ? source.slice(offset + match[0].length, following.start) : "";
+    const attaches = Boolean(
+      following && /^[\s]*(?:(?:public|protected|private|abstract|static|final|sealed|non-sealed|strictfp)\s+)*$/u.test(gap),
+    );
+    const owner = attaches ? following?.name : (containing[0]?.name ?? following?.name);
     entries.push({
       filePath: "",
       ...(owner ? { owner } : {}),
@@ -410,33 +422,38 @@ export function extractJava(root: string, files: string[]): ExtractResult {
     };
     new JavaParser(context).parse();
     parseFailures += context.failures;
+    const moduleDotted = context.modulePath.replace(/\//gu, ".");
+    const byPath = new Map(
+      context.drafts
+        .filter((draft) => draft.kind === "class" || draft.kind === "interface")
+        .map((draft) => [draft.path, draft]),
+    );
     for (const draft of context.drafts) {
       const shapeText = canonicalShape(draft.shape);
-      const parent = draft.parentName
-        ? context.drafts.find((candidate) => candidate.name === draft.parentName && candidate.kind !== "method")
-        : undefined;
+      const parent = draft.parentPath ? byPath.get(draft.parentPath) : undefined;
       /* v8 ignore next */
-      if (draft.parentName && !parent) continue;
-      const qualified = parent
-        ? `${context.packageName}.${context.modulePath.replace(/\//gu, ".")}.${parent.name}.${draft.name}`
-        : `${context.packageName}.${context.modulePath.replace(/\//gu, ".")}.${draft.name}`;
-      const aliases = new Set<string>([draft.name]);
+      if (draft.parentPath && !parent) continue;
+      const qualified = `${context.packageName}.${moduleDotted}.${draft.path}`;
+      const aliases = new Set<string>([draft.name, draft.path]);
+      const segments = draft.path.split(".");
+      const hasHash = draft.kind === "method" || draft.kind === "property";
+      if (hasHash) aliases.add(draft.path.replace(/\.([^.]+)$/u, "#$1"));
       if (context.packageClause) {
-        aliases.add(parent ? `${context.packageClause}.${parent.name}.${draft.name}` : `${context.packageClause}.${draft.name}`);
-        aliases.add(parent ? `${parent.name}.${draft.name}` : `${context.packageClause}.${draft.name}`);
+        aliases.add(`${context.packageClause}.${draft.path}`);
+        if (hasHash) aliases.add(`${context.packageClause}.${draft.path.replace(/\.([^.]+)$/u, "#$1")}`);
       }
-      if (parent) {
-        aliases.add(`${parent.name}.${draft.name}`);
-        aliases.add(`${parent.name}#${draft.name}`);
+      for (let index = 1; index < segments.length; index += 1) {
+        const suffix = segments.slice(index).join(".");
+        aliases.add(suffix);
+        if (hasHash) aliases.add(suffix.replace(/\.([^.]+)$/u, "#$1"));
         if (context.packageClause) {
-          aliases.add(`${context.packageClause}.${parent.name}#${draft.name}`);
+          aliases.add(`${context.packageClause}.${suffix}`);
+          if (hasHash) aliases.add(`${context.packageClause}.${suffix.replace(/\.([^.]+)$/u, "#$1")}`);
         }
       }
-      aliases.add(`${context.modulePath.replace(/\//gu, ".")}.${draft.name}`);
+      aliases.add(`${moduleDotted}.${draft.path}`);
       symbols.push({
-        id: parent
-          ? `${context.packageName}|${context.modulePath}|${draft.kind}|${parent.name}.${draft.name}|0`
-          : `${context.packageName}|${context.modulePath}|${draft.kind}|${draft.name}|0`,
+        id: `${context.packageName}|${context.modulePath}|${draft.kind}|${draft.path}|0`,
         name: draft.name,
         kind: draft.kind,
         modulePath: context.modulePath,
@@ -450,7 +467,7 @@ export function extractJava(root: string, files: string[]): ExtractResult {
         paramNamesHash: paramNamesHash(draft.shape.params),
         bodyHash: bodyHash(draft.body),
         contractFlags: [],
-        ...(parent ? { parentId: `${context.packageName}|${context.modulePath}|${parent.kind}|${parent.name}|0` } : {}),
+        ...(parent ? { parentId: `${context.packageName}|${context.modulePath}|${parent.kind}|${parent.path}|0` } : {}),
         line: lineOf(source, draft.start),
         filePath: context.filePath,
       });

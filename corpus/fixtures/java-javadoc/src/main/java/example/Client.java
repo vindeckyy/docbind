@@ -9,6 +9,13 @@ public class Client {
     public String get(int id, String label) {
         return label;
     }
+
+    /** Inner entry point: {@link #run()}. */
+    public class Inner {
+        public String run() {
+            return "";
+        }
+    }
 }
 
 /**
@@ -17,5 +24,12 @@ public class Client {
 public class Other {
     public String get(int id, String label) {
         return label;
+    }
+
+    /** Inner entry point: {@link #run()}. */
+    public class Inner {
+        public String run() {
+            return "";
+        }
     }
 }

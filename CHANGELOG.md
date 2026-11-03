@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.50] - 2026-11-03
+
+### Added
+
+- Java extraction covers public nested classes and interfaces.
+- Nested symbols keep dotted paths and qualified aliases such as `Outer.Inner`, `Outer.Inner#run`, and `example.Outer.Inner.run`.
+- Duplicate nested names in different outer types stay distinct through path-based ids and qualified names.
+- `java-javadoc-fixture` now has two outer types each with an `Inner` class and detects 5 of 5 mutations.
+
+### Improved
+
+- Javadoc class comments attach to the immediately following declaration, so nested class docs resolve against the nested type.
+
+### Limits
+
+- Java extraction still skips non-public members and annotations.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.49] - 2026-11-03
 
 ### Fixed
@@ -926,3 +944,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.47]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.47
 [0.1.48]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.48
 [0.1.49]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.49
+[0.1.50]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.50
