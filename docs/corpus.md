@@ -1,6 +1,6 @@
 # Corpus results
 
-`corpus/repos.json` pins five open-source repositories at exact commits and three local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
+`corpus/repos.json` pins five open-source repositories at exact commits and four local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -20,6 +20,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | go-package-fixture (local) | Go | 1 | 10 | 10 | 0 | 10 | 10 | 0 | 0 |
+| go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -49,6 +50,8 @@ Re-export aliases propagate through multiple hops. A middle package can alias a 
 Method-valued aliases and direct method-call wrappers are followed too. `var MethodValue = client.Client.Computed` attaches `viper.MethodValue` to the target method, and `func WrapComputed(...) { return client.Client.Wrapped(...) }` attaches `viper.WrapComputed` to `Wrapped`.
 
 Instance-method wrappers infer the receiver parameter type. `func WrapInstance(c *client.Client, value int) error { return c.Instance(value) }` attaches `viper.WrapInstance` to `client.Client.Instance`. The fixture binds 10 of 10 anchors and detects 10 of 10 mutations.
+
+Re-export cycles terminate without cross-linking symbols. A two-package fixture has `a.CycleAValue = b.CycleBValue` and `b.CycleBValue = a.CycleAValue`, plus a type cycle. Both local symbols remain, no `b.*` alias leaks onto `a`, no `a.*` alias leaks onto `b`, and each mutation is detected. The cycle case binds 2 of 2 anchors and detects 2 of 2 mutations.
 
 ## Crate macros and generic aliases
 
@@ -88,7 +91,7 @@ Python fences then gained local type inference. Source return annotations feed a
 - anyhow binds ten anchors after crate macros and generic type aliases were added. Most of its README still uses standard-library types and prose that do not map to crate symbols.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
-- The corpus uses five external repositories and three local fixtures. It is evidence, not a benchmark.
+- The corpus uses five external repositories and four local fixtures. It is evidence, not a benchmark.
 
 Run the harness from the repository root:
 

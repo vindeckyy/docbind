@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.23] - 2026-11-03
+
+### Added
+
+- Go re-export cycles terminate with bounded passes and keep local symbols instead of creating false cross-package aliases.
+- Local two-package cycle fixture covers value and type cycles.
+
+### Improved
+
+- Cycle fixture binds 2 of 2 anchors and detects 2 of 2 mutations.
+- Corpus now detects 39 of 39 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go arbitrary arithmetic and composite expressions are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.22] - 2026-11-03
 
 ### Added
@@ -426,3 +443,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.20]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.20
 [0.1.21]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.21
 [0.1.22]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.22
+[0.1.23]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.23

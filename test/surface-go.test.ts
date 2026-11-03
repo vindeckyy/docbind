@@ -201,6 +201,23 @@ describe("Go surface", () => {
     expect(result.symbols.some((symbol) => symbol.name === "WrapInstance")).toBe(false);
   });
 
+  it("terminates on two-package re-export cycles without false aliases", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/cycle\n",
+      "a/a.go": "package a\nimport \"example.com/cycle/b\"\nconst A = b.B\ntype CycleA = b.CycleB\n",
+      "b/b.go": "package b\nimport \"example.com/cycle/a\"\nconst B = a.A\ntype CycleB = a.CycleA\n",
+    });
+    const result = extractGo(root, ["a/a.go", "b/b.go"]);
+    const aValue = result.symbols.find((symbol) => symbol.name === "A" && symbol.modulePath === "a/a");
+    const bValue = result.symbols.find((symbol) => symbol.name === "B" && symbol.modulePath === "b/b");
+    const aType = result.symbols.find((symbol) => symbol.name === "CycleA");
+    expect(aValue?.aliases).toEqual(expect.arrayContaining(["a.A"]));
+    expect(aValue?.aliases).not.toContain("b.A");
+    expect(bValue?.aliases).toEqual(expect.arrayContaining(["b.B"]));
+    expect(bValue?.aliases).not.toContain("a.B");
+    expect(aType?.aliases).not.toContain("b.CycleA");
+  });
+
   it("falls back when the re-export file matches the package name", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

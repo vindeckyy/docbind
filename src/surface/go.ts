@@ -698,11 +698,14 @@ function isTypeReexport(symbol: Symbol): boolean {
     /^(?:\*|\[\])?[A-Za-z_]\w*\.[A-Za-z_]\w*/u.test(symbol.shape.typeShape ?? "");
 }
 
+const MAX_REEXPORT_PASSES = 16;
+
 function applyGoReexports(symbols: Symbol[]): Symbol[] {
   const removed = new Set<string>();
   const top = symbols.filter((symbol) => !symbol.parentId);
 
-  for (let pass = 0; pass < 16; pass += 1) {
+  // Unresolvable cycles keep their local symbols. A pass with no alias change ends the loop.
+  for (let pass = 0; pass < MAX_REEXPORT_PASSES; pass += 1) {
     let changed = false;
     for (const reexport of top) {
       if (reexport.kind !== "type") continue;
@@ -734,7 +737,7 @@ function applyGoReexports(symbols: Symbol[]): Symbol[] {
     if (!changed) break;
   }
 
-  for (let pass = 0; pass < 16; pass += 1) {
+  for (let pass = 0; pass < MAX_REEXPORT_PASSES; pass += 1) {
     let changed = false;
     for (const reexport of top) {
       if (removed.has(reexport.id)) continue;

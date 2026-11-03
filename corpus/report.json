@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:04:22.704Z",
+  "generatedAt": "2026-11-03T19:09:23.094Z",
   "report": [
     {
       "name": "slugify",
@@ -549,6 +549,46 @@
         }
       ],
       "hits": 10,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "go-cycle-fixture",
+      "repo": "local/go-cycle",
+      "commit": "fixture-v1",
+      "docs": 1,
+      "anchors": 2,
+      "bound": 2,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "CycleAValue",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "CycleBValue",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
       "misses": 0,
       "collateral": 0
     }

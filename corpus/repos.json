@@ -154,5 +154,22 @@
       "go": true
     },
     "mutations": 10
+  },
+  {
+    "name": "go-cycle-fixture",
+    "repo": "local/go-cycle",
+    "commit": "fixture-v1",
+    "local": "corpus/fixtures/go-cycle",
+    "docs": [
+      "docs/**/*.md"
+    ],
+    "exclude": [],
+    "languages": {
+      "typescript": false,
+      "python": false,
+      "rust": false,
+      "go": true
+    },
+    "mutations": 2
   }
 ]
