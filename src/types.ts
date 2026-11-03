@@ -1,0 +1,223 @@
+export type SymbolKind =
+  | "function"
+  | "class"
+  | "method"
+  | "property"
+  | "interface"
+  | "type"
+  | "const"
+  | "enum"
+  | "enumMember"
+  | "module";
+
+export type ContractFlag =
+  | "deprecated"
+  | "async"
+  | "generator"
+  | "abstract"
+  | "readonly"
+  | "static";
+
+export interface ParamShape {
+  name?: string;
+  type: string;
+  optional: boolean;
+  rest: boolean;
+  hasDefault: boolean;
+  kind?: string;
+}
+
+export interface MemberShape {
+  name: string;
+  kind: SymbolKind;
+  optional: boolean;
+  shape: Shape;
+}
+
+export interface EnumMemberShape {
+  name: string;
+  value: string;
+}
+
+export interface Shape {
+  kind: SymbolKind;
+  async?: boolean;
+  generator?: boolean;
+  abstract?: boolean;
+  typeParams?: string;
+  params?: ParamShape[];
+  returnType?: string;
+  visibility?: string;
+  flags?: ContractFlag[];
+  extends?: string[];
+  implements?: string[];
+  members?: MemberShape[];
+  typeShape?: string;
+  literalKind?: string;
+  enumMembers?: EnumMemberShape[];
+  overload?: number;
+}
+
+export interface Symbol {
+  id: string;
+  name: string;
+  kind: SymbolKind;
+  modulePath: string;
+  packageName: string;
+  packageRoot: string;
+  qualifiedName: string;
+  aliases: string[];
+  shape: Shape;
+  shapeText: string;
+  shapeHash: string;
+  paramNamesHash: string;
+  bodyHash: string;
+  contractFlags: ContractFlag[];
+  parentId?: string;
+  line: number;
+  filePath: string;
+}
+
+export type Surface =
+  | "inlineCode"
+  | "headingCode"
+  | "tableCode"
+  | "fenceToken"
+  | "signatureFence"
+  | "explicitRef";
+
+export interface ImportRef {
+  source: string;
+  imported: string;
+}
+
+export interface DocAnchor {
+  docPath: string;
+  line: number;
+  column: number;
+  length: number;
+  token: string;
+  occurrence: number;
+  surface: Surface;
+  fenceLang?: string;
+  contextFp: string;
+  importTable: Record<string, ImportRef>;
+  localDecls: string[];
+  fragment: boolean;
+  signatureShape?: Shape;
+}
+
+export interface LockEntry {
+  docPath: string;
+  contextFp: string;
+  token: string;
+  occurrence: number;
+  symbolId: string;
+  name: string;
+  qualifiedName: string;
+  kind: SymbolKind;
+  shapeHash: string;
+  shape: string;
+  paramNamesHash: string;
+  bodyHash: string;
+  confidence: number;
+}
+
+export interface Tombstone {
+  symbolId: string;
+  name: string;
+  qualifiedName: string;
+  kind: SymbolKind;
+  shapeHash: string;
+  shape: string;
+  bodyHash: string;
+  removedInGeneration: number;
+  renamedTo?: string;
+}
+
+export interface LockFile {
+  schema: number;
+  engine: string;
+  generation: number;
+  anchors: LockEntry[];
+  tombstones: Tombstone[];
+}
+
+export type Rule =
+  | "L1-broken"
+  | "L2-moved"
+  | "L3-reshaped"
+  | "L4-renamed"
+  | "S1-deprecated";
+
+export type Severity = "error" | "warning" | "note" | "off";
+
+export interface Fix {
+  kind: "replaceToken" | "replacePath";
+  from: string;
+  to: string;
+}
+
+export interface Finding {
+  id: string;
+  rule: Rule;
+  severity: Exclude<Severity, "off">;
+  doc: { path: string; line: number; column: number; length: number };
+  code?: { path: string; line: number; symbolId: string };
+  message: string;
+  suggestion?: string;
+  fix?: Fix;
+}
+
+export interface Binding {
+  anchor: DocAnchor;
+  symbol: Symbol;
+  score: number;
+  evidence: string[];
+}
+
+export interface ResolveResult {
+  binding?: Binding;
+  candidates: Array<{ symbol: Symbol; score: number; evidence: string[] }>;
+  reason: "bound" | "unbound" | "ambiguous" | "vetoed";
+  veto?: string;
+}
+
+export interface ProjectStats {
+  docsScanned: number;
+  codeFilesScanned: number;
+  symbols: number;
+  anchors: number;
+  bound: number;
+  unbound: number;
+  parseFailures: number;
+}
+
+export interface CheckResult {
+  findings: Finding[];
+  pending: Binding[];
+  stats: ProjectStats;
+  lock: LockFile;
+}
+
+export interface LanguageConfig {
+  typescript: boolean;
+  python: boolean;
+}
+
+export interface Config {
+  docs: string[];
+  exclude: string[];
+  packages: string[];
+  languages: LanguageConfig;
+  severity: Record<Rule, Severity>;
+  maxFindings: number;
+}
+
+export const RULES: Rule[] = [
+  "L1-broken",
+  "L2-moved",
+  "L3-reshaped",
+  "L4-renamed",
+  "S1-deprecated",
+];

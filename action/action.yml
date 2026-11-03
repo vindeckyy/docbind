@@ -1,0 +1,14 @@
+name: docbind
+description: Report stale symbol references in markdown.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - shell: bash
+      run: npx docbind check --sarif docbind.sarif
+    - uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: docbind.sarif

@@ -1,0 +1,383 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { checkProject, markLockAdvanced } from "../src/check.js";
+import { parseConfig } from "../src/config.js";
+import { writeLock } from "../src/lock/write.js";
+import { entryFromBinding, readLock } from "../src/lock/schema.js";
+import { parseDoc } from "../src/docs/parse.js";
+import { extractSurface } from "../src/surface/index.js";
+import { discoverCode } from "../src/discover.js";
+import { applyFixes } from "../src/fix.js";
+import { tempProject } from "./helpers.js";
+
+const config = parseConfig({});
+
+function files(code: string, doc: string, extra: Record<string, string> = {}): Record<string, string> {
+  return {
+    "package.json": JSON.stringify({ name: "app" }),
+    "src/users.ts": code,
+    "docs/api.md": doc,
+    ...extra,
+  };
+}
+
+function lockNow(root: string): void {
+  const result = checkProject(root, config);
+  writeLock(root, markLockAdvanced({ ...result.lock, engine: "0.1.0" }));
+}
+
+const userCode = (name = "getUser", extraParam = ""): string => `
+export interface User { id: string; email?: string }
+export function ${name}(id: string${extraParam}): User { return { id }; }
+export class Client { request(path: string): Promise<User> { return Promise.resolve({ id: path }); } }
+`;
+
+describe("check pipeline", () => {
+  it("binds a clean repo and reports nothing", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)` and `users.getUser(id)`.\n"));
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.stats.anchors).toBe(2);
+    expect(result.stats.bound).toBe(2);
+    expect(result.stats.unbound).toBe(0);
+    expect(result.pending).toHaveLength(2);
+    lockNow(root);
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
+  it("detects a rename, fixes it, and then runs clean", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("get_user"));
+    const result = checkProject(root, config);
+    expect(result.findings.map((finding) => finding.rule)).toEqual(["L4-renamed"]);
+    expect(result.findings[0].fix).toMatchObject({ from: "getUser", to: "get_user" });
+    const fixed = applyFixes(root, result.findings);
+    expect(fixed.changedFiles).toEqual(["docs/api.md"]);
+    expect(readFileSync(join(root, "docs/api.md"), "utf8")).toContain("`get_user(id)`");
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
+  it("reports a removal through a tombstone", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), "export const other = 1;\n");
+    const first = checkProject(root, config);
+    expect(first.findings.map((finding) => finding.rule)).toEqual(["L1-broken"]);
+    writeLock(root, markLockAdvanced({ ...first.lock, engine: "0.1.0" }));
+    expect(first.lock.tombstones).toHaveLength(1);
+    const second = checkProject(root, config);
+    expect(second.findings.map((finding) => finding.rule)).toEqual(["L1-broken"]);
+  });
+
+  it("stays silent for additive changes and keeps the baseline", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("getUser", ", opts?: { cache: boolean }"));
+    expect(checkProject(root, config).findings).toEqual([]);
+    writeFileSync(join(root, "src/users.ts"), userCode("getUser"));
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
+  it("reports a required parameter as reshaped", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("getUser", ", force: boolean"));
+    const result = checkProject(root, config);
+    expect(result.findings[0]?.rule).toBe("L3-reshaped");
+    expect(result.findings[0]?.message).toContain("required parameter");
+  });
+
+  it("reports a qualified path move", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `users.getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), "");
+    writeFileSync(join(root, "src/accounts.ts"), userCode());
+    const result = checkProject(root, config);
+    expect(result.findings.map((finding) => finding.rule)).toEqual(["L2-moved"]);
+    expect(result.findings[0].fix?.kind).toBe("replacePath");
+  });
+
+  it("checks signature fences against real symbols", () => {
+    const root = tempProject(files(userCode(), "```ts\nfunction getUser(id: string): User\n```\n"));
+    const good = checkProject(root, config);
+    expect(good.findings).toEqual([]);
+    expect(good.pending).toHaveLength(1);
+    expect(good.pending[0].anchor.surface).toBe("signatureFence");
+    writeFileSync(join(root, "src/users.ts"), userCode().replace(": User {", ": { id: string } {"));
+    const bad = checkProject(root, config);
+    expect(bad.findings.map((finding) => finding.rule)).toEqual(["L3-reshaped"]);
+  });
+
+  it("reports an unresolved explicit reference", () => {
+    const root = tempProject(files(userCode(), "See {@link missing}.\n"));
+    const result = checkProject(root, config);
+    expect(result.findings.map((finding) => finding.rule)).toEqual(["L1-broken"]);
+  });
+
+  it("flags new deprecation when enabled", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode().replace(
+      "export function getUser",
+      "/** @deprecated use fetchUser */\nexport function getUser",
+    ));
+    const enabled = parseConfig({ severity: { "S1-deprecated": "warning" } });
+    expect(checkProject(root, enabled).findings.map((finding) => finding.rule)).toEqual(["S1-deprecated"]);
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
+  it("clears when the doc is edited", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("get_user"));
+    expect(checkProject(root, config).findings).toHaveLength(1);
+    writeFileSync(join(root, "docs/api.md"), "# API\n\nCall `get_user(id)`.\n");
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
+  it("does not bind prose words in a README", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/install.ts": "export function install(): void {}",
+      "README.md": "Run `install` to set up.\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.stats.bound).toBe(0);
+  });
+
+  it("ignores generated docs", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": userCode(),
+      "docs/generated.md": "<!-- generated -->\n`getUser(id)`\n",
+    });
+    const result = checkProject(root, parseConfig({ docs: ["docs/**/*.md"] }));
+    expect(result.stats.docsScanned).toBe(0);
+    expect(result.findings).toEqual([]);
+  });
+
+  it("can refresh without a baseline", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("get_user"));
+    writeFileSync(join(root, "docs/api.md"), "# API\n\nCall `get_user(id)`.\n");
+    const result = checkProject(root, config, { ignoreBaseline: true });
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0].symbol.name).toBe("get_user");
+  });
+
+  it("drops claims when the doc disappears", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    rmSync(join(root, "docs/api.md"));
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.lock.anchors).toEqual([]);
+  });
+
+  it("deduplicates lock entries", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    const current = readLock(root);
+    writeLock(root, { ...current, anchors: [...current.anchors, current.anchors[0]] });
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
+  it("keeps tombstones through a move", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `users.getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), "");
+    writeFileSync(join(root, "src/accounts.ts"), userCode());
+    const first = checkProject(root, config);
+    expect(first.findings[0].rule).toBe("L2-moved");
+    writeLock(root, markLockAdvanced({ ...first.lock, engine: "0.1.0" }));
+    const second = checkProject(root, config);
+    expect(second.findings[0].rule).toBe("L2-moved");
+  });
+
+  it("reports a tombstone whose target is gone", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "docs/api.md": "Call `getUser`.\n",
+    });
+    writeLock(root, {
+      schema: 1,
+      engine: "0.1.0",
+      generation: 1,
+      anchors: [],
+      tombstones: [{
+        symbolId: "old",
+        name: "getUser",
+        qualifiedName: "app.users.getUser",
+        kind: "function",
+        shapeHash: "h",
+        shape: '{"kind":"function"}',
+        bodyHash: "b",
+        removedInGeneration: 1,
+        renamedTo: "missing",
+      }],
+    });
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L1-broken");
+  });
+
+  it("respects severity off", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("get_user"));
+    const off = parseConfig({
+      severity: {
+        "L1-broken": "off",
+        "L2-moved": "off",
+        "L3-reshaped": "off",
+        "L4-renamed": "off",
+        "S1-deprecated": "off",
+      },
+    });
+    expect(checkProject(root, off).findings).toEqual([]);
+  });
+
+  it("does not repeat an existing deprecation", () => {
+    const root = tempProject(files(
+      userCode().replace("export function getUser", "/** @deprecated */\nexport function getUser"),
+      "# API\n\nCall `getUser(id)`.\n",
+    ));
+    lockNow(root);
+    const enabled = parseConfig({ severity: { "S1-deprecated": "warning" } });
+    expect(checkProject(root, enabled).findings).toEqual([]);
+  });
+
+  it("binds a valid explicit reference", () => {
+    const root = tempProject(files(userCode(), "See {@link getUser}.\n"));
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending).toHaveLength(1);
+  });
+
+  it("sorts findings by doc path", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    writeFileSync(join(root, "docs/z.md"), "Call `getUser(id)`.\n");
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode("get_user"));
+    const result = checkProject(root, config);
+    expect(result.findings.map((finding) => finding.doc.path)).toEqual(["docs/api.md", "docs/z.md"]);
+  });
+
+  it("handles const shape changes", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": 'export const VERSION: string = "1";\n',
+      "docs/api.md": "Value `users.VERSION`.\n",
+    });
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), "export const VERSION: number = 1;\n");
+    const result = checkProject(root, config);
+    expect(result.findings[0]?.rule).toBe("L3-reshaped");
+    expect(result.findings[0]?.message).toContain("value type changed");
+  });
+
+  it("reports a bare-name move as broken", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), "");
+    writeFileSync(join(root, "src/accounts.ts"), userCode());
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L1-broken");
+  });
+
+  it("reports a moved path when the symbol is unchanged", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `users.getUser(id)`.\n"));
+    writeFileSync(join(root, "src/users.ts"), "");
+    writeFileSync(join(root, "src/accounts.ts"), userCode());
+    const anchor = parseDoc("docs/api.md", "# API\n\nCall `users.getUser(id)`.\n").anchors[0];
+    const symbol = extractSurface(root, discoverCode(root, config), config).symbols
+      .find((candidate) => candidate.name === "getUser")!;
+    writeLock(root, {
+      schema: 1,
+      engine: "0.1.0",
+      generation: 1,
+      anchors: [entryFromBinding({ anchor, symbol, score: 0.9, evidence: [] })],
+      tombstones: [],
+    });
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L2-moved");
+  });
+
+  it("checks locked signature fences", () => {
+    const root = tempProject(files(userCode(), "```ts\nfunction getUser(id: string): User\n```\n"));
+    lockNow(root);
+    writeFileSync(join(root, "src/users.ts"), userCode().replace(": User {", ": { id: string } {"));
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L3-reshaped");
+  });
+
+  it("reports a tombstone rename to a different name", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": "export function fetchUser(): void {}\n",
+      "docs/api.md": "Call `getUser`.\n",
+    });
+    writeLock(root, {
+      schema: 1,
+      engine: "0.1.0",
+      generation: 1,
+      anchors: [],
+      tombstones: [{
+        symbolId: "old",
+        name: "getUser",
+        qualifiedName: "app.users.getUser",
+        kind: "function",
+        shapeHash: "h",
+        shape: '{"kind":"function"}',
+        bodyHash: "b",
+        removedInGeneration: 1,
+        renamedTo: "app|src/users|function|fetchUser|0",
+      }],
+    });
+    const result = checkProject(root, config);
+    expect(result.findings[0]?.rule).toBe("L4-renamed");
+    expect(result.findings[0]?.fix?.to).toBe("fetchUser");
+  });
+
+  it("suppresses explicit and tombstone findings when off", () => {
+    const off = parseConfig({
+      severity: {
+        "L1-broken": "off",
+        "L2-moved": "off",
+        "L3-reshaped": "off",
+        "L4-renamed": "off",
+        "S1-deprecated": "off",
+      },
+    });
+    const explicit = tempProject(files(userCode(), "See {@link missing}.\n"));
+    expect(checkProject(explicit, off).findings).toEqual([]);
+    const tombstone = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "docs/api.md": "Call `getUser`.\n",
+    });
+    writeLock(tombstone, {
+      schema: 1,
+      engine: "0.1.0",
+      generation: 1,
+      anchors: [],
+      tombstones: [{
+        symbolId: "old",
+        name: "getUser",
+        qualifiedName: "app.users.getUser",
+        kind: "function",
+        shapeHash: "h",
+        shape: '{"kind":"function"}',
+        bodyHash: "b",
+        removedInGeneration: 1,
+        renamedTo: "missing",
+      }],
+    });
+    expect(checkProject(tombstone, off).findings).toEqual([]);
+  });
+
+  it("advances lock generations", () => {
+    const root = tempProject(files(userCode(), "# API\n\nCall `getUser(id)`.\n"));
+    lockNow(root);
+    expect(checkProject(root, config).lock.generation).toBe(1);
+    expect(markLockAdvanced(checkProject(root, config).lock).generation).toBe(2);
+  });
+});
