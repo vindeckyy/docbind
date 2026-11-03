@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.34] - 2026-11-03
+
+### Added
+
+- Real thiserror-derived fixture pinned to `thiserror` 2.0.21.
+- Its documented generated `Outer.source()` method binds through the opt-in rustdoc extractor and is mutated successfully.
+
+### Improved
+
+- Real thiserror fixture binds 1 of 1 anchors and detects 1 of 1 mutation.
+- Corpus now detects 54 of 54 seeded mutations with zero collateral findings.
+
+### Limits
+
+- The thiserror fixture fetches its pinned dependency through Cargo. Corpus runs need network access.
+- npm publication remains unresolved.
+
 ## [0.1.33] - 2026-11-03
 
 ### Added
@@ -635,3 +652,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.31]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.31
 [0.1.32]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.32
 [0.1.33]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.33
+[0.1.34]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.34

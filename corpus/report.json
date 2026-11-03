@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T20:01:43.823Z",
+  "generatedAt": "2026-11-03T20:10:09.389Z",
   "report": [
     {
       "name": "slugify",
@@ -745,6 +745,35 @@
         }
       ],
       "hits": 2,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "thiserror-derived-fixture",
+      "repo": "local/thiserror-derived",
+      "commit": "fixture-v1",
+      "docs": 1,
+      "anchors": 1,
+      "bound": 1,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "source",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 1,
       "misses": 0,
       "collateral": 0
     }

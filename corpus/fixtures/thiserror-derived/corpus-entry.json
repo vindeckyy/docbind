@@ -1,0 +1,10 @@
+{
+  "name": "thiserror-derived-fixture",
+  "repo": "local/thiserror-derived",
+  "commit": "fixture-v1",
+  "local": "corpus/fixtures/thiserror-derived",
+  "docs": ["docs/**/*.md"],
+  "exclude": ["target/**"],
+  "languages": { "typescript": false, "python": false, "rust": true, "go": false, "rustdoc": true },
+  "mutations": 1
+}
