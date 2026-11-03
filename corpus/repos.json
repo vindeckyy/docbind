@@ -367,6 +367,14 @@
         "to": 4,
         "symbol": "halfConstant",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "field": "WIDENED",
+        "from": 2,
+        "to": 4,
+        "symbol": "widened",
+        "expectedRule": "L3-reshaped"
       }
     ]
   }

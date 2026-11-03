@@ -2,6 +2,29 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.77] - 2026-11-03
+
+### Fixed
+
+- Division follows operand integrality rather than the target field or return type. `static final double X = 7 / 2` now evaluates to `3`, matching Java, instead of `3.5`.
+- `7.0 / 2` remains `3.5`, because the decimal literal is non-integral.
+- Constants carry an integral flag so widened values keep their origin type for later division.
+
+### Added
+
+- Corpus adds `Constants.WIDENED` declared `double` and initialised with `7 / 2`; editing it must produce `L3-reshaped` on `Marker#widened`.
+
+### Changed
+
+- Corpus mutations: 102 to 103; `java-javadoc-fixture` runs 31 mutations with 26 anchors, all hitting with zero collateral.
+- Branch coverage stays at 95.69%; line coverage at 99.24%.
+
+### Limits
+
+- Constant integrality covers primitive numeric fields; boxed types and casts stay unevaluated.
+- Function calls and bitwise operators stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.76] - 2026-11-03
 
 ### Added
@@ -1386,3 +1409,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.74]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.74
 [0.1.75]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.75
 [0.1.76]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.76
+[0.1.77]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.77

@@ -43,7 +43,7 @@ interface JavaContext {
   packageClause: string;
   drafts: JavaDraft[];
   types: Array<{ name: string; start: number; end: number }>;
-  constants: Map<string, EvaluatedValue>;
+  constants: Map<string, EvaluatedConstant>;
   evaluateDefaults: boolean;
   failures: number;
 }
@@ -231,41 +231,41 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
   return tokens;
 }
 
+interface EvaluatedConstant {
+  value: EvaluatedValue;
+  integral: boolean;
+}
+
+function isIntegralLiteral(text: string): boolean {
+  return /^(?:0[xX][0-9a-fA-F]+|\d+)[lL]?$/u.test(text);
+}
+
 function isIntegralType(type: string | undefined): boolean {
   return Boolean(type && /^(?:int|long|short|byte)$/u.test(type.trim()));
 }
 
 function evaluateExpression(
   source: string,
-  constants?: Map<string, EvaluatedValue>,
-  integral = false,
-): EvaluatedValue | undefined {
+  constants?: Map<string, EvaluatedConstant>,
+): EvaluatedConstant | undefined {
   const tokens = expressionTokens(source);
   if (!tokens || tokens.length === 0) return undefined;
-  const integerDivision =
-    integral &&
-    tokens.every(
-      (token) =>
-        token.type !== "number" ||
-        /^(?:0[xX][0-9a-fA-F]+|\d+)[lL]?$/u.test(token.value),
-    );
   let position = 0;
 
-  const parsePrimary = (): EvaluatedValue | undefined => {
+  const parsePrimary = (): EvaluatedConstant | undefined => {
     const token = tokens[position];
     if (!token) return undefined;
     if (token.type === "number") {
       position += 1;
-      return token.number as number;
+      return { value: token.number as number, integral: isIntegralLiteral(token.value) };
     }
     if (token.type === "string") {
       position += 1;
-      return token.value;
+      return { value: token.value, integral: false };
     }
     if (token.type === "ident") {
       position += 1;
-      const value = constants?.get(token.value);
-      return typeof value === "string" || typeof value === "number" ? value : undefined;
+      return constants?.get(token.value);
     }
     if (token.type === "op" && token.value === "(") {
       position += 1;
@@ -278,26 +278,35 @@ function evaluateExpression(
     if (token.type === "op" && token.value === "-") {
       position += 1;
       const value = parsePrimary();
-      return typeof value === "number" ? -value : undefined;
+      return typeof value?.value === "number" ? { value: -value.value, integral: value.integral } : undefined;
     }
     return undefined;
   };
 
-  const parseMul = (): EvaluatedValue | undefined => {
+  const parseMul = (): EvaluatedConstant | undefined => {
     let left = parsePrimary();
     while (left !== undefined && tokens[position]?.type === "op") {
       const operator = tokens[position]?.value as string;
       if (operator !== "*" && operator !== "/") break;
       position += 1;
       const right = parsePrimary();
-      if (typeof left !== "number" || typeof right !== "number") return undefined;
-      if (operator === "/" && right === 0) return undefined;
-      left = operator === "*" ? left * right : integerDivision ? Math.trunc(left / right) : left / right;
+      if (typeof left.value !== "number" || typeof right?.value !== "number") return undefined;
+      if (operator === "/" && right.value === 0) return undefined;
+      const integral = left.integral && right.integral;
+      left = {
+        value:
+          operator === "*"
+            ? left.value * right.value
+            : integral
+              ? Math.trunc(left.value / right.value)
+              : left.value / right.value,
+        integral,
+      };
     }
     return left;
   };
 
-  const parseAdd = (): EvaluatedValue | undefined => {
+  const parseAdd = (): EvaluatedConstant | undefined => {
     let left = parseMul();
     while (left !== undefined && tokens[position]?.type === "op") {
       const operator = tokens[position]?.value as string;
@@ -305,12 +314,15 @@ function evaluateExpression(
       position += 1;
       const right = parseMul();
       if (right === undefined) return undefined;
-      if (operator === "+" && (typeof left === "string" || typeof right === "string")) {
-        left = `${left}${right}`;
+      if (operator === "+" && (typeof left.value === "string" || typeof right.value === "string")) {
+        left = { value: `${left.value}${right.value}`, integral: false };
         continue;
       }
-      if (typeof left !== "number" || typeof right !== "number") return undefined;
-      left = operator === "+" ? left + right : left - right;
+      if (typeof left.value !== "number" || typeof right.value !== "number") return undefined;
+      left = {
+        value: operator === "+" ? left.value + right.value : left.value - right.value,
+        integral: left.integral && right.integral,
+      };
     }
     return left;
   };
@@ -322,43 +334,45 @@ function evaluateExpression(
 
 function evaluateArgument(
   argument: AnnotationArgument,
-  constants?: Map<string, EvaluatedValue>,
+  constants?: Map<string, EvaluatedConstant>,
   enumLabels?: Set<string>,
-  integral = false,
-): EvaluatedValue | undefined {
+): EvaluatedConstant | undefined {
   if (argument.kind === "string" || argument.kind === "number" || argument.kind === "boolean") {
-    return argument.literal as EvaluatedValue;
+    return {
+      value: argument.literal as EvaluatedValue,
+      integral: argument.kind === "number" && isIntegralLiteral(argument.value),
+    };
   }
   if (argument.kind === "enum") {
     const literal = argument.literal as string;
     const direct = constants?.get(literal);
     if (direct !== undefined) return direct;
-    return enumLabels?.has(literal) ? literal : undefined;
+    return enumLabels?.has(literal) ? { value: literal, integral: false } : undefined;
   }
   if (argument.kind === "class") {
-    return argument.literal as string;
+    return { value: argument.literal as string, integral: false };
   }
   if (argument.kind === "array") {
     const values = (argument.items as AnnotationArgument[]).map((item) =>
-      evaluateArgument(item, constants, enumLabels, integral),
+      evaluateArgument(item, constants, enumLabels),
     );
     if (values.some((value) => value === undefined)) return undefined;
-    return values as EvaluatedValue[];
+    return { value: values.map((value) => (value as EvaluatedConstant).value), integral: false };
   }
   if (argument.kind === "expression") {
-    return evaluateExpression(argument.value, constants, integral);
+    return evaluateExpression(argument.value, constants);
   }
   /* v8 ignore next */
   if (argument.kind === "annotation") {
     const evaluated: Record<string, EvaluatedValue> = {};
     let position = 0;
     for (const item of argument.items as AnnotationArgument[]) {
-      const value = evaluateArgument(item, constants, enumLabels, integral);
+      const value = evaluateArgument(item, constants, enumLabels);
       if (value === undefined) return undefined;
-      evaluated[item.name ?? `arg${position}`] = value;
+      evaluated[item.name ?? `arg${position}`] = value.value;
       position += 1;
     }
-    return evaluated;
+    return { value: evaluated, integral: false };
   }
   return undefined;
 }
@@ -902,15 +916,11 @@ class JavaParser {
           .slice((tokens[equals] as Token).end, (tokens[semicolon] as Token).start)
           .trim();
         const parsed = annotationLiteral(initializer);
-        const evaluated = evaluateArgument(
-          { value: initializer, ...parsed },
-          this.context.constants,
-          undefined,
-          isIntegralType(type),
-        );
+        const evaluated = evaluateArgument({ value: initializer, ...parsed }, this.context.constants);
         if (evaluated !== undefined) {
-          this.context.constants.set(name, evaluated);
-          this.context.constants.set(`${typePath}.${name}`, evaluated);
+          const constant = { value: evaluated.value, integral: isIntegralType(type) };
+          this.context.constants.set(name, constant);
+          this.context.constants.set(`${typePath}.${name}`, constant);
         }
       }
     }
@@ -1001,7 +1011,7 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
     parsedContexts.push(context);
   }
 
-  const constants = new Map<string, EvaluatedValue>();
+  const constants = new Map<string, EvaluatedConstant>();
   for (const context of parsedContexts) {
     for (const [key, value] of context.constants) constants.set(key, value);
   }
@@ -1034,9 +1044,8 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
           { value: draft.defaultValue, ...draft.defaultParsed },
           constants,
           enumLabels,
-          isIntegralType(draft.shape.returnType),
         );
-        if (evaluated !== undefined) draft.shape.evaluatedDefault = evaluated;
+        if (evaluated !== undefined) draft.shape.evaluatedDefault = evaluated.value;
       }
       const shapeText = canonicalShape(draft.shape);
       const parent = draft.parentPath ? byPath.get(draft.parentPath) : undefined;

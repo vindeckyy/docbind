@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T23:46:18.236Z",
+  "generatedAt": "2026-11-03T23:50:10.787Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,14 +720,36 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 25,
-      "bound": 25,
+      "anchors": 26,
+      "bound": 26,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
+        {
+          "symbol": "widened",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "intDiv",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
         {
           "symbol": "get",
           "rule": "L2-moved",
@@ -768,17 +790,6 @@
           "findings": 1,
           "relatedRules": [
             "L2-moved"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "intDiv",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -939,17 +950,6 @@
           "collateralRules": []
         },
         {
-          "symbol": "label",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
           "symbol": "command",
           "kind": "annotation",
           "expectedRule": "L3-reshaped",
@@ -1078,9 +1078,22 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "widened",
+          "kind": "constant",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 30,
+      "hits": 31,
       "misses": 0,
       "collateral": 0
     }

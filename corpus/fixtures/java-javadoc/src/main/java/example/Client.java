@@ -74,7 +74,7 @@ class Internal {
 /**
  * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, {@link Marker#tags()},
  * {@link Marker#fromConstant()}, {@link Marker#fromShared()}, {@link Marker#arithmetic()},
- * {@link Marker#intDiv()}, and {@link Marker#halfConstant()}.
+ * {@link Marker#intDiv()}, {@link Marker#halfConstant()}, and {@link Marker#widened()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -94,11 +94,14 @@ public @interface Marker {
     int intDiv() default 7 / 2;
 
     int halfConstant() default Constants.HALF;
+
+    double widened() default Constants.WIDENED;
 }
 
 class Constants {
     static final String NAME = "named";
     static final int HALF = 7 / 2;
+    static final double WIDENED = 7 / 2;
 }
 
 /**
