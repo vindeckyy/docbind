@@ -1,6 +1,6 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.1.42",
+  "version": "0.1.43",
   "description": "Static analysis for stale symbol references in markdown and reStructuredText. Supports TypeScript, JavaScript, Python, Rust, and Go.",
   "type": "module",
   "bin": {

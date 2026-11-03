@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.43] - 2026-11-03
+
+### Added
+
+- `docs/precision.md` now publishes a full-corpus threshold sweep alongside the local one.
+- `npm run thresholds -- --all` covers every pinned repository; raw rows are in `corpus/precision-external.json`.
+
+### Changed
+
+- The default floor stays at 0.60. The sweep shows 0.50 adds 17 anchors whose only evidence is a unique exported name, which the precision model treats as prose. Floors at 0.70 and above lose external mutation recall.
+
+### Limits
+
+- The full sweep samples six floors; a finer scan between 0.60 and 0.70 could tighten the edge.
+- Two union mutation targets are never detected at any floor.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.42] - 2026-11-03
 
 ### Added
@@ -824,3 +841,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.40]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.40
 [0.1.41]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.41
 [0.1.42]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.42
+[0.1.43]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.43

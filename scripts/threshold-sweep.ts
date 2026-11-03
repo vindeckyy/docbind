@@ -30,9 +30,14 @@ interface SweepRow {
 }
 
 const root = process.cwd();
-const thresholds = [0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9];
+const args = process.argv.slice(2);
+const all = args.includes("--all");
+const thresholdArg = args.includes("--thresholds") ? args[args.indexOf("--thresholds") + 1] : undefined;
+const thresholds = thresholdArg
+  ? thresholdArg.split(",").map(Number)
+  : [0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9];
 const fixtures = "macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture";
-const reportPath = join(root, "corpus/precision.json");
+const reportPath = join(root, all ? "corpus/precision-external.json" : "corpus/precision.json");
 const runs: Array<{ threshold: number; report: SweepReport[] }> = [];
 const targets = new Set<string>();
 
@@ -44,14 +49,11 @@ for (const threshold of thresholds) {
     [
       "tsx",
       "scripts/corpus.ts",
-      "--local-only",
-      "--only",
-      fixtures,
+      ...(all ? [] : ["--local-only", "--only", fixtures]),
       "--threshold",
       String(threshold),
       "--out",
       out,
-      "--refresh",
     ],
     { cwd: root, stdio: "inherit" },
   );
@@ -102,8 +104,9 @@ for (const { threshold, report } of runs) {
   });
 }
 
-writeFileSync(reportPath, `${JSON.stringify({ generatedAt: new Date().toISOString(), fixtures, rows }, null, 2)}\n`);
+writeFileSync(reportPath, `${JSON.stringify({ generatedAt: new Date().toISOString(), scope: all ? "all" : "local", fixtures: all ? "corpus/repos.json" : fixtures, rows }, null, 2)}\n`);
 console.log("\nthreshold sweep");
+console.log(`scope: ${all ? "all" : "local"}`);
 console.log("threshold\tbound\tanchors\tbindRate\tbaseline\thits\ttargets\trecall\tnameOnlyFP\tcollateral");
 for (const row of rows) {
   console.log(
