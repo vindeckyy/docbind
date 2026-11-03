@@ -802,6 +802,7 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
   const javadocs: DocstringEntry[] = [];
   let parseFailures = 0;
   let filesScanned = 0;
+  const parsedContexts: JavaContext[] = [];
   for (const rel of files) {
     let source: string;
     try {
@@ -830,6 +831,24 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
     };
     new JavaParser(context).parse();
     parseFailures += context.failures;
+    parsedContexts.push(context);
+  }
+
+  const constants = new Map<string, EvaluatedValue>();
+  for (const context of parsedContexts) {
+    for (const [key, value] of context.constants) constants.set(key, value);
+  }
+  const enumLabels = new Set<string>();
+  for (const context of parsedContexts) {
+    for (const draft of context.drafts) {
+      if (draft.kind !== "enum") continue;
+      for (const member of draft.shape.enumMembers ?? []) {
+        enumLabels.add(`${draft.name}.${member.name}`);
+      }
+    }
+  }
+
+  for (const context of parsedContexts) {
     const moduleDotted = context.modulePath.replace(/\//gu, ".");
     const byPath = new Map(
       context.drafts
@@ -842,18 +861,11 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
         )
         .map((draft) => [draft.path, draft]),
     );
-    const enumLabels = new Set<string>();
-    for (const draft of context.drafts) {
-      if (draft.kind !== "enum") continue;
-      for (const member of draft.shape.enumMembers ?? []) {
-        enumLabels.add(`${draft.name}.${member.name}`);
-      }
-    }
     for (const draft of context.drafts) {
       if (evaluateDefaults && draft.defaultValue !== undefined && draft.defaultParsed) {
         const evaluated = evaluateArgument(
           { value: draft.defaultValue, ...draft.defaultParsed },
-          context.constants,
+          constants,
           enumLabels,
         );
         if (evaluated !== undefined) draft.shape.evaluatedDefault = evaluated;
@@ -897,11 +909,11 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
         bodyHash: bodyHash(draft.body),
         contractFlags: draft.shape.flags as ContractFlag[],
         ...(parent ? { parentId: `${context.packageName}|${context.modulePath}|${parent.kind}|${parent.path}|0` } : {}),
-        line: lineOf(source, draft.start),
+        line: lineOf(context.source, draft.start),
         filePath: context.filePath,
       });
     }
-    for (const entry of collectJavadocs(source, context.types)) {
+    for (const entry of collectJavadocs(context.source, context.types)) {
       javadocs.push({ ...entry, filePath: context.filePath });
     }
   }

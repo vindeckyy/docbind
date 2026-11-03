@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.73] - 2026-11-03
+
+### Added
+
+- Java annotation defaults resolve `static final` constants declared in any file of the same project, not just the declaring file.
+- Constants are collected across parsed files, then defaults are evaluated in a second pass so declaration order does not matter.
+- Corpus adds `SharedConstants.NAME` in a separate file; editing it must produce `L3-reshaped` on `Marker#fromShared`.
+
+### Changed
+
+- Corpus mutations: 98 to 99; `java-javadoc-fixture` runs 27 mutations with 22 anchors, all hitting with zero collateral.
+- Corpus anchors: 3388 to 3389; bound 821 to 822.
+
+### Limits
+
+- Cross-file resolution is limited to the files extracted for the project; a constant in a file not scanned stays unresolved.
+- Simple-name collisions across files resolve to the last parsed definition; qualified names avoid the collision.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.72] - 2026-11-03
 
 ### Added
@@ -1299,3 +1318,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.70]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.70
 [0.1.71]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.71
 [0.1.72]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.72
+[0.1.73]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.73

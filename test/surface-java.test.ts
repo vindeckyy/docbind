@@ -303,6 +303,27 @@ describe("Java surface", () => {
     ]);
   });
 
+  it("resolves constants declared in another file", () => {
+    const root = tempProject({
+      "src/Marker.java": [
+        "public @interface Marker {",
+        "    String value() default Shared.NAME;",
+        "}",
+        "",
+      ].join("\n"),
+      "src/Shared.java": [
+        "class Shared {",
+        "    static final String NAME = \"shared\";",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    const result = extractJava(root, ["src/Marker.java", "src/Shared.java"], true);
+    expect(result.symbols.find((symbol) => symbol.name === "value")?.shape.evaluatedDefault).toBe("shared");
+    const off = extractJava(root, ["src/Marker.java", "src/Shared.java"]);
+    expect(off.symbols.find((symbol) => symbol.name === "value")?.shape.evaluatedDefault).toBeUndefined();
+  });
+
   it("skips parameter annotations and final modifiers", () => {
     const root = tempProject({
       "src/ParamKinds.java": [

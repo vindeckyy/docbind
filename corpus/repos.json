@@ -335,6 +335,14 @@
         "to": "other",
         "symbol": "fromConstant",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/SharedConstants.java",
+        "field": "NAME",
+        "from": "shared",
+        "to": "other",
+        "symbol": "fromShared",
+        "expectedRule": "L3-reshaped"
       }
     ]
   }

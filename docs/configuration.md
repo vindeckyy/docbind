@@ -51,7 +51,7 @@ Set `"javadoc": true` to extract public Java types and scan Javadoc comments. `{
 
 ## Java defaults
 
-Set `"javaDefaults": true` with `"javadoc": true` to evaluate annotation method defaults. The raw `defaultValue` and classification fields remain; annotation methods also gain `evaluatedDefault` with strings, numbers, booleans, enum names, class names, arrays, and nested annotation objects. Unsupported expressions stay raw and leave `evaluatedDefault` absent. Static final literals declared in the same file resolve when a default names them, for example `default Constants.NAME`; unresolved references also stay absent.
+Set `"javaDefaults": true` with `"javadoc": true` to evaluate annotation method defaults. The raw `defaultValue` and classification fields remain; annotation methods also gain `evaluatedDefault` with strings, numbers, booleans, enum names, class names, arrays, and nested annotation objects. Unsupported expressions stay raw and leave `evaluatedDefault` absent. Static final literals declared anywhere in the same project resolve when a default names them, for example `default Constants.NAME`; unresolved references stay absent.
 
 ## Severity
 
