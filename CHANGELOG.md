@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.61] - 2026-11-03
+
+### Added
+
+- Java enum constants keep constructor arguments in `enumMembers[].args`.
+- Members declared in an enum constant class body extract under the constant path, for example `Color.GREEN#label`, with dotted and `#` aliases.
+- `java-javadoc-fixture` adds constant arguments and a constant-body method and detects 20 of 20 mutations.
+
+### Limits
+
+- Constructor arguments are stored as normalized source text, not typed.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.60] - 2026-11-03
 
 ### Added
@@ -14,11 +27,6 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 ### Fixed
 
 - Enum member symbols always carry a contract-flag array, so deprecation checks cannot crash.
-
-### Limits
-
-- Enum constructor arguments and constant bodies are skipped; only the constant name is stored.
-- The unscoped npm package remains unavailable.
 
 ## [0.1.59] - 2026-11-03
 
@@ -1099,3 +1107,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.58]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.58
 [0.1.59]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.59
 [0.1.60]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.60
+[0.1.61]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.61

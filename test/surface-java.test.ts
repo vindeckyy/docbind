@@ -138,6 +138,10 @@ describe("Java surface", () => {
         "        void handle();",
         "    }",
         "",
+        "    public @interface NestedMarker {",
+        "        String value();",
+        "    }",
+        "",
         "    private class HiddenInner {",
         "        public void hiddenRun() {}",
         "    }",
@@ -157,6 +161,7 @@ describe("Java surface", () => {
     expect(run?.parentId).toBe(inner?.id);
     expect(run?.aliases).toEqual(expect.arrayContaining(["Outer.Inner.run", "Outer.Inner#run"]));
     expect(result.symbols.find((symbol) => symbol.name === "Nested")?.kind).toBe("interface");
+    expect(result.symbols.find((symbol) => symbol.name === "NestedMarker")?.contractFlags).toContain("annotation-type");
     expect(result.symbols.find((symbol) => symbol.name === "HiddenInner")?.shape.visibility).toBe("private");
     expect(result.symbols.some((symbol) => symbol.name === "hiddenRun")).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "ProtectedInner")?.shape.visibility).toBe("protected");
@@ -332,11 +337,13 @@ describe("Java surface", () => {
         "package example;",
         "",
         "public enum Color {",
-        "    @Deprecated RED,",
-        "    GREEN(\"g\"),",
+        "    @Deprecated",
+        "    @Marker(\"x\")",
+        "    RED,",
+        "    GREEN(),",
         "    BLUE {",
         "        public String label() { return \"b\"; }",
-        "    }",
+        "    };",
         "}",
         "",
       ].join("\n"),
@@ -345,10 +352,16 @@ describe("Java surface", () => {
     const color = result.symbols.find((symbol) => symbol.name === "Color");
     expect(color?.kind).toBe("enum");
     expect(color?.shape.enumMembers?.map((member) => member.name)).toEqual(["RED", "GREEN", "BLUE"]);
+    expect(color?.shape.enumMembers?.find((member) => member.name === "GREEN")?.args).toBeUndefined();
     const red = result.symbols.find((symbol) => symbol.name === "RED");
     expect(red?.kind).toBe("enumMember");
     expect(red?.parentId).toBe(color?.id);
     expect(red?.aliases).toEqual(expect.arrayContaining(["Color.RED", "Color#RED", "example.Color.RED"]));
+    const blue = result.symbols.find((symbol) => symbol.name === "BLUE");
+    const label = result.symbols.find((symbol) => symbol.name === "label");
+    expect(label?.parentId).toBe(blue?.id);
+    expect(label?.aliases).toEqual(expect.arrayContaining(["Color.BLUE.label", "Color.BLUE#label"]));
+    expect(color?.shape.enumMembers?.map((member) => member.args)).toEqual([undefined, undefined, undefined]);
   });
 
   it("survives malformed files", () => {
@@ -358,6 +371,7 @@ describe("Java surface", () => {
       "src/BadName.java": "public class 123 {}",
       "src/BadString.java": 'public class BadString { String value = "unterminated;',
       "src/Unclosed.java": "public class Unclosed { public void run() {",
+      "src/UnclosedEnum.java": "public enum UnclosedEnum { A(param {",
     });
     expect(() =>
       extractJava(root, [
@@ -366,6 +380,7 @@ describe("Java surface", () => {
         "src/BadName.java",
         "src/BadString.java",
         "src/Unclosed.java",
+        "src/UnclosedEnum.java",
       ])
     ).not.toThrow();
   });

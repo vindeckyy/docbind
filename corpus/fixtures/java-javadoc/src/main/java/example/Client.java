@@ -88,6 +88,11 @@ public @interface Marker {
  * Colors: {@link Color#RED} and {@link Color#GREEN}.
  */
 public enum Color {
-    RED,
-    GREEN
+    RED("red"),
+    GREEN("green") {
+        /** Label: {@link Color.GREEN#label()}. */
+        public String label() {
+            return "green";
+        }
+    }
 }

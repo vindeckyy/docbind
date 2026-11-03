@@ -40,6 +40,7 @@ export interface MemberShape {
 export interface EnumMemberShape {
   name: string;
   value: string;
+  args?: string;
 }
 
 export type AnnotationArgumentKind =

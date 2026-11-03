@@ -419,16 +419,38 @@ class JavaParser {
           continue;
         }
         if (/^[A-Za-z_]/u.test(value)) {
+          const path = `${typePath}.${value}`;
+          const start = (tokens[cursor] as Token).start;
+          let args: string | undefined;
+          cursor += 1;
+          if ((tokens[cursor] as Token | undefined)?.value === "(") {
+            const close = findMatching(tokens, cursor, "(", ")");
+            if (close > cursor) {
+              const raw = this.context.source
+                .slice((tokens[cursor] as Token).end, (tokens[close] as Token).start)
+                .replace(/\s+/gu, " ")
+                .trim();
+              if (raw.length > 0) args = raw;
+            }
+            cursor = close < 0 ? segmentEnd : close + 1;
+          }
           this.context.drafts.push({
             name: value,
             kind: "enumMember",
-            path: `${typePath}.${value}`,
+            path,
             parentPath: typePath,
-            start: (tokens[cursor] as Token).start,
+            start,
             body: "",
             shape: { kind: "enumMember", flags: [] },
           });
-          members.push({ name: value, value });
+          if ((tokens[cursor] as Token | undefined)?.value === "{") {
+            const close = findMatching(tokens, cursor, "{", "}");
+            if (close > cursor) {
+              this.parseMembers(path, cursor + 1, close, false);
+            }
+            cursor = close < 0 ? segmentEnd : close + 1;
+          }
+          members.push({ name: value, value: args ?? "", ...(args ? { args } : {}) });
           return;
         }
         cursor += 1;
@@ -486,6 +508,12 @@ class JavaParser {
           visibility = modifier;
         }
         cursor += 1;
+      }
+      if ((tokens[cursor] as Token | undefined)?.value === "@" &&
+        (tokens[cursor + 1] as Token | undefined)?.value === "interface") {
+        index = this.parseType(cursor + 1, `${typePath}.`, annotations, true);
+        annotations = [];
+        continue;
       }
       if (["class", "interface", "enum", "record"].includes((tokens[cursor] as Token | undefined)?.value ?? "")) {
         index = this.parseType(cursor, `${typePath}.`, annotations);
@@ -716,7 +744,11 @@ export function extractJava(root: string, files: string[]): ExtractResult {
     const byPath = new Map(
       context.drafts
         .filter(
-          (draft) => draft.kind === "class" || draft.kind === "interface" || draft.kind === "enum",
+          (draft) =>
+            draft.kind === "class" ||
+            draft.kind === "interface" ||
+            draft.kind === "enum" ||
+            draft.kind === "enumMember",
         )
         .map((draft) => [draft.path, draft]),
     );
