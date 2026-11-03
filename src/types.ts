@@ -207,6 +207,7 @@ export interface LanguageConfig {
   python: boolean;
   rust: boolean;
   go: boolean;
+  rustdoc: boolean;
 }
 
 export interface Config {

@@ -10,7 +10,8 @@
     "typescript": true,
     "python": true,
     "rust": true,
-    "go": false
+    "go": false,
+    "rustdoc": false
   },
   "severity": {
     "L1-broken": "error",
@@ -29,7 +30,7 @@
 
 ## Language switches
 
-TypeScript, Python, and Rust are on by default. Go is off. Turn off a language to reduce scan time or to avoid vendor generated sources.
+TypeScript, Python, and Rust are on by default. Go is off. The rustdoc JSON extractor is off because it runs `cargo +nightly rustdoc`, which executes build scripts and proc macros. Enable `rustdoc` only on trusted repositories. Turn off a language to reduce scan time or to avoid vendor generated sources.
 
 ## Severity
 

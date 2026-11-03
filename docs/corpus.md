@@ -1,6 +1,6 @@
 # Corpus results
 
-`corpus/repos.json` pins five open-source repositories at exact commits and one local macro fixture. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
+`corpus/repos.json` pins five open-source repositories at exact commits and two local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -16,10 +16,11 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | dtolnay/anyhow | Rust | 1 | 79 | 4 | 0 | 2 | 2 | 0 | 0 |
 | spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
 | encode/httpx | Python | 23 | 2541 | 34 | 0 | 3 | 3 | 0 | 0 |
-| dtolnay/thiserror | Rust | 1 | 162 | 21 | 0 | 2 | 2 | 0 | 0 |
+| dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 4 | 4 | 0 | 2 | 2 | 0 | 0 |
+| proc-macro-fixture (local) | Rust | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
 
-Editing the first anchored doc line produced zero findings in all six cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
+Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
 ## What the corpus found
 
@@ -39,7 +40,8 @@ The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`,
 ## Limits
 
 - thiserror is a real proc-macro crate. Its derive name is recognized through `#[proc_macro_derive]`, not expanded.
-- macro-fixture is local. It exists to exercise generated items, not to represent an external project.
+- macro-fixture and proc-macro-fixture are local. They exercise generated items, not external project coverage.
+- proc-macro-fixture enables the opt-in rustdoc JSON extractor. It requires `cargo +nightly` and executes a proc macro during extraction.
 - Standard derives such as `Clone`, `Default`, `Debug`, `PartialEq`, `PartialOrd`, `Ord`, and `Hash` are synthesized for public Rust types.
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
 - `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, and cross-file `#[macro_export]` macros. It does not handle nested repetition, non-exported cross-file macros, or general proc-macro output.

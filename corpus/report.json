@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T17:13:38.468Z",
+  "generatedAt": "2026-11-03T17:22:12.437Z",
   "report": [
     {
       "name": "slugify",
@@ -231,8 +231,8 @@
       "commit": "3b29f0107e7900860c7a061c069958569eb458e7",
       "docs": 1,
       "anchors": 162,
-      "bound": 21,
-      "bindRate": 0.12962962962962962,
+      "bound": 12,
+      "bindRate": 0.07407407407407407,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -262,6 +262,23 @@
         }
       ],
       "hits": 2,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "proc-macro-fixture",
+      "repo": "local/proc-macro-crate",
+      "commit": "fixture-v1",
+      "docs": 1,
+      "anchors": 1,
+      "bound": 1,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [],
+      "hits": 0,
       "misses": 0,
       "collateral": 0
     }

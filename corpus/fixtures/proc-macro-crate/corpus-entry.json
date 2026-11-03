@@ -1,0 +1,10 @@
+{
+  "name": "proc-macro-fixture",
+  "repo": "local/proc-macro-crate",
+  "commit": "fixture-v1",
+  "local": "corpus/fixtures/proc-macro-crate",
+  "docs": ["app/docs/**/*.md"],
+  "exclude": ["target/**"],
+  "languages": { "typescript": false, "python": false, "rust": true, "go": false, "rustdoc": true },
+  "mutations": 1
+}

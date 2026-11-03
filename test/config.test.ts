@@ -26,7 +26,7 @@ describe("config", () => {
     });
     expect(config.docs).toEqual(["README.md"]);
     expect(config.exclude).toEqual(["x.md"]);
-    expect(config.languages).toEqual({ typescript: true, python: false, rust: true, go: false });
+    expect(config.languages).toEqual({ typescript: true, python: false, rust: true, go: false, rustdoc: false });
     expect(config.severity["L1-broken"]).toBe("warning");
     expect(config.severity["S1-deprecated"]).toBe("note");
     expect(config.maxFindings).toBe(5);

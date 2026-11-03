@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Opt-in rustdoc JSON extractor for proc-macro-generated public functions, impl methods, trait methods, and macro items.
+- Local proc-macro workspace fixture that exercises the rustdoc extractor.
+- Real thiserror corpus case now runs with rustdoc extraction enabled.
+
+### Security
+
+- Rustdoc extraction runs `cargo +nightly rustdoc`, which executes build scripts and proc macros. It is off by default and only enabled explicitly.
+
+### Limits
+
+- Nested `macro_rules!` repetition and non-exported cross-file macros remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.5] - 2026-11-03
 
 ### Added

@@ -26,7 +26,7 @@ export const DEFAULT_CONFIG: Config = {
   docs: DEFAULT_DOCS,
   exclude: DEFAULT_EXCLUDES,
   packages: [],
-  languages: { typescript: true, python: true, rust: true, go: false },
+  languages: { typescript: true, python: true, rust: true, go: false, rustdoc: false },
   severity: {
     "L1-broken": "error",
     "L2-moved": "error",
@@ -50,6 +50,7 @@ const rawConfigSchema = z
         python: z.boolean().optional(),
         rust: z.boolean().optional(),
         go: z.boolean().optional(),
+        rustdoc: z.boolean().optional(),
       })
       .strict()
       .optional(),

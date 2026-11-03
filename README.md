@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml/badge.svg"></a>
-  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.59%25-brightgreen">
+  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.37%25-brightgreen">
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D22.12-339933?logo=node.js&logoColor=white">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -104,9 +104,12 @@ Ignored by default: plain prose names without backticks, unlabeled fences, histo
 | TypeScript, JavaScript | TypeScript compiler API | on |
 | Python | bundled `ast` worker | on |
 | Rust | built-in lexer and item parser | on |
+| Rust proc macros | opt-in rustdoc JSON | off |
 | Go | built-in lexer and declaration parser | off |
 
 Go is opt-in. Set `"go": true` in `docbind.json`.
+
+The rustdoc extractor is also opt-in. It runs `cargo +nightly rustdoc --output-format json`, which executes build scripts and proc macros. Enable it only on trusted code.
 
 Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or generated bindings.
 
@@ -181,7 +184,7 @@ The repository also ships a composite action in [`action/action.yml`](action/act
 {
   "docs": ["README.md", "docs/**/*.md", "**/*.md"],
   "exclude": ["CHANGELOG.md", "docs/migration/**"],
-  "languages": { "typescript": true, "python": true, "rust": true, "go": false },
+  "languages": { "typescript": true, "python": true, "rust": true, "go": false, "rustdoc": false },
   "severity": {
     "L1-broken": "error",
     "L2-moved": "error",
@@ -204,7 +207,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and one local macro fixture produce zero baseline findings, zero doc-edit findings, and 14 of 14 mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and two local fixtures produce zero baseline findings, zero doc-edit findings, and 14 of 14 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
 
 ## Development
 
@@ -234,11 +237,11 @@ Measured on the 0.1.5 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 244 passing |
-| Statements | 98.96% |
+| Tests | 252 passing |
+| Statements | 98.77% |
 | Branches | 95.04% |
-| Functions | 99.71% |
-| Lines | 99.59% |
+| Functions | 99.46% |
+| Lines | 99.37% |
 | Changed-line coverage, feature diff | 99.88% |
 | Structure gate | 73 of 73 checks |
 | Docs build | `mkdocs build --strict` passes |

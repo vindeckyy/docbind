@@ -1,6 +1,7 @@
 import type { Config, Symbol } from "../types.js";
 import { extractPython } from "./python.js";
 import { extractRust } from "./rust.js";
+import { extractRustdoc } from "./rustdoc.js";
 import { extractGo } from "./go.js";
 import type { ExtractResult } from "./protocol.js";
 import { extractTypescript } from "./typescript.js";
@@ -20,6 +21,9 @@ export function extractSurface(root: string, files: string[], config: Config): E
   }
   if (config.languages.rust && rustFiles.length > 0) {
     results.push(extractRust(root, rustFiles));
+    if (config.languages.rustdoc) {
+      results.push(extractRustdoc(root, rustFiles));
+    }
   }
   if (config.languages.go && goFiles.length > 0) {
     results.push(extractGo(root, goFiles));
@@ -36,14 +40,30 @@ export function extractSurface(root: string, files: string[], config: Config): E
     if (result.error) errors.push(result.error);
   }
 
-  symbols.sort((left, right) => left.id.localeCompare(right.id));
+  const syntacticKeys = new Set(
+    symbols
+      .filter((symbol) => !symbol.id.includes("|rustdoc|"))
+      .map((symbol) => `${symbol.name}|${symbol.kind}|${symbol.modulePath}`),
+  );
+  const deduped = new Map<string, Symbol>();
+  for (const symbol of symbols) {
+    if (
+      symbol.id.includes("|rustdoc|") &&
+      syntacticKeys.has(`${symbol.name}|${symbol.kind}|${symbol.modulePath}`)
+    ) {
+      continue;
+    }
+    deduped.set(symbol.id, symbol);
+  }
+  const finalSymbols = [...deduped.values()];
+  finalSymbols.sort((left, right) => left.id.localeCompare(right.id));
   return {
-    symbols,
+    symbols: finalSymbols,
     parseFailures,
     filesScanned,
     ...(errors.length > 0 ? { error: errors.join("; ") } : {}),
   };
 }
 
-export { extractTypescript, extractPython, extractRust, extractGo };
+export { extractTypescript, extractPython, extractRust, extractRustdoc, extractGo };
 export type { ExtractResult };
