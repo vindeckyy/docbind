@@ -4,6 +4,8 @@ export interface PythonTypeHints {
   classes: Set<string>;
   returns: Map<string, string>;
   fields: Map<string, string>;
+  bases: Map<string, string[]>;
+  params: Map<string, string[]>;
 }
 
 export interface GoTypeHints {
@@ -78,7 +80,28 @@ export function buildPythonTypeHints(symbols: Symbol[]): PythonTypeHints {
   for (const [key, found] of fieldTypes) {
     if (found.size === 1) fields.set(key, [...found][0] as string);
   }
-  return { classes, returns: resolved, fields };
+
+  const bases = new Map<string, string[]>();
+  const params = new Map<string, string[]>();
+  for (const symbol of symbols) {
+    if (symbol.kind === "class") {
+      const names = (symbol.shape.extends ?? [])
+        .map((base) => base.replace(/\[.*$/u, "").split(".").pop()?.trim() ?? "")
+        .filter((name) => name.length > 0);
+      if (names.length > 0) bases.set(symbol.name, names);
+      continue;
+    }
+    if (symbol.kind !== "method" || !symbol.parentId) continue;
+    const parent = byId.get(symbol.parentId);
+    if (!parent) continue;
+    params.set(
+      `${parent.name}.${symbol.name}`,
+      (symbol.shape.params ?? [])
+        .filter((param) => param.name !== "self" && param.name !== "cls")
+        .map((param) => param.type ?? ""),
+    );
+  }
+  return { classes, returns: resolved, fields, bases, params };
 }
 
 function goTypeName(raw: string): string | undefined {

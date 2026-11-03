@@ -763,6 +763,58 @@ describe("check pipeline", () => {
     expect(checkProject(root, config).findings[0]?.rule).toBe("L4-renamed");
   });
 
+  it("binds Python parameters inferred from call arguments", () => {
+    const root = tempProject({
+      "pyproject.toml": '[project]\nname = "pyfields"\n',
+      "pyfields/__init__.py": "",
+      "pyfields/models.py": [
+        "class Request:",
+        "    def __init__(self, method: str) -> None:",
+        "        self.method = method",
+        "",
+        "class Response:",
+        "    @property",
+        "    def request(self) -> Request:",
+        "        return Request('GET')",
+        "",
+        "def get_response() -> Response:",
+        "    return Response()",
+        "",
+      ].join("\n"),
+      "docs/api.md": [
+        "```python",
+        "response = get_response()",
+        "def log(request):",
+        "    request.method",
+        "log(response.request)",
+        "```",
+        "",
+      ].join("\n"),
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("method");
+    lockNow(root);
+    writeFileSync(
+      join(root, "pyfields/models.py"),
+      [
+        "class Request:",
+        "    def __init__(self, method: str) -> None:",
+        "        self.verb = method",
+        "",
+        "class Response:",
+        "    @property",
+        "    def request(self) -> Request:",
+        "        return Request('GET')",
+        "",
+        "def get_response() -> Response:",
+        "    return Response()",
+        "",
+      ].join("\n"),
+    );
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L4-renamed");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

@@ -126,6 +126,14 @@ The tool errs toward silence. A wrong finding costs more trust than a missed one
 
 The full design is in [docs/architecture.md](docs/architecture.md).
 
+## Scope and limits
+
+`docbind` checks symbol contracts, not prose claims. A doc sentence that names `getUser` binds the symbol. The tool verifies that the symbol still exists and that its parameters and return type still match. It does not check what the sentence says about them: a line claiming `getUser` returns `Email` passes while the signature returns `string`.
+
+Markdown is the only input format. `docbind` reads inline code, headings, tables, fenced code, signature fences, and explicit references from markdown files. Docstrings, reStructuredText, AsciiDoc, and Javadoc are not read.
+
+It does not execute anything. Examples are parsed, never run. Example-output drift, such as a printed value that no longer matches the code, is invisible.
+
 ## Install
 
 The `docbind` npm name is held by an unrelated package. Install from source for now.
@@ -207,7 +215,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and six local fixtures produce zero baseline findings, zero doc-edit findings, and 61 of 61 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and six local fixtures produce zero baseline findings, zero doc-edit findings, and 64 of 64 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
 
 ## Development
 
@@ -233,14 +241,14 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.40 tree:
+Measured on the 0.1.41 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 322 passing |
+| Tests | 327 passing |
 | Statements | 98.70% |
-| Branches | 95.08% |
-| Functions | 99.54% |
+| Branches | 95.1% |
+| Functions | 99.55% |
 | Lines | 99.38% |
 | Changed-line coverage, feature diff | 99.88% |
 | Structure gate | 73 of 73 checks |

@@ -44,6 +44,14 @@ The doc anchor did not change. The symbol contract it referenced did. The tool r
 - signature fence mismatch
 - deprecation, when enabled
 
+## Scope and limits
+
+`docbind` checks symbol contracts, not prose claims. A backticked `getUser` binds the symbol; the tool verifies that it exists and that its parameters and return type still match. It does not check what the surrounding sentence asserts. A line saying `getUser` returns `Email` passes while the signature returns `string`.
+
+Markdown is the only input format. Docstrings, reStructuredText, AsciiDoc, and Javadoc are not read.
+
+Examples are parsed, never run. Example-output drift is invisible.
+
 ## Next
 
 - [Usage](usage.md)

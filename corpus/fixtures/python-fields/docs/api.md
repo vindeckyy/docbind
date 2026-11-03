@@ -1,8 +1,17 @@
 # API
 
 ```python
-from pyfields import get_response
+from pyfields import Handler, get_response
 
 response = get_response()
-print(response.request.method)
+response.request.method
+
+def show(req):
+    req.method
+
+show(response.request)
+
+class MyHandler(Handler):
+    def handle(self, request):
+        request.url
 ```

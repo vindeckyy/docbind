@@ -15,14 +15,14 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
 | dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
 | spf13/viper | Go | 2 | 167 | 94 | 0 | 8 | 8 | 0 | 0 |
-| encode/httpx | Python | 23 | 2882 | 405 | 0 | 3 | 3 | 0 | 0 |
+| encode/httpx | Python | 23 | 2818 | 417 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 3 | 3 | 0 | 1 | 1 | 0 | 0 |
 | go-package-fixture (local) | Go | 1 | 45 | 45 | 0 | 28 | 28 | 0 | 0 |
 | go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 | thiserror-derived-fixture (local) | Rust | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 |
-| python-fields-fixture (local) | Python | 1 | 4 | 3 | 0 | 2 | 2 | 0 | 0 |
+| python-fields-fixture (local) | Python | 1 | 9 | 8 | 0 | 5 | 5 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -39,7 +39,9 @@ The same run also found a missed mutation. Removing the typed declaration for `s
 
 Python fences resolve attribute chains through source class fields. A property such as `Response.request -> Request` rewrites `response.request.method` to `Request.method`. Instance attributes assigned in `__init__`, such as `self.method = method`, are extracted as properties with their parameter type. Bare function calls now use their return annotations, so `response = get_response()` types `response` when `get_response() -> Response`.
 
-httpx rose from 379 to 405 bound anchors with zero baseline findings. Predeclared Python builtins are filtered from anchors, so httpx anchors fell from 2972 to 2882. The local Python fixture binds 3 of 4 anchors and detects 2 of 2 mutations, including an `L4-renamed` finding on the attribute chain.
+Python fence parameters are typed three ways: annotated signatures such as `def log(request: Request)`, call arguments such as `log(response.request)`, and base-class methods when a subclass overrides them without annotations. That covers the common `class MyAuth(httpx.Auth): def auth_flow(self, request)` pattern.
+
+httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclared Python builtins are filtered from anchors, so httpx anchors fell from 2972 to 2818. The local Python fixture binds 8 of 9 anchors and detects 5 of 5 mutations, including `L4-renamed` findings on `Request.method` and `Request.url`.
 
 ## Go package selectors and constants
 

@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.41] - 2026-11-03
+
+### Added
+
+- Python fence parameters are typed from annotations, call arguments, and overridden base-class methods.
+- `README.md` and `docs/index.md` now state the scope boundary: contract shape only, markdown only, no execution.
+
+### Improved
+
+- httpx corpus bind rate rose from 405 to 417 anchors with zero baseline findings.
+- Python fixture grew from 4 to 9 anchors and from 2 to 5 detected mutations.
+- Corpus now detects 64 of 64 seeded mutations with zero collateral findings.
+- Branch coverage rose from 95.08% to 95.1%.
+
+### Limits
+
+- Prose claims are not checked. A sentence can misstate a return type or behavior and still pass.
+- Docstrings, reStructuredText, AsciiDoc, and Javadoc are not read.
+- Examples are never executed, so example-output drift is invisible.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.40] - 2026-11-03
 
 ### Added
@@ -773,3 +794,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.38]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.38
 [0.1.39]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.39
 [0.1.40]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.40
+[0.1.41]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.41

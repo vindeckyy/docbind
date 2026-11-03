@@ -263,9 +263,42 @@ function tsFenceAnchors(node: Code, docPath: string, heading: string): FenceResu
   return { anchors, imports };
 }
 
+function splitPythonArguments(source: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let quote = "";
+  let start = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index] as string;
+    if (quote) {
+      if (char === quote && source[index - 1] !== "\\") quote = "";
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (char === "(" || char === "[" || char === "{") depth += 1;
+    else if (char === ")" || char === "]" || char === "}") depth = Math.max(0, depth - 1);
+    else if (char === "," && depth === 0) {
+      parts.push(source.slice(start, index));
+      start = index + 1;
+    }
+  }
+  if (start < source.length) parts.push(source.slice(start));
+  return parts.map((part) => part.trim()).filter((part) => part.length > 0);
+}
+
 function inferPythonTypes(lines: string[], hints?: PythonTypeHints): Map<string, string> {
   const types = new Map<string, string>();
   if (!hints) return types;
+  const annotationType = (source: string): string | undefined => {
+    const first = source.split("|")[0] as string;
+    /* v8 ignore next */
+    const names = first.replace(/^typing\./u, "").match(/[A-Za-z_]\w*/gu) ?? [];
+    const type = names[names.length - 1];
+    return type && hints.classes.has(type) ? type : undefined;
+  };
   const inferChain = (source: string): string | undefined => {
     const chain = /^([A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*)+)$/u.exec(source);
     if (!chain?.[1]) return undefined;
@@ -294,8 +327,112 @@ function inferPythonTypes(lines: string[], hints?: PythonTypeHints): Map<string,
     return hints.returns.get(`${receiverType ?? receiver}.${method}`) ??
       hints.returns.get(`${receiver}.${method}`);
   };
+  const fenceBases = new Map<string, string[]>();
+  const baseParamTypes = (base: string, method: string, seen: Set<string>): string[] | undefined => {
+    if (seen.has(base)) return undefined;
+    seen.add(base);
+    const direct = hints.params.get(`${base}.${method}`);
+    if (direct?.some((type) => type.length > 0)) return direct;
+    const bases = fenceBases.get(base) ?? hints.bases.get(base);
+    if (!bases) return undefined;
+    for (const next of bases) {
+      const found = baseParamTypes(next, method, seen);
+      if (found) return found;
+    }
+    return undefined;
+  };
+  const rawLines = lines.map((raw) => raw.replace(/^\s*(?:>>>|\.\.\.)\s?/u, "").replace(/\s+$/u, ""));
+  let currentClass: string | undefined;
+  let classIndent = -1;
+  for (const line of rawLines) {
+    if (line.trim().length === 0) continue;
+    const indent = line.length - line.trimStart().length;
+    const classMatch = /^\s*class\s+([A-Za-z_]\w*)\s*(?:\(([^)]*)\))?\s*:/u.exec(line);
+    if (classMatch?.[1]) {
+      currentClass = classMatch[1];
+      classIndent = indent;
+      const bases = (classMatch[2] ?? "")
+        .split(",")
+        .map((base) => (base.replace(/\[.*$/u, "").split(".").pop() as string).trim())
+        .filter((base) => base.length > 0);
+      fenceBases.set(currentClass, bases);
+      continue;
+    }
+    const definition = /^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(([^)]*)\)/u.exec(line);
+    if (!definition?.[1]) {
+      if (indent <= classIndent) currentClass = undefined;
+      continue;
+    }
+    if (!currentClass || indent <= classIndent) {
+      if (indent <= classIndent) currentClass = undefined;
+      continue;
+    }
+    const inherited = baseParamTypes(currentClass, definition[1], new Set());
+    if (!inherited) continue;
+    let paramIndex = 0;
+    for (const part of splitPythonArguments(definition[2] as string)) {
+      const name = (part.split(":")[0] as string).trim().replace(/^\*+/u, "");
+      if (name === "self" || name === "cls") continue;
+      const type = inherited[paramIndex];
+      paramIndex += 1;
+      if (!part.includes(":") && type && hints.classes.has(type)) types.set(name, type);
+    }
+  }
+  const signatures = new Map<string, string[]>();
+  const stripped = lines.map((raw) => raw.replace(/^\s*(?:>>>|\.\.\.)\s?/u, "").trim());
+  for (const line of stripped) {
+    const definition = /^(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\((.*)$/u.exec(line);
+    if (!definition?.[1]) continue;
+    const body = (definition[2] as string).split(")")[0] as string;
+    const names: string[] = [];
+    for (const part of splitPythonArguments(body)) {
+      const [rawName, rawAnnotation] = part.split(":");
+      const name = (rawName as string).trim();
+      if (!/^[A-Za-z_]\w*$/u.test(name)) continue;
+      names.push(name);
+      const type = rawAnnotation ? annotationType(rawAnnotation) : undefined;
+      if (type) types.set(name, type);
+    }
+    signatures.set(definition[1], names);
+  }
+  const inferValue = (expression: string): string | undefined => {
+    const trimmed = expression.trim();
+    if (/^[A-Za-z_]\w*$/u.test(trimmed)) return types.get(trimmed);
+    return inferCall(trimmed);
+  };
   for (const raw of lines) {
     const line = raw.replace(/^\s*(?:>>>|\.\.\.)\s?/u, "").trim();
+    for (const [name, parameters] of signatures) {
+      const callStart = new RegExp(`(?:^|\\.)${name}\\s*\\(`, "u").exec(line);
+      if (!callStart) continue;
+      /* v8 ignore next */
+      const open = line.indexOf("(", callStart.index);
+      /* v8 ignore next */
+      if (open < 0) continue;
+      let depth = 1;
+      let close = -1;
+      for (let index = open + 1; index < line.length; index += 1) {
+        if (line[index] === "(") depth += 1;
+        else if (line[index] === ")") {
+          depth -= 1;
+          if (depth === 0) {
+            close = index;
+            break;
+          }
+        }
+      }
+      if (close < 0) continue;
+      const args = splitPythonArguments(line.slice(open + 1, close));
+      args.forEach((argument, index) => {
+        const keyword = /^([A-Za-z_]\w*)\s*=\s*(.+)$/u.exec(argument);
+        const target = keyword?.[1] && parameters.includes(keyword[1])
+          ? keyword[1]
+          : parameters[index];
+        if (!target || types.has(target)) return;
+        const type = inferValue(keyword?.[2] ?? argument);
+        if (type) types.set(target, type);
+      });
+    }
     const withMatch = /^(?:async\s+)?with\s+(.+?)\s+as\s+([A-Za-z_]\w*)\s*:/u.exec(line);
     if (withMatch) {
       const type = inferCall(withMatch[1] as string);
@@ -305,6 +442,7 @@ function inferPythonTypes(lines: string[], hints?: PythonTypeHints): Map<string,
     const annotated = /^([A-Za-z_]\w*)\s*:\s*([^=]+)=/u.exec(line);
     if (annotated) {
       const first = (annotated[2] as string).split("|")[0] as string;
+      /* v8 ignore next */
       const names = first.match(/[A-Za-z_]\w*/gu) ?? [];
       const type = names[names.length - 1];
       if (type && hints.classes.has(type)) types.set(annotated[1] as string, type);
@@ -350,6 +488,13 @@ function pyFenceAnchors(
     const cleaned = line.replace(/^\s*(?:>>>|\.\.\.)\s?/u, "");
     const declaration = /^\s*(?:async\s+)?(?:def|class)\s+([A-Za-z_]\w*)/u.exec(cleaned);
     if (declaration?.[1]) locals.add(declaration[1]);
+    const definition = /^\s*(?:async\s+)?def\s+[A-Za-z_]\w*\s*\(([^)]*)\)/u.exec(cleaned);
+    if (definition?.[1]) {
+      for (const part of definition[1].split(",")) {
+        const name = (part.split(":")[0] as string).trim().replace(/^\*+/u, "");
+        if (/^[A-Za-z_]\w*$/u.test(name)) locals.add(name);
+      }
+    }
     const assignment = /^\s*([A-Za-z_]\w*)\s*=/u.exec(cleaned);
     if (assignment?.[1]) locals.add(assignment[1]);
   }

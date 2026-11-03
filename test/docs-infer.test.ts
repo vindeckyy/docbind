@@ -182,6 +182,214 @@ describe("Python type hints", () => {
     expect(tokens).not.toContain("Request.headers.value");
   });
 
+  it("maps class bases and method parameter types", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });
+    const auth = symbol("Auth", {
+      id: "auth",
+      kind: "class",
+      qualifiedName: "httpx.Auth",
+      aliases: ["Auth"],
+    });
+    const subclass = symbol("BasicAuth", {
+      id: "basic",
+      kind: "class",
+      qualifiedName: "httpx.BasicAuth",
+      shape: { kind: "class", extends: ["httpx.Auth"], members: [] },
+    });
+    const flow = symbol("auth_flow", {
+      id: "auth.auth_flow",
+      kind: "method",
+      parentId: auth.id,
+      qualifiedName: "httpx.Auth.auth_flow",
+      shape: {
+        kind: "method",
+        params: [
+          { name: "self", kind: "positional", optional: false, rest: false, hasDefault: false, type: "" },
+          { name: "request", kind: "positional", optional: false, rest: false, hasDefault: false, type: "Request" },
+        ],
+        returnType: "Request",
+      },
+    });
+    const hints = buildPythonTypeHints([request, response, auth, subclass, flow]);
+    expect(hints.bases.get("BasicAuth")).toEqual(["Auth"]);
+    expect(hints.params.get("Auth.auth_flow")).toEqual(["Request"]);
+  });
+
+  it("types annotated and inferred function parameters", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });
+    const property = symbol("request", {
+      id: "response.request",
+      kind: "property",
+      parentId: response.id,
+      qualifiedName: "httpx.Response.request",
+      aliases: ["Response.request"],
+      shape: { kind: "property", typeShape: "Request", visibility: "public", flags: [] },
+    });
+    const getResponse = symbol("get_response", {
+      id: "get_response",
+      qualifiedName: "httpx.get_response",
+      shape: { ...shape, returnType: "Response" },
+    });
+    const hints = buildPythonTypeHints([request, response, property, getResponse]);
+    const annotated = fenceAnchors(
+      code("def log(request: Request):\n    request.method\n"),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    expect(annotated.anchors.map((anchor) => anchor.token)).toContain("Request.method");
+    const positional = fenceAnchors(
+      code([
+        "response = get_response()",
+        "def log(request):",
+        "    request.method",
+        "log(response.request)",
+        "",
+      ].join("\n")),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    expect(positional.anchors.map((anchor) => anchor.token)).toContain("Request.method");
+    const keyword = fenceAnchors(
+      code([
+        "response = get_response()",
+        "def log(request):",
+        "    request.method",
+        "log(request=response.request)",
+        "",
+      ].join("\n")),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    expect(keyword.anchors.map((anchor) => anchor.token)).toContain("Request.method");
+  });
+
+  it("inherits parameter types from base classes", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const auth = symbol("Auth", { id: "auth", kind: "class", qualifiedName: "httpx.Auth" });
+    const basic = symbol("BasicAuth", {
+      id: "basic",
+      kind: "class",
+      qualifiedName: "httpx.BasicAuth",
+      shape: { kind: "class", extends: ["httpx.Auth"], members: [] },
+    });
+    const override = symbol("auth_flow", {
+      id: "basic.auth_flow",
+      kind: "method",
+      parentId: basic.id,
+      qualifiedName: "httpx.BasicAuth.auth_flow",
+      shape: {
+        kind: "method",
+        params: [{ name: "request", kind: "positional", optional: false, rest: false, hasDefault: false, type: "" }],
+        returnType: "",
+      },
+    });
+    const flow = symbol("auth_flow", {
+      id: "auth.auth_flow",
+      kind: "method",
+      parentId: auth.id,
+      qualifiedName: "httpx.Auth.auth_flow",
+      shape: {
+        kind: "method",
+        params: [{ name: "request", kind: "positional", optional: false, rest: false, hasDefault: false, type: "Request" }],
+        returnType: "Request",
+      },
+    });
+    const hints = buildPythonTypeHints([request, auth, basic, override, flow]);
+    const result = fenceAnchors(
+      code([
+        "class MyAuth(BasicAuth):",
+        "    def auth_flow(self, request):",
+        "        request.method",
+        "",
+      ].join("\n")),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Request.method");
+  });
+
+  it("handles Python parameter edge cases", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const base = symbol("Base", { id: "base", kind: "class", qualifiedName: "httpx.Base" });
+    const cycleA = symbol("CycleA", {
+      id: "cycle-a",
+      kind: "class",
+      qualifiedName: "httpx.CycleA",
+      shape: { kind: "class", extends: ["CycleB"], members: [] },
+    });
+    const cycleB = symbol("CycleB", {
+      id: "cycle-b",
+      kind: "class",
+      qualifiedName: "httpx.CycleB",
+      shape: { kind: "class", extends: ["CycleA"], members: [] },
+    });
+    const getResponse = symbol("get_response", {
+      id: "get_response",
+      qualifiedName: "httpx.get_response",
+      shape: { ...shape, returnType: "Response" },
+    });
+    const baseRun = symbol("run", {
+      id: "base.run",
+      kind: "method",
+      parentId: base.id,
+      qualifiedName: "httpx.Base.run",
+      shape: {
+        kind: "method",
+        params: [{ name: "value", kind: "positional", optional: false, rest: false, hasDefault: false, type: "Request" }],
+        returnType: "",
+      },
+    });
+    const hints = buildPythonTypeHints([request, base, baseRun, cycleA, cycleB, getResponse]);
+    const result = fenceAnchors(
+      code([
+        "response = get_response()",
+        "def messy(a, b=1, *, extra, **kwargs):",
+        "    a.method",
+        "messy(1, 2, 3, extra=4,)",
+        "def nested(p):",
+        "    p.method",
+        "nested(helper(unknown))",
+        "def incomplete(q):",
+        "    q.method",
+        "incomplete(",
+        "def quoted(a):",
+        "    a.method",
+        "quoted(\"a,b\")",
+        "quoted(\"it's\")",
+        "def strparam(s: str):",
+        "    s.method",
+        "def typedcall():",
+        "    response.raise_for_status()",
+        "    httpx.get(\"/\")",
+        "messy(response)",
+        "class Bare:",
+        "    value = 1",
+        "    def run(self, value: Request | None):",
+        "        value.method",
+        "class Child(Base):",
+        "    def run(self, value: Request):",
+        "        value.method",
+        "class Unknown(Nowhere):",
+        "    def run(self, value):",
+        "        value.method",
+        "class CycleA(CycleB):",
+        "    def run(self, value):",
+        "        value.method",
+        "",
+      ].join("\n")),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Request.method");
+  });
+
   it("drops conflicting property types and orphan properties", () => {
     const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
     const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });

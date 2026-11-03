@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T20:49:20.039Z",
+  "generatedAt": "2026-11-03T20:58:19.979Z",
   "report": [
     {
       "name": "slugify",
@@ -203,9 +203,9 @@
       "repo": "encode/httpx",
       "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
       "docs": 23,
-      "anchors": 2882,
-      "bound": 405,
-      "bindRate": 0.14052741151977793,
+      "anchors": 2818,
+      "bound": 417,
+      "bindRate": 0.14797728885734562,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -841,9 +841,9 @@
       "repo": "local/python-fields",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 4,
-      "bound": 3,
-      "bindRate": 0.75,
+      "anchors": 9,
+      "bound": 8,
+      "bindRate": 0.8888888888888888,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -870,9 +870,42 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "request",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Handler",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "url",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 2,
+      "hits": 5,
       "misses": 0,
       "collateral": 0
     }
