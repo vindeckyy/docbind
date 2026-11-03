@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T23:23:29.239Z",
+  "generatedAt": "2026-11-03T23:29:27.313Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,8 +720,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 20,
-      "bound": 20,
+      "anchors": 21,
+      "bound": 21,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -762,7 +762,7 @@
           "collateralRules": []
         },
         {
-          "symbol": "flag",
+          "symbol": "count",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -806,28 +806,6 @@
           "collateralRules": []
         },
         {
-          "symbol": "tags",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "count",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
           "symbol": "routes",
           "rule": "L4-renamed",
           "hit": true,
@@ -850,7 +828,18 @@
           "collateralRules": []
         },
         {
-          "symbol": "value",
+          "symbol": "fromConstant",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "flag",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -894,6 +883,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "value",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "GREEN",
           "rule": "L4-renamed",
           "hit": true,
@@ -917,34 +917,34 @@
           "collateralRules": []
         },
         {
-          "symbol": "secret",
-          "rule": "L2-moved",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L2-moved"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "secret",
-          "rule": "L2-moved",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L2-moved"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "helper",
+          "symbol": "tags",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
           "relatedRules": [
             "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "secret",
+          "rule": "L2-moved",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "secret",
+          "rule": "L2-moved",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L2-moved"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -1013,9 +1013,22 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "fromConstant",
+          "kind": "constant",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 25,
+      "hits": 26,
       "misses": 0,
       "collateral": 0
     }

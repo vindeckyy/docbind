@@ -9,6 +9,7 @@
 - annotation mutations: locate `@Annotation` arguments through the Java token stream, then pick the string literal by value or by array index and replace it; no raw annotation text match
 - enum mutations: locate an enum constant through the Java token stream, bound its constructor arguments, pick the unique string literal with the requested value, and replace it
 - default mutations: locate an annotation method through the Java token stream, find its `default` clause, and replace the unique matching string
+- constant mutations: locate a static field initializer through the Java token stream and replace the unique matching string, proving that resolved defaults track the constant
 - macro fixture: cross-file `#[macro_export]` repetition macros, with two seeded mutations
 - collateral findings: findings for unrelated symbols during each mutation
 

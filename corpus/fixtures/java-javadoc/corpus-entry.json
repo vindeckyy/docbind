@@ -62,5 +62,15 @@
       "symbol": "value",
       "expectedRule": "L3-reshaped"
     }
+  ],
+  "constantMutations": [
+    {
+      "file": "src/main/java/example/Client.java",
+      "field": "NAME",
+      "from": "named",
+      "to": "other",
+      "symbol": "fromConstant",
+      "expectedRule": "L3-reshaped"
+    }
   ]
 }

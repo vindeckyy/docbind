@@ -5,7 +5,7 @@
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
 - doc-edit noise: append a word to an anchored doc line, with code unchanged
-- mutation recall: rename a bound symbol, edit a named annotation argument, edit an annotation array element by value or index, edit an enum constant argument, or edit an annotation default; every Java edit finds its target through the token stream
+- mutation recall: rename a bound symbol, edit a named annotation argument, edit an annotation array element by value or index, edit an enum constant argument, edit an annotation default, or edit a static constant referenced by a default; every Java edit finds its target through the token stream
 - collateral findings: findings for unrelated symbols during each mutation
 
 Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/main/corpus/report.json)
@@ -26,7 +26,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/rst-fixture (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/python-asciidoc (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
-| local/java-javadoc (local) | Java | 1 | 20 | 20 | 100.0% | 0 | 25 | 25 | 0 | 0 |
+| local/java-javadoc (local) | Java | 1 | 21 | 21 | 100.0% | 0 | 26 | 26 | 0 | 0 |
 
 Overall: 820 of 3387 anchors bound, or 24.2%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
 
@@ -51,7 +51,7 @@ httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclare
 
 ## Javadoc
 
-Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 20 of 20 anchors with 22 of 22 mutations, including token-located edits to an enum constant argument, a named annotation argument, and two annotation array elements selected by value and by index, and an annotation default, each required to produce `L3-reshaped`. Java enums keep constant constructor arguments, typed constant argument values, and members declared in constant bodies.
+Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 20 of 20 anchors with 22 of 22 mutations, including token-located edits to an enum constant argument, a named annotation argument, and two annotation array elements selected by value and by index, an annotation default, and a static constant referenced by a default, each required to produce `L3-reshaped`. Java enums keep constant constructor arguments, typed constant argument values, and members declared in constant bodies.
 
 ## AsciiDoc
 

@@ -29,6 +29,8 @@ interface JavaDraft {
   body: string;
   path: string;
   parentPath?: string;
+  defaultValue?: string;
+  defaultParsed?: Pick<AnnotationArgument, "kind" | "literal" | "items">;
 }
 
 interface JavaContext {
@@ -41,6 +43,7 @@ interface JavaContext {
   packageClause: string;
   drafts: JavaDraft[];
   types: Array<{ name: string; start: number; end: number }>;
+  constants: Map<string, EvaluatedValue>;
   evaluateDefaults: boolean;
   failures: number;
 }
@@ -160,15 +163,27 @@ function annotationArguments(raw: string): AnnotationArgument[] {
   return splitArguments(raw).map(annotationArgument);
 }
 
-function evaluateArgument(argument: AnnotationArgument): EvaluatedValue | undefined {
+function evaluateArgument(
+  argument: AnnotationArgument,
+  constants?: Map<string, EvaluatedValue>,
+  enumLabels?: Set<string>,
+): EvaluatedValue | undefined {
   if (argument.kind === "string" || argument.kind === "number" || argument.kind === "boolean") {
     return argument.literal as EvaluatedValue;
   }
-  if (argument.kind === "enum" || argument.kind === "class") {
+  if (argument.kind === "enum") {
+    const literal = argument.literal as string;
+    const direct = constants?.get(literal);
+    if (direct !== undefined) return direct;
+    return enumLabels?.has(literal) ? literal : undefined;
+  }
+  if (argument.kind === "class") {
     return argument.literal as string;
   }
   if (argument.kind === "array") {
-    const values = (argument.items as AnnotationArgument[]).map(evaluateArgument);
+    const values = (argument.items as AnnotationArgument[]).map((item) =>
+      evaluateArgument(item, constants, enumLabels),
+    );
     if (values.some((value) => value === undefined)) return undefined;
     return values as EvaluatedValue[];
   }
@@ -176,7 +191,7 @@ function evaluateArgument(argument: AnnotationArgument): EvaluatedValue | undefi
     const evaluated: Record<string, EvaluatedValue> = {};
     let position = 0;
     for (const item of argument.items as AnnotationArgument[]) {
-      const value = evaluateArgument(item);
+      const value = evaluateArgument(item, constants, enumLabels);
       if (value === undefined) return undefined;
       evaluated[item.name ?? `arg${position}`] = value;
       position += 1;
@@ -551,10 +566,16 @@ class JavaParser {
       }
       let cursor = index;
       let visibility = isInterface ? "public" : "package";
+      let isStatic = false;
+      let isFinal = false;
       while (cursor < end && MODIFIERS.has((tokens[cursor] as Token).value)) {
         const modifier = (tokens[cursor] as Token).value;
         if (modifier === "public" || modifier === "protected" || modifier === "private") {
           visibility = modifier;
+        } else if (modifier === "static") {
+          isStatic = true;
+        } else if (modifier === "final") {
+          isFinal = true;
         }
         cursor += 1;
       }
@@ -595,7 +616,7 @@ class JavaParser {
       if (boundary < 0) break;
       /* v8 ignore next */
       if ((tokens[boundary] as Token).value === ";") {
-        this.parseField(typePath, cursor, boundary, visibility, annotations);
+        this.parseField(typePath, cursor, boundary, visibility, annotations, isStatic && isFinal);
         annotations = [];
         index = boundary + 1;
         continue;
@@ -642,10 +663,6 @@ class JavaParser {
       defaultValue = this.context.source.slice(startOffset, endOffset).trim();
       defaultParsed = annotationLiteral(defaultValue);
     }
-    const evaluatedDefault =
-      this.context.evaluateDefaults && defaultValue !== undefined && defaultParsed
-        ? evaluateArgument({ value: defaultValue, ...defaultParsed })
-        : undefined;
     let body = "";
     if ((tokens[cursor] as Token | undefined)?.value === "{") {
       const bodyClose = findMatching(tokens, cursor, "{", "}");
@@ -664,6 +681,8 @@ class JavaParser {
         parentPath: typePath,
         start: (tokens[nameIndex] as Token).start,
         body,
+        ...(defaultValue !== undefined ? { defaultValue } : {}),
+        ...(defaultParsed ? { defaultParsed } : {}),
         shape: {
           kind: "method",
           async: false,
@@ -678,7 +697,6 @@ class JavaParser {
                 defaultKind: defaultParsed.kind,
                 ...(defaultParsed.literal !== undefined ? { defaultLiteral: defaultParsed.literal } : {}),
                 ...(defaultParsed.items !== undefined ? { defaultItems: defaultParsed.items } : {}),
-                ...(evaluatedDefault !== undefined ? { evaluatedDefault } : {}),
               }
             : {}),
           ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
@@ -694,12 +712,33 @@ class JavaParser {
     semicolon: number,
     visibility: string,
     annotations: JavaAnnotation[] = [],
+    constant = false,
   ): void {
     const tokens = this.context.lexed.tokens;
-    let nameIndex = semicolon - 1;
+    let equals = -1;
+    for (let index = start; index < semicolon; index += 1) {
+      if ((tokens[index] as Token).value === "=") {
+        equals = index;
+        break;
+      }
+    }
+    let nameIndex = (equals >= 0 ? equals : semicolon) - 1;
     while (nameIndex >= start && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
     const name = nameIndex >= start ? (tokens[nameIndex] as Token).value : "";
     if (!name) return;
+    if (constant) {
+      if (equals >= 0) {
+        const initializer = this.context.source
+          .slice((tokens[equals] as Token).end, (tokens[semicolon] as Token).start)
+          .trim();
+        const parsed = annotationLiteral(initializer);
+        const evaluated = evaluateArgument({ value: initializer, ...parsed });
+        if (evaluated !== undefined) {
+          this.context.constants.set(name, evaluated);
+          this.context.constants.set(`${typePath}.${name}`, evaluated);
+        }
+      }
+    }
     const type = tokens
       .slice(start, Math.max(start, nameIndex))
       .map((token) => token.value)
@@ -785,6 +824,7 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
       packageClause: "",
       drafts: [],
       types: [],
+      constants: new Map(),
       evaluateDefaults,
       failures: 0,
     };
@@ -802,7 +842,22 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
         )
         .map((draft) => [draft.path, draft]),
     );
+    const enumLabels = new Set<string>();
     for (const draft of context.drafts) {
+      if (draft.kind !== "enum") continue;
+      for (const member of draft.shape.enumMembers ?? []) {
+        enumLabels.add(`${draft.name}.${member.name}`);
+      }
+    }
+    for (const draft of context.drafts) {
+      if (evaluateDefaults && draft.defaultValue !== undefined && draft.defaultParsed) {
+        const evaluated = evaluateArgument(
+          { value: draft.defaultValue, ...draft.defaultParsed },
+          context.constants,
+          enumLabels,
+        );
+        if (evaluated !== undefined) draft.shape.evaluatedDefault = evaluated;
+      }
       const shapeText = canonicalShape(draft.shape);
       const parent = draft.parentPath ? byPath.get(draft.parentPath) : undefined;
       /* v8 ignore next */

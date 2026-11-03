@@ -2,6 +2,29 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.72] - 2026-11-03
+
+### Added
+
+- Annotation defaults resolve static final literals declared in the same file, for example `default Constants.NAME`.
+- Resolution covers string, number, and boolean constants; unresolved references leave `evaluatedDefault` absent.
+- Enum defaults resolve only against enums declared in the file, so `Mode.FAST` stays evaluable while `Missing.NAME` does not.
+- Corpus supports token-located constant mutations; editing `Constants.NAME` must produce `L3-reshaped` on `Marker#fromConstant`.
+
+### Fixed
+
+- Java field names are read from the token before `=`, so `static final boolean ON = true` no longer extracts the field name `true`.
+
+### Changed
+
+- Corpus mutations: 97 to 98; `java-javadoc-fixture` runs 26 mutations with 21 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.6%; line coverage to 99.29%.
+
+### Limits
+
+- Only same-file constants resolve; cross-file constant references stay unresolved.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.71] - 2026-11-03
 
 ### Added
@@ -1275,3 +1298,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.69]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.69
 [0.1.70]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.70
 [0.1.71]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.71
+[0.1.72]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.72

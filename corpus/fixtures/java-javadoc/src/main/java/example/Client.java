@@ -72,7 +72,8 @@ class Internal {
 }
 
 /**
- * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, and {@link Marker#tags()}.
+ * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, {@link Marker#tags()},
+ * and {@link Marker#fromConstant()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -82,6 +83,12 @@ public @interface Marker {
     boolean flag() default true;
 
     String[] tags() default {"a", "b"};
+
+    String fromConstant() default Constants.NAME;
+}
+
+class Constants {
+    static final String NAME = "named";
 }
 
 /**

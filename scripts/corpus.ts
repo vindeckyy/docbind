@@ -60,11 +60,19 @@ interface CorpusEntry {
     symbol: string;
     expectedRule?: string;
   }>;
+  constantMutations?: Array<{
+    file: string;
+    field: string;
+    from: string;
+    to: string;
+    symbol: string;
+    expectedRule?: string;
+  }>;
 }
 
 interface MutationResult {
   symbol: string;
-  kind?: "rename" | "value" | "annotation" | "enum" | "default";
+  kind?: "rename" | "value" | "annotation" | "enum" | "default" | "constant";
   expectedRule?: string;
   rule?: string;
   hit: boolean;
@@ -238,6 +246,43 @@ function replaceAnnotationString(
   }
   if (open < 0) throw new Error(`annotation not found: @${annotation}`);
   return replaceStringInParens(source, tokens, open, `@${annotation}`, from, to, element);
+}
+
+function replaceConstantString(source: string, field: string, from: string, to: string): string {
+  const tokens = lex(source, "java").tokens;
+  const index = tokens.findIndex(
+    (token, cursor) => token.value === field && tokens[cursor + 1]?.value === "=",
+  );
+  if (index < 0) throw new Error(`constant declaration not found: ${field}`);
+  let equals = -1;
+  for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
+    const value = tokens[cursor]?.value;
+    if (value === "=") {
+      equals = cursor;
+      break;
+    }
+    if (value === ";" || value === "}") break;
+  }
+  if (equals < 0) throw new Error(`constant has no initializer: ${field}`);
+  let cursor = equals + 1;
+  while (cursor < tokens.length && tokens[cursor]?.value !== ";") cursor += 1;
+  if (cursor >= tokens.length) throw new Error(`constant has no terminator: ${field}`);
+  const bodyStart = tokens[equals]?.end as number;
+  const bodyEnd = tokens[cursor]?.start as number;
+  const body = source.slice(bodyStart, bodyEnd);
+  const matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
+    .map((match) => ({ text: match[0], index: match.index as number }))
+    .filter((match) => {
+      try {
+        return JSON.parse(match.text) === from;
+      } catch {
+        return false;
+      }
+    });
+  if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in constant ${field}, found ${matches.length}`);
+  const match = matches[0] as { text: string; index: number };
+  const start = bodyStart + match.index;
+  return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
 }
 
 function replaceDefaultString(source: string, method: string, from: string, to: string): string {
@@ -533,6 +578,36 @@ for (const entry of selected) {
         symbol: defaultMutation.symbol,
         kind: "default",
         ...(defaultMutation.expectedRule ? { expectedRule: defaultMutation.expectedRule } : {}),
+        rule: relatedFindings[0]?.rule,
+        hit: ruleMatched,
+        findings: findings.length,
+        relatedRules: [...new Set(relatedFindings.map((finding) => finding.rule))],
+        collateral: collateralFindings.length,
+        collateralRules: [...new Set(collateralFindings.map((finding) => finding.rule))],
+      });
+    } finally {
+      writeFileSync(path, original);
+    }
+  }
+
+  for (const constantMutation of entry.constantMutations ?? []) {
+    const path = join(".", constantMutation.file);
+    const original = readFileSync(path, "utf8");
+    writeFileSync(
+      path,
+      replaceConstantString(original, constantMutation.field, constantMutation.from, constantMutation.to),
+    );
+    try {
+      const findings = findingsFor(checkout, config);
+      const relatedFindings = findings.filter((finding) => finding.message.includes(constantMutation.symbol));
+      const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));
+      const ruleMatched = constantMutation.expectedRule
+        ? relatedFindings.some((finding) => finding.rule === constantMutation.expectedRule)
+        : relatedFindings.length > 0;
+      mutations.push({
+        symbol: constantMutation.symbol,
+        kind: "constant",
+        ...(constantMutation.expectedRule ? { expectedRule: constantMutation.expectedRule } : {}),
         rule: relatedFindings[0]?.rule,
         hit: ruleMatched,
         findings: findings.length,

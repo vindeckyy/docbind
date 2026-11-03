@@ -336,8 +336,25 @@ describe("Java surface", () => {
         "    int[] empty() default {};",
         "    int calc() default 1 + 2;",
         "    int[] raw() default {1 + 2};",
+        "    String fromConstant() default Constants.NAME;",
+        "    String unqualified() default NAME;",
+        "    int computed() default Constants.COMPUTED;",
+        "    int limit() default Constants.LIMIT;",
+        "    boolean on() default Constants.ON;",
+        "    String missing() default Missing.NAME;",
         "    String required();",
         "}",
+        "",
+        "class Constants {",
+        "    static final String NAME = \"named\";",
+        "    static final int LIMIT = 7;",
+        "    static final boolean ON = true;",
+        "    static final int UNINITIALIZED;",
+        "    static final int COMPUTED = 1 + 2;",
+        "    transient int counter = 1;",
+        "}",
+        "",
+        "enum Mode { FAST, SLOW }",
         "",
       ].join("\n"),
     });
@@ -368,6 +385,12 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "inner")?.shape.evaluatedDefault).toEqual({ level: 1 });
     expect(result.symbols.find((symbol) => symbol.name === "positional")?.shape.evaluatedDefault).toEqual({ arg0: 1 });
     expect(result.symbols.find((symbol) => symbol.name === "bad")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "fromConstant")?.shape.evaluatedDefault).toBe("named");
+    expect(result.symbols.find((symbol) => symbol.name === "unqualified")?.shape.evaluatedDefault).toBe("named");
+    expect(result.symbols.find((symbol) => symbol.name === "computed")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "limit")?.shape.evaluatedDefault).toBe(7);
+    expect(result.symbols.find((symbol) => symbol.name === "on")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "missing")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "empty")?.shape.evaluatedDefault).toEqual([]);
     expect(result.symbols.find((symbol) => symbol.name === "calc")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "raw")?.shape.evaluatedDefault).toBeUndefined();
