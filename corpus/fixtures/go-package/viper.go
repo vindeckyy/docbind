@@ -24,6 +24,8 @@ func (v *Viper) Multi(key string) any { return nil }
 
 func (v *Viper) Field(key string) any { return nil }
 
+func (v *Viper) Asserted(key string) any { return nil }
+
 func New() *Viper { return &Viper{} }
 
 var Default = New()

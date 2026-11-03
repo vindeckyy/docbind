@@ -647,6 +647,18 @@ describe("check pipeline", () => {
     expect(result.pending.map((binding) => binding.symbol.name)).toContain("Get");
   });
 
+  it("binds Go asserted package values", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/viper\n",
+      "pkg/viper.go": "package viper\ntype Viper struct{}\nfunc (v *Viper) Get(key string) any { return nil }\nvar Default any = &Viper{}\n",
+      "docs/api.md": "```go\nv := viper.Default.(*Viper)\nv.Get(\"key\")\n```\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("Get");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

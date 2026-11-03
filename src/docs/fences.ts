@@ -396,6 +396,11 @@ function inferGoExpression(
   if (call?.[1]) return localReturns?.get(call[1]) ?? hints.returns.get(call[1]);
   const composite = /^([A-Za-z_]\w*)\s*\{/u.exec(cleaned);
   if (composite?.[1] && hints.types.has(composite[1])) return composite[1];
+  const assertion = /\.\(\s*([^)]+)\)\s*$/u.exec(cleaned);
+  if (assertion?.[1]) {
+    const type = goAnnotationType(assertion[1]);
+    if (type && hints.types.has(type)) return type;
+  }
   return hints.values.get(cleaned);
 }
 

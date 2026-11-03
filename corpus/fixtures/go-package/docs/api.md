@@ -63,3 +63,8 @@ cfg.Viper.Field("key")
 v := viper.Qualified
 v.Qualified("key")
 ```
+
+```go
+v := viper.Default.(*Viper)
+v.Asserted("key")
+```
