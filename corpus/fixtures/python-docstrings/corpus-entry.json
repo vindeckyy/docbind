@@ -1,0 +1,11 @@
+{
+  "name": "python-docstrings-fixture",
+  "repo": "local/python-docstrings",
+  "commit": "fixture-v1",
+  "local": "corpus/fixtures/python-docstrings",
+  "docs": ["docs/**/*.md"],
+  "exclude": [],
+  "languages": { "typescript": false, "python": true, "rust": false, "go": false },
+  "docstrings": true,
+  "mutations": 2
+}

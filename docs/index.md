@@ -48,7 +48,7 @@ The doc anchor did not change. The symbol contract it referenced did. The tool r
 
 `docbind` checks symbol contracts, not prose claims. A backticked `getUser` binds the symbol; the tool verifies that it exists and that its parameters and return type still match. It does not check what the surrounding sentence asserts. A line saying `getUser` returns `Email` passes while the signature returns `string`.
 
-Markdown and reStructuredText are the supported input formats. Docstrings, AsciiDoc, and Javadoc are not read.
+Markdown and reStructuredText are the supported input formats. Python docstrings are opt-in; AsciiDoc and Javadoc are not read.
 
 Examples are parsed, never run. Example-output drift is invisible.
 

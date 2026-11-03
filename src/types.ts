@@ -222,6 +222,7 @@ export interface Config {
   severity: Record<Rule, Severity>;
   maxFindings: number;
   minConfidence: number;
+  docstrings: boolean;
 }
 
 export const RULES: Rule[] = [

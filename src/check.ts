@@ -1,7 +1,7 @@
 import { buildIndex, resolveAnchor } from "./resolve/resolve.js";
 import { matchTombstone } from "./resolve/tombstone.js";
 import { inferRename, modulePathFromId, parseShapeText } from "./resolve/rename.js";
-import { parseDocs } from "./docs/parse.js";
+import { parseDocstring, parseDocs } from "./docs/parse.js";
 import { buildGoTypeHints, buildPythonTypeHints } from "./docs/infer.js";
 import { anchorKey } from "./docs/anchors.js";
 import { compareShapeClaims } from "./shape/compat.js";
@@ -197,16 +197,19 @@ export function checkProject(root: string, config: Config, options: CheckProject
   const docs = discoverDocs(root, config);
   const codeFiles = discoverCode(root, config);
   const surface = extractSurface(root, codeFiles, config);
-  const parsedDocs = parseDocs(
-    root,
-    docs,
-    buildPythonTypeHints(surface.symbols),
-    buildGoTypeHints(surface.symbols),
-  );
+  const pythonHints = buildPythonTypeHints(surface.symbols);
+  const goHints = buildGoTypeHints(surface.symbols);
+  const parsedDocs = parseDocs(root, docs, pythonHints, goHints);
+  const docstringAnchors =
+    config.docstrings && config.languages.python
+      ? (surface.docstrings ?? []).flatMap(
+          (entry) => parseDocstring(entry.filePath, entry.text, entry.line, pythonHints, goHints).anchors,
+        )
+      : [];
   const loadedLock = readLock(root);
   const lock = options.ignoreBaseline ? { ...loadedLock, anchors: [] } : loadedLock;
   const index = buildIndex(surface.symbols);
-  const anchors = parsedDocs.anchors;
+  const anchors = [...parsedDocs.anchors, ...docstringAnchors];
   const byKey = new Map(anchors.map((anchor) => [anchorKey(anchor), anchor]));
   const repeated = repeatedTokens(anchors);
   const findings: Finding[] = [];

@@ -22,6 +22,8 @@ def _hidden():
     pass
 
 class Client:
+    """Call Client.request or Client.active."""
+
     version: str = "1"
     def __init__(self, method: str) -> None:
         self.method = method
@@ -68,6 +70,7 @@ describe("Python surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "request")?.aliases).toEqual(
       expect.arrayContaining(["Client.request", "pyapp.Client.request"]),
     );
+    expect(result.docstrings?.some((entry) => entry.filePath === "pkg/users.py" && entry.text.includes("Client.request"))).toBe(true);
     expect(result.parseFailures).toBeGreaterThan(0);
   });
 

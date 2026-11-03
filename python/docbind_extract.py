@@ -451,18 +451,42 @@ def apply_import_aliases(root: Path, payloads: list[dict], symbols: list[dict]) 
                     target["aliases"].sort()
 
 
+def collect_docstrings(tree: ast.AST) -> list[dict]:
+    docstrings: list[dict] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        text = ast.get_docstring(node, clean=False)
+        if not text or not node.body:
+            continue
+        docstrings.append({"line": node.body[0].lineno, "text": text})
+    return docstrings
+
+
 def main() -> int:
     payloads = json.loads(sys.stdin.read())
     root = Path(payloads["root"])
     files = payloads["files"]
     symbols: list[dict] = []
+    docstrings: list[dict] = []
     parse_failures = 0
     for payload in files:
         extracted, _exported, failures = extract_file(root, payload)
         symbols.extend(extracted)
         parse_failures += failures
+        try:
+            tree = ast.parse((root / payload["rel"]).read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            continue
+        for entry in collect_docstrings(tree):
+            docstrings.append({"filePath": payload["rel"], **entry})
     apply_import_aliases(root, files, symbols)
-    print(json.dumps({"symbols": symbols, "parseFailures": parse_failures, "filesScanned": len(files)}))
+    print(json.dumps({
+        "symbols": symbols,
+        "docstrings": docstrings,
+        "parseFailures": parse_failures,
+        "filesScanned": len(files),
+    }))
     return 0
 
 

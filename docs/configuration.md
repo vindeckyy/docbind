@@ -21,7 +21,8 @@
     "S1-deprecated": "off"
   },
   "maxFindings": 200,
-  "minConfidence": 0.6
+  "minConfidence": 0.6,
+  "docstrings": false
 }
 ```
 
@@ -32,6 +33,10 @@
 ## Language switches
 
 TypeScript, Python, and Rust are on by default. Go is off. The rustdoc JSON extractor is off because it runs `cargo +nightly rustdoc`, which executes build scripts and proc macros. Enable `rustdoc` only on trusted repositories. Turn off a language to reduce scan time or to avoid vendor generated sources.
+
+## Docstrings
+
+Set `"docstrings": true` to scan Python module, class, and function docstrings. Backticked symbols and Sphinx roles become anchors on the source file. It is off by default because docstrings mix prose with code tokens more loosely than dedicated docs.
 
 ## Severity
 

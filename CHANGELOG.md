@@ -2,6 +2,21 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.45] - 2026-11-03
+
+### Added
+
+- Opt-in Python docstring scanning via `"docstrings": true`.
+- Module, class, function, and method docstrings contribute anchors for single or double backtick literals and Sphinx roles.
+- Local `python-docstrings-fixture`: 2 of 2 anchors bound, 2 of 2 mutations detected.
+- `docs/configuration.md` and the scope sections document the flag and its default.
+
+### Limits
+
+- Docstrings remain off by default because they mix prose with code tokens more loosely than dedicated docs.
+- AsciiDoc and Javadoc are still unread.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.44] - 2026-11-03
 
 ### Fixed
@@ -850,3 +865,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.42]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.42
 [0.1.43]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.43
 [0.1.44]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.44
+[0.1.45]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.45

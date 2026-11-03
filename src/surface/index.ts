@@ -3,7 +3,7 @@ import { extractPython } from "./python.js";
 import { extractRust } from "./rust.js";
 import { extractRustdoc } from "./rustdoc.js";
 import { extractGo } from "./go.js";
-import type { ExtractResult } from "./protocol.js";
+import type { DocstringEntry, ExtractResult } from "./protocol.js";
 import { extractTypescript } from "./typescript.js";
 
 export function extractSurface(root: string, files: string[], config: Config): ExtractResult {
@@ -30,11 +30,13 @@ export function extractSurface(root: string, files: string[], config: Config): E
   }
 
   const symbols: Symbol[] = [];
+  const docstrings: DocstringEntry[] = [];
   let parseFailures = 0;
   let filesScanned = 0;
   const errors: string[] = [];
   for (const result of results) {
     symbols.push(...result.symbols);
+    docstrings.push(...(result.docstrings ?? []));
     parseFailures += result.parseFailures;
     filesScanned += result.filesScanned;
     if (result.error) errors.push(result.error);
@@ -59,6 +61,7 @@ export function extractSurface(root: string, files: string[], config: Config): E
   finalSymbols.sort((left, right) => left.id.localeCompare(right.id));
   return {
     symbols: finalSymbols,
+    docstrings,
     parseFailures,
     filesScanned,
     ...(errors.length > 0 ? { error: errors.join("; ") } : {}),
@@ -66,4 +69,4 @@ export function extractSurface(root: string, files: string[], config: Config): E
 }
 
 export { extractTypescript, extractPython, extractRust, extractRustdoc, extractGo };
-export type { ExtractResult };
+export type { DocstringEntry, ExtractResult };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDoc } from "../src/docs/parse.js";
+import { parseDoc, parseDocstring } from "../src/docs/parse.js";
 
 describe("reStructuredText docs", () => {
   it("collects literals, roles, and code blocks", () => {
@@ -47,6 +47,13 @@ describe("reStructuredText docs", () => {
   it("handles empty literals and empty code blocks", () => {
     const text = ["Blank ```` literal.", "", ".. code-block:: python", "", "Text follows.", ""].join("\n");
     expect(() => parseDoc("docs/api.rst", text)).not.toThrow();
+  });
+
+  it("handles empty docstrings and role overlaps", () => {
+    expect(parseDocstring("pkg/models.py", "", 1).anchors).toEqual([]);
+    const anchors = parseDocstring("pkg/models.py", ":meth:`Client.send` and `Client.get`", 1).anchors;
+    expect(anchors.map((anchor) => anchor.token)).toEqual(["Client.send", "Client.get"]);
+    expect(anchors.map((anchor) => anchor.surface)).toEqual(["explicitRef", "inlineCode"]);
   });
 
   it("ignores option lines before code", () => {

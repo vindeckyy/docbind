@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { findPackageRoot, modulePathFor } from "../discover.js";
-import type { ExtractResult } from "./protocol.js";
+import type { DocstringEntry, ExtractResult } from "./protocol.js";
 
 function workerPath(): string {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -45,6 +45,7 @@ export function extractPython(root: string, files: string[]): ExtractResult {
     const parsed = JSON.parse(result.stdout) as ExtractResult;
     return {
       symbols: parsed.symbols ?? [],
+      docstrings: (parsed.docstrings ?? []) as DocstringEntry[],
       parseFailures: parsed.parseFailures ?? 0,
       filesScanned: parsed.filesScanned ?? files.length,
     };

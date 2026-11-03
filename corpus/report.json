@@ -1,260 +1,6 @@
 {
-  "generatedAt": "2026-11-03T21:27:01.280Z",
+  "generatedAt": "2026-11-03T21:32:54.017Z",
   "report": [
-    {
-      "name": "slugify",
-      "repo": "sindresorhus/slugify",
-      "commit": "6df9e8fb3397d1f55bd9aaf005ef67ccf0a7aaff",
-      "nameOnlyFalsePositives": 30,
-      "docs": 1,
-      "anchors": 58,
-      "bound": 28,
-      "bindRate": 0.4827586206896552,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "slugify",
-          "rule": "L3-reshaped",
-          "hit": true,
-          "findings": 2,
-          "relatedRules": [
-            "L3-reshaped"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "slugifyWithCounter",
-          "rule": "L3-reshaped",
-          "hit": true,
-          "findings": 2,
-          "relatedRules": [
-            "L3-reshaped"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 2,
-      "misses": 0,
-      "collateral": 0
-    },
-    {
-      "name": "anyhow",
-      "repo": "dtolnay/anyhow",
-      "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
-      "nameOnlyFalsePositives": 64,
-      "docs": 1,
-      "anchors": 79,
-      "bound": 14,
-      "bindRate": 0.17721518987341772,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "Result",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 4,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "anyhow",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 2,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "bail",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 2,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 3,
-      "misses": 0,
-      "collateral": 0
-    },
-    {
-      "name": "viper",
-      "repo": "spf13/viper",
-      "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
-      "nameOnlyFalsePositives": 150,
-      "docs": 2,
-      "anchors": 167,
-      "bound": 94,
-      "bindRate": 0.562874251497006,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "ReadInConfig",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "AddConfigPath",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "SetConfigType",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "SetDefault",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "ReadRemoteConfig",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "SetEnvPrefix",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "SetConfigType",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "SetDefault",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 8,
-      "misses": 0,
-      "collateral": 0
-    },
-    {
-      "name": "httpx",
-      "repo": "encode/httpx",
-      "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
-      "nameOnlyFalsePositives": 2446,
-      "docs": 23,
-      "anchors": 2818,
-      "bound": 559,
-      "bindRate": 0.19836763662171752,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "password",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 5,
-          "relatedRules": [
-            "L1-broken",
-            "L3-reshaped"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "NetRCAuth",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 3,
-          "relatedRules": [
-            "L1-broken"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "Response",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 39,
-          "relatedRules": [
-            "L1-broken",
-            "L2-moved"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 3,
-      "misses": 0,
-      "collateral": 0
-    },
     {
       "name": "macro-fixture",
       "repo": "local/macro-crate",
@@ -370,77 +116,6 @@
         }
       ],
       "hits": 9,
-      "misses": 0,
-      "collateral": 0
-    },
-    {
-      "name": "thiserror",
-      "repo": "dtolnay/thiserror",
-      "commit": "3b29f0107e7900860c7a061c069958569eb458e7",
-      "nameOnlyFalsePositives": 121,
-      "docs": 1,
-      "anchors": 162,
-      "bound": 23,
-      "bindRate": 0.1419753086419753,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "From",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "derive",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 2,
-      "misses": 0,
-      "collateral": 0
-    },
-    {
-      "name": "proc-macro-fixture",
-      "repo": "local/proc-macro-crate",
-      "commit": "fixture-v1",
-      "nameOnlyFalsePositives": 2,
-      "docs": 1,
-      "anchors": 3,
-      "bound": 3,
-      "bindRate": 1,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "generated_method",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 1,
       "misses": 0,
       "collateral": 0
     },
@@ -817,36 +492,6 @@
       "collateral": 0
     },
     {
-      "name": "thiserror-derived-fixture",
-      "repo": "local/thiserror-derived",
-      "commit": "fixture-v1",
-      "nameOnlyFalsePositives": 1,
-      "docs": 1,
-      "anchors": 1,
-      "bound": 1,
-      "bindRate": 1,
-      "baselineFindings": 0,
-      "baselineRules": [],
-      "docEditFindings": 0,
-      "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "source",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L1-broken"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 1,
-      "misses": 0,
-      "collateral": 0
-    },
-    {
       "name": "python-fields-fixture",
       "repo": "local/python-fields",
       "commit": "fixture-v1",
@@ -971,6 +616,47 @@
         }
       ],
       "hits": 3,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "python-docstrings-fixture",
+      "repo": "local/python-docstrings",
+      "commit": "fixture-v1",
+      "nameOnlyFalsePositives": 0,
+      "docs": 1,
+      "anchors": 2,
+      "bound": 2,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "get",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "status_code",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
       "misses": 0,
       "collateral": 0
     }

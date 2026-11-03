@@ -21,6 +21,7 @@ interface CorpusEntry {
   docs: string[];
   exclude: string[];
   languages: Config["languages"];
+  docstrings?: boolean;
   mutations: number;
 }
 
@@ -88,6 +89,7 @@ async function materialize(entry: CorpusEntry): Promise<string> {
           docs: entry.docs,
           exclude: entry.exclude,
           languages: entry.languages,
+          ...(entry.docstrings ? { docstrings: true } : {}),
           ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
         }, null, 2)}\n`,
       );
@@ -106,6 +108,7 @@ async function materialize(entry: CorpusEntry): Promise<string> {
         docs: entry.docs,
         exclude: entry.exclude,
         languages: entry.languages,
+        ...(entry.docstrings ? { docstrings: true } : {}),
         ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
       }, null, 2)}\n`,
     );
@@ -126,6 +129,7 @@ async function materialize(entry: CorpusEntry): Promise<string> {
       docs: entry.docs,
       exclude: entry.exclude,
       languages: entry.languages,
+      ...(entry.docstrings ? { docstrings: true } : {}),
       ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
     }, null, 2)}\n`,
   );
@@ -179,6 +183,7 @@ for (const entry of selected) {
     docs: entry.docs,
     exclude: entry.exclude,
     languages: entry.languages,
+    ...(entry.docstrings ? { docstrings: true } : {}),
     ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();

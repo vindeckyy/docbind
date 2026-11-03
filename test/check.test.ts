@@ -815,6 +815,29 @@ describe("check pipeline", () => {
     expect(checkProject(root, config).findings[0]?.rule).toBe("L4-renamed");
   });
 
+  it("scans Python docstrings only when enabled", () => {
+    const root = tempProject({
+      "pyproject.toml": '[project]\nname = "pyfields"\n',
+      "pyfields/__init__.py": "",
+      "pyfields/models.py": [
+        "class Client:",
+        "    \"\"\"Call `Client.get()` to send a request.\"\"\"",
+        "",
+        "    def get(self, url: str) -> str:",
+        "        return url",
+        "",
+      ].join("\n"),
+      "docs/api.md": "Prose without code anchors.\n",
+    });
+    const enabled = parseConfig({ languages: { python: true }, docstrings: true });
+    const result = checkProject(root, enabled);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("get");
+    expect(result.pending[0]?.anchor.docPath).toBe("pyfields/models.py");
+    const disabled = parseConfig({ languages: { python: true } });
+    expect(checkProject(root, disabled).pending).toEqual([]);
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

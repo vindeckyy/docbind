@@ -1,6 +1,6 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.1.44",
+  "version": "0.1.45",
   "description": "Static analysis for stale symbol references in markdown and reStructuredText. Supports TypeScript, JavaScript, Python, Rust, and Go.",
   "type": "module",
   "bin": {
@@ -25,7 +25,7 @@
     "prepublishOnly": "npm run gate",
     "bench": "tsx scripts/bench.ts",
     "thresholds": "tsx scripts/threshold-sweep.ts",
-    "corpus:fixtures": "tsx scripts/corpus.ts --local-only --strict --only macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture"
+    "corpus:fixtures": "tsx scripts/corpus.ts --local-only --strict --only macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture,python-docstrings-fixture"
   },
   "dependencies": {
     "ignore": "^7.0.14",
