@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.38] - 2026-11-03
+
+### Added
+
+- Go fence inference carries return types from interface method calls, so `v := h.Load()` types `v` from `Load() *Viper`.
+- Local Go fixture covers an interface method result with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 40 to 43 bound anchors and from 26 to 27 detected mutations.
+- Corpus now detects 58 of 58 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go fence inference does not type values supplied from outside the fence.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.37] - 2026-11-03
 
 ### Added
@@ -708,3 +725,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.35]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.35
 [0.1.36]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.36
 [0.1.37]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.37
+[0.1.38]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.38

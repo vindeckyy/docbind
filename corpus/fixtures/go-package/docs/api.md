@@ -83,3 +83,10 @@ func useHandler(h interface{ Handled(string) any }) {
     h.Handled("key")
 }
 ```
+
+```go
+func useLoaded(h Handler) {
+    v := h.Load()
+    v.FromLoad("key")
+}
+```

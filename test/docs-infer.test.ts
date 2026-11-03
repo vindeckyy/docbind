@@ -369,6 +369,49 @@ describe("Go fence inference", () => {
     )).not.toThrow();
   });
 
+  it("types interface method return values", () => {
+    const viper = symbol("Viper", {
+      id: "viper", kind: "class", packageName: "viper",
+      qualifiedName: "viper.Viper", aliases: ["viper.Viper"],
+    });
+    const handler = symbol("Handler", {
+      id: "handler", kind: "interface", packageName: "viper",
+      qualifiedName: "viper.Handler", aliases: ["viper.Handler"],
+      shape: {
+        kind: "interface",
+        members: [{
+          name: "Load",
+          kind: "method",
+          optional: false,
+          shape: { kind: "method", params: [], returnType: "*Viper" },
+        }],
+      },
+    });
+    const load = symbol("Load", {
+      id: "load", kind: "method", parentId: handler.id, packageName: "viper",
+      qualifiedName: "viper.Handler.Load", aliases: ["Handler.Load"],
+      shape: { kind: "method", params: [], returnType: "*Viper" },
+    });
+    const hints = buildGoTypeHints([viper, handler, load]);
+    expect(hints.returns.get("Handler.Load")).toBe("Viper");
+    const result = fenceAnchors(
+      { ...code("func f(h Handler) {\n    v := h.Load()\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+      undefined,
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+    const missingMethod = fenceAnchors(
+      { ...code("func f(h Handler) {\n    v := h.Missing()\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+      undefined,
+      hints,
+    );
+    expect(missingMethod.anchors.map((anchor) => anchor.token)).not.toContain("Viper.Get");
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

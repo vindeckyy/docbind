@@ -695,6 +695,18 @@ describe("check pipeline", () => {
     expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L4-renamed");
   });
 
+  it("binds Go interface method return values", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/viper\n",
+      "pkg/viper.go": "package viper\ntype Viper struct{}\nfunc (v *Viper) Get(key string) any { return nil }\ntype Handler interface {\n    Load() *Viper\n}\n",
+      "docs/api.md": "```go\nfunc f(h Handler) {\n    v := h.Load()\n    v.Get(\"key\")\n}\n```\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("Get");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

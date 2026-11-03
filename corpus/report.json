@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T20:27:33.821Z",
+  "generatedAt": "2026-11-03T20:32:34.142Z",
   "report": [
     {
       "name": "slugify",
@@ -441,8 +441,8 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 40,
-      "bound": 40,
+      "anchors": 43,
+      "bound": 43,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -519,7 +519,7 @@
           "symbol": "Viper",
           "rule": "L1-broken",
           "hit": true,
-          "findings": 12,
+          "findings": 13,
           "relatedRules": [
             "L1-broken",
             "L4-renamed"
@@ -583,6 +583,18 @@
           "collateralRules": []
         },
         {
+          "symbol": "Load",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L3-reshaped",
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Default",
           "rule": "L4-renamed",
           "hit": true,
@@ -595,6 +607,17 @@
         },
         {
           "symbol": "ReadRemoteConfig",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "FromLoad",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -622,6 +645,18 @@
           "findings": 1,
           "relatedRules": [
             "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Handler",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L4-renamed",
+            "L2-moved"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -696,9 +731,10 @@
           "symbol": "Handled",
           "rule": "L4-renamed",
           "hit": true,
-          "findings": 1,
+          "findings": 2,
           "relatedRules": [
-            "L4-renamed"
+            "L4-renamed",
+            "L3-reshaped"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -713,31 +749,9 @@
           ],
           "collateral": 0,
           "collateralRules": []
-        },
-        {
-          "symbol": "Load",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "SupportedExts",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
         }
       ],
-      "hits": 26,
+      "hits": 27,
       "misses": 0,
       "collateral": 0
     },

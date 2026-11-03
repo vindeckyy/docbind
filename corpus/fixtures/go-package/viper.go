@@ -8,6 +8,7 @@ type Config struct {
 
 type Handler interface {
 	Handled(key string) any
+	Load() *Viper
 }
 
 func (v *Viper) Get(key string) any { return nil }
@@ -31,6 +32,8 @@ func (v *Viper) Field(key string) any { return nil }
 func (v *Viper) Asserted(key string) any { return nil }
 
 func (v *Viper) Anonymous(key string) any { return nil }
+
+func (v *Viper) FromLoad(key string) any { return nil }
 
 func New() *Viper { return &Viper{} }
 

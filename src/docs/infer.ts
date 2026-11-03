@@ -81,11 +81,21 @@ export function buildGoTypeHints(symbols: Symbol[]): GoTypeHints {
     returns.set(key, values);
   };
 
+  const byId = new Map(symbols.map((symbol) => [symbol.id, symbol]));
   for (const symbol of symbols) {
-    if (symbol.parentId || !symbol.shape.returnType) continue;
+    if (!symbol.shape.returnType) continue;
     const type = goTypeName(symbol.shape.returnType);
     if (!type || !types.has(type)) continue;
-    const keys = new Set<string>([symbol.name, `${symbol.packageName}.${symbol.name}`]);
+    const parent = symbol.parentId ? byId.get(symbol.parentId) : undefined;
+    if (parent && parent.kind !== "interface") continue;
+    const keys = new Set<string>();
+    if (parent) {
+      keys.add(`${parent.name}.${symbol.name}`);
+      keys.add(`${symbol.packageName}.${parent.name}.${symbol.name}`);
+    } else {
+      keys.add(symbol.name);
+      keys.add(`${symbol.packageName}.${symbol.name}`);
+    }
     for (const alias of symbol.aliases) {
       if (alias.includes(".")) keys.add(alias);
     }

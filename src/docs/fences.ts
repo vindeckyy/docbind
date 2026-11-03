@@ -602,6 +602,13 @@ function lexFenceAnchors(
   const inferGoValue = (expression: string): string | undefined => {
     const alias = /^([A-Za-z_]\w*)$/u.exec(expression.trim());
     if (alias?.[1]) return localTypes.get(alias[1]);
+    const methodCall = /^([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(/u.exec(expression.trim());
+    const receiver = methodCall?.[1] ? localTypes.get(methodCall[1]) : undefined;
+    if (receiver && methodCall?.[2]) {
+      const returned = helperReturns.get(methodCall[2]) ??
+        (goHints ?? goFallback).returns.get(`${receiver}.${methodCall[2]}`);
+      if (returned) return returned;
+    }
     return inferGoExpression(expression, goHints ?? goFallback, helperReturns);
   };
   const setGoType = (name: string, type: string | undefined): void => {
@@ -691,7 +698,7 @@ function lexFenceAnchors(
       const parts = chain.split(".");
       if (!type && interfaceMethods && parts.length === 2 && parts[1] && interfaceMethods.has(parts[1])) {
         const match = [...(goHints?.interfaces.entries() ?? [])].find(([, methods]) =>
-          methods.size === interfaceMethods.size &&
+          methods.size >= interfaceMethods.size &&
           [...interfaceMethods].every((method) => methods.has(method))
         )?.[0];
         anchors.push(
