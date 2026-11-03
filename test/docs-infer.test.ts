@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Code } from "mdast";
-import { buildPythonTypeHints } from "../src/docs/infer.js";
+import { buildGoTypeHints, buildPythonTypeHints } from "../src/docs/infer.js";
 import { fenceAnchors } from "../src/docs/fences.js";
 import type { Shape, Symbol } from "../src/types.js";
 
@@ -116,6 +116,67 @@ describe("Python type hints", () => {
     const hints = buildPythonTypeHints([client, response, first, second, empty]);
     expect(hints.returns.has("Client.get")).toBe(false);
     expect(hints.returns.has("empty")).toBe(false);
+  });
+});
+
+describe("Go fence inference", () => {
+  it("infers local values from package constructor calls", () => {
+    const viper = symbol("Viper", {
+      id: "viper",
+      kind: "class",
+      packageName: "viper",
+      qualifiedName: "viper.Viper",
+      aliases: ["viper.Viper"],
+    });
+    const get = symbol("Get", {
+      id: "get",
+      kind: "method",
+      parentId: viper.id,
+      packageName: "viper",
+      qualifiedName: "viper.Viper.Get",
+      aliases: ["Viper.Get", "viper.Viper.Get"],
+      shape: { ...shape, kind: "method", params: [], returnType: "any" },
+    });
+    const make = symbol("New", {
+      id: "new",
+      kind: "function",
+      packageName: "viper",
+      qualifiedName: "viper.New",
+      aliases: ["New", "viper.New"],
+      shape: { ...shape, returnType: "*Viper" },
+    });
+    const hints = buildGoTypeHints([viper, get, make]);
+    expect(hints.returns.get("viper.New")).toBe("Viper");
+    const result = fenceAnchors(
+      { ...code("v := viper.New()\nv.Get(\"key\")\nw := Viper{}\nw.Get(\"other\")\nx := 1\n"), lang: "go" } as unknown as Code,
+      "docs/quickstart.md",
+      "Quickstart",
+      undefined,
+      hints,
+    );
+    const tokens = result.anchors.map((anchor) => anchor.token);
+    expect(tokens).toContain("viper.New");
+    expect(tokens.filter((token) => token === "Viper.Get").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("drops conflicting Go constructor return types", () => {
+    const viper = symbol("Viper", {
+      id: "viper", kind: "class", packageName: "viper",
+      qualifiedName: "viper.Viper", aliases: ["viper.Viper"],
+    });
+    const client = symbol("Client", {
+      id: "client", kind: "class", packageName: "viper",
+      qualifiedName: "viper.Client", aliases: ["viper.Client"],
+    });
+    const first = symbol("New", {
+      id: "new1", packageName: "viper", qualifiedName: "viper.New",
+      aliases: ["viper.New"], shape: { ...shape, returnType: "*Viper" },
+    });
+    const second = symbol("New", {
+      id: "new2", packageName: "viper", qualifiedName: "viper.New",
+      aliases: ["viper.New"], shape: { ...shape, returnType: "*Client" },
+    });
+    expect(buildGoTypeHints([viper, client, first, second]).returns.get("viper.New")).toBeUndefined();
   });
 });
 

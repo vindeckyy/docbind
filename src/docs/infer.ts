@@ -5,6 +5,11 @@ export interface PythonTypeHints {
   returns: Map<string, string>;
 }
 
+export interface GoTypeHints {
+  types: Set<string>;
+  returns: Map<string, string>;
+}
+
 function returnTypeName(raw: string | undefined): string | undefined {
   if (!raw) return undefined;
   const first = raw.split("|")[0]?.trim() ?? "";
@@ -52,4 +57,40 @@ export function buildPythonTypeHints(symbols: Symbol[]): PythonTypeHints {
     if (values.size === 1) resolved.set(key, [...values][0] as string);
   }
   return { classes, returns: resolved };
+}
+
+function goTypeName(raw: string): string | undefined {
+  const names = raw.replace(/^\*+/u, "").replace(/^\[\]/u, "").match(/[A-Za-z_]\w*/gu) ?? [];
+  return names[names.length - 1];
+}
+
+export function buildGoTypeHints(symbols: Symbol[]): GoTypeHints {
+  const types = new Set(
+    symbols
+      .filter((symbol) => ["class", "interface", "enum", "type"].includes(symbol.kind))
+      .map((symbol) => symbol.name),
+  );
+  const returns = new Map<string, Set<string>>();
+  const add = (key: string, type: string): void => {
+    const values = returns.get(key) ?? new Set<string>();
+    values.add(type);
+    returns.set(key, values);
+  };
+
+  for (const symbol of symbols) {
+    if (symbol.parentId || !symbol.shape.returnType) continue;
+    const type = goTypeName(symbol.shape.returnType);
+    if (!type || !types.has(type)) continue;
+    const keys = new Set<string>([symbol.name, `${symbol.packageName}.${symbol.name}`]);
+    for (const alias of symbol.aliases) {
+      if (alias.includes(".")) keys.add(alias);
+    }
+    for (const key of keys) add(key, type);
+  }
+
+  const resolved = new Map<string, string>();
+  for (const [key, values] of returns) {
+    if (values.size === 1) resolved.set(key, [...values][0] as string);
+  }
+  return { types, returns: resolved };
 }

@@ -8,7 +8,7 @@ import { toString as mdastToString } from "mdast-util-to-string";
 import { assignOccurrences } from "./anchors.js";
 import { contextFingerprint, hasNegativeCue } from "./context.js";
 import { fenceAnchors, isSupportedFence } from "./fences.js";
-import type { PythonTypeHints } from "./infer.js";
+import type { GoTypeHints, PythonTypeHints } from "./infer.js";
 import type { DocAnchor, ImportRef } from "../types.js";
 
 interface WalkContext {
@@ -19,6 +19,7 @@ interface WalkContext {
   inTableCell: boolean;
   inBlockquote: boolean;
   pythonHints?: PythonTypeHints;
+  goHints?: GoTypeHints;
 }
 
 interface WalkState {
@@ -75,7 +76,7 @@ function walk(
       state.ranges.push([position.start.offset, position.end.offset]);
     }
     if (!isSupportedFence(node.lang)) return;
-    const result = fenceAnchors(node, docPath, context.heading, context.pythonHints);
+    const result = fenceAnchors(node, docPath, context.heading, context.pythonHints, context.goHints);
     state.anchors.push(...result.anchors);
     mergeImports(context.imports, result.imports);
     return;
@@ -202,6 +203,7 @@ export function parseDoc(
   docPath: string,
   text: string,
   pythonHints?: PythonTypeHints,
+  goHints?: GoTypeHints,
 ): DocParseResult {
   let root: Root;
   try {
@@ -220,6 +222,7 @@ export function parseDoc(
     inTableCell: false,
     inBlockquote: false,
     ...(pythonHints ? { pythonHints } : {}),
+    ...(goHints ? { goHints } : {}),
   };
   const state: WalkState = { anchors: [], ranges: [], inlineRanges: [] };
   for (const child of root.children) {
@@ -245,6 +248,7 @@ export function parseDocs(
   root: string,
   docs: string[],
   pythonHints?: PythonTypeHints,
+  goHints?: GoTypeHints,
 ): DocsParseResult {
   const anchors: DocAnchor[] = [];
   let parseFailures = 0;
@@ -258,7 +262,7 @@ export function parseDocs(
       continue;
     }
     docsScanned += 1;
-    const result = parseDoc(doc, text, pythonHints);
+    const result = parseDoc(doc, text, pythonHints, goHints);
     anchors.push(...result.anchors);
     parseFailures += result.parseFailures;
   }

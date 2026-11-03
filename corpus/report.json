@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:09:23.094Z",
+  "generatedAt": "2026-11-03T19:15:25.293Z",
   "report": [
     {
       "name": "slugify",
@@ -97,9 +97,9 @@
       "repo": "spf13/viper",
       "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
       "docs": 2,
-      "anchors": 293,
+      "anchors": 267,
       "bound": 94,
-      "bindRate": 0.32081911262798635,
+      "bindRate": 0.352059925093633,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -131,7 +131,7 @@
           "symbol": "SetConfigType",
           "rule": "L4-renamed",
           "hit": true,
-          "findings": 2,
+          "findings": 1,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -142,7 +142,7 @@
           "symbol": "SetDefault",
           "rule": "L4-renamed",
           "hit": true,
-          "findings": 2,
+          "findings": 1,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -153,7 +153,7 @@
           "symbol": "ReadRemoteConfig",
           "rule": "L4-renamed",
           "hit": true,
-          "findings": 2,
+          "findings": 1,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -172,7 +172,7 @@
           "collateralRules": []
         },
         {
-          "symbol": "BindFlagValue",
+          "symbol": "SetConfigType",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -183,10 +183,10 @@
           "collateralRules": []
         },
         {
-          "symbol": "GetInt",
+          "symbol": "SetDefault",
           "rule": "L4-renamed",
           "hit": true,
-          "findings": 2,
+          "findings": 1,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -429,8 +429,8 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 10,
-      "bound": 10,
+      "anchors": 12,
+      "bound": 12,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -460,7 +460,29 @@
           "collateralRules": []
         },
         {
+          "symbol": "New",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Special",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Get",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -548,7 +570,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 10,
+      "hits": 12,
       "misses": 0,
       "collateral": 0
     },

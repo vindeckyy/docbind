@@ -2,7 +2,7 @@ import { buildIndex, resolveAnchor } from "./resolve/resolve.js";
 import { matchTombstone } from "./resolve/tombstone.js";
 import { inferRename, modulePathFromId, parseShapeText } from "./resolve/rename.js";
 import { parseDocs } from "./docs/parse.js";
-import { buildPythonTypeHints } from "./docs/infer.js";
+import { buildGoTypeHints, buildPythonTypeHints } from "./docs/infer.js";
 import { anchorKey } from "./docs/anchors.js";
 import { compareShapeClaims } from "./shape/compat.js";
 import { dedupeFindings, makeFinding } from "./findings.js";
@@ -197,7 +197,12 @@ export function checkProject(root: string, config: Config, options: CheckProject
   const docs = discoverDocs(root, config);
   const codeFiles = discoverCode(root, config);
   const surface = extractSurface(root, codeFiles, config);
-  const parsedDocs = parseDocs(root, docs, buildPythonTypeHints(surface.symbols));
+  const parsedDocs = parseDocs(
+    root,
+    docs,
+    buildPythonTypeHints(surface.symbols),
+    buildGoTypeHints(surface.symbols),
+  );
   const loadedLock = readLock(root);
   const lock = options.ignoreBaseline ? { ...loadedLock, anchors: [] } : loadedLock;
   const index = buildIndex(surface.symbols);

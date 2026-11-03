@@ -1,5 +1,5 @@
 import { parseDocs } from "./docs/parse.js";
-import { buildPythonTypeHints } from "./docs/infer.js";
+import { buildGoTypeHints, buildPythonTypeHints } from "./docs/infer.js";
 import { discoverCode, discoverDocs } from "./discover.js";
 import { buildIndex, resolveAnchor } from "./resolve/resolve.js";
 import { parseToken } from "./resolve/score.js";
@@ -19,7 +19,12 @@ export function explain(root: string, config: Config, target: ExplainTarget): st
   const doc = docs.find((candidate) => candidate === target.docPath);
   if (!doc) return `${target.docPath}: not found in configured docs`;
   const surface = extractSurface(root, discoverCode(root, config), config);
-  const parsed = parseDocs(root, [doc], buildPythonTypeHints(surface.symbols));
+  const parsed = parseDocs(
+    root,
+    [doc],
+    buildPythonTypeHints(surface.symbols),
+    buildGoTypeHints(surface.symbols),
+  );
   const anchors = parsed.anchors.filter((anchor) =>
     anchor.line === target.line &&
     (target.column === undefined || anchor.column === target.column)

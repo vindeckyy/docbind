@@ -6,7 +6,7 @@ import { snippetSignature } from "../surface/typescript.js";
 import { snippetSignatureRust } from "../surface/rust.js";
 import { snippetSignatureGo } from "../surface/go.js";
 import { lex } from "../surface/lex.js";
-import type { PythonTypeHints } from "./infer.js";
+import type { GoTypeHints, PythonTypeHints } from "./infer.js";
 
 const TS_LANGS = new Set(["ts", "typescript", "tsx", "js", "javascript", "jsx", "mjs", "cjs"]);
 const PY_LANGS = new Set(["py", "python", "pycon"]);
@@ -379,11 +379,21 @@ function pyFenceAnchors(
   return { anchors, imports };
 }
 
+function inferGoExpression(expression: string, hints: GoTypeHints): string | undefined {
+  const cleaned = expression.trim().replace(/^&/u, "");
+  const call = /^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\s*\(/u.exec(cleaned);
+  if (call?.[1]) return hints.returns.get(call[1]);
+  const composite = /^([A-Za-z_]\w*)\s*\{/u.exec(cleaned);
+  if (composite?.[1] && hints.types.has(composite[1])) return composite[1];
+  return undefined;
+}
+
 function lexFenceAnchors(
   node: Code,
   docPath: string,
   heading: string,
   language: "rust" | "go",
+  goHints?: GoTypeHints,
 ): FenceResult {
   const value = node.value;
   const lexed = lex(value, language);
@@ -406,6 +416,19 @@ function lexFenceAnchors(
       }
       const local = /\b(?:func|type|var|const)\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/u.exec(line);
       if (local?.[1]) locals.add(local[1]);
+      const short = /^\s*([A-Za-z_]\w*)\s*:=/u.exec(line);
+      if (short?.[1]) locals.add(short[1]);
+    }
+  }
+  const localTypes = new Map<string, string>();
+  if (language === "go" && goHints) {
+    for (const line of value.split("\n")) {
+      const declaration = /^\s*var\s+([A-Za-z_]\w*)\s*(?:[^=]*?)?=\s*(.+)$/u.exec(line) ??
+        /^\s*([A-Za-z_]\w*)\s*:=\s*(.+)$/u.exec(line) ??
+        /^\s*([A-Za-z_]\w*)\s*=\s*(.+)$/u.exec(line);
+      if (!declaration?.[1] || !declaration[2]) continue;
+      const type = inferGoExpression(declaration[2], goHints);
+      if (type) localTypes.set(declaration[1], type);
     }
   }
   const signature = language === "rust" ? snippetSignatureRust(value) : snippetSignatureGo(value);
@@ -435,10 +458,10 @@ function lexFenceAnchors(
   }
 
   const anchors: DocAnchor[] = [];
-  const seen = new Set<string>();
   for (let index = 0; index < lexed.tokens.length; index += 1) {
     const token = lexed.tokens[index];
-    if (token.value.length < 2 || !/^[A-Za-z_]/u.test(token.value)) continue;
+    if (!/^[A-Za-z_]/u.test(token.value)) continue;
+    if (token.value.length < 2 && !localTypes.has(token.value)) continue;
     let chain = token.value;
     let chainEnd = index;
     while (
@@ -450,14 +473,21 @@ function lexFenceAnchors(
       chain += `.${next.value}`;
       chainEnd += 2;
     }
-    if (locals.has(token.value) || seen.has(`${token.start}`)) continue;
+    let anchorToken = chain;
+    if (locals.has(token.value)) {
+      const type = localTypes.get(token.value);
+      if (!type || !chain.includes(".")) {
+        index = chainEnd;
+        continue;
+      }
+      anchorToken = `${type}${chain.slice(token.value.length)}`;
+    }
     const position = lexed.masked.slice(0, token.start).split("\n").length - 1;
     const column = token.start - lexed.masked.lastIndexOf("\n", token.start - 1);
-    seen.add(`${token.start}`);
     anchors.push(
       makeAnchor(
         docPath,
-        chain,
+        anchorToken,
         startLine + 1 + position,
         column,
         "fenceToken",
@@ -480,12 +510,13 @@ export function fenceAnchors(
   docPath: string,
   heading: string,
   pythonHints?: PythonTypeHints,
+  goHints?: GoTypeHints,
 ): FenceResult {
   const lang = (node.lang ?? "").toLowerCase();
   if (TS_LANGS.has(lang)) return tsFenceAnchors(node, docPath, heading);
   if (PY_LANGS.has(lang)) return pyFenceAnchors(node, docPath, heading, pythonHints);
   if (RUST_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "rust");
-  if (GO_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "go");
+  if (GO_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "go", goHints);
   return { anchors: [], imports: {} };
 }
 
