@@ -1,5 +1,5 @@
 import { RULES, type Finding } from "../types.js";
-import { ENGINE_NAME } from "../version.js";
+import { ENGINE_NAME, ENGINE_URL } from "../version.js";
 
 const LEVELS: Record<Finding["severity"], "error" | "warning" | "note"> = {
   error: "error",
@@ -49,7 +49,7 @@ export function formatSarif(findings: Finding[]): string {
       $schema: "https://json.schemastore.org/sarif-2.1.0.json",
       runs: [
         {
-          tool: { driver: { name: ENGINE_NAME, informationUri: "https://github.com/docbind/docbind", rules } },
+          tool: { driver: { name: ENGINE_NAME, informationUri: ENGINE_URL, rules } },
           results,
         },
       ],
