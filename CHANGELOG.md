@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.76] - 2026-11-03
+
+### Added
+
+- Constant initialisers use their parsed field type, so `static final int X = 7 / 2` evaluates to `3`.
+- `long`, `short`, and `byte` constants follow the same rule.
+- Annotation defaults that reference such a constant inherit the evaluated value.
+- Corpus adds `Constants.HALF = 7 / 2`; editing `2` to `4` must produce `L3-reshaped` on `Marker#halfConstant`.
+
+### Changed
+
+- Corpus mutations: 101 to 102; `java-javadoc-fixture` runs 30 mutations with 25 anchors, all hitting with zero collateral.
+- Branch coverage stays at 95.69%; line coverage at 99.24%.
+
+### Limits
+
+- Floating field types still use floating division, which differs from Java when both operands are integers.
+- Function calls, casts, and bitwise operators stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.75] - 2026-11-03
 
 ### Added
@@ -1365,3 +1385,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.73]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.73
 [0.1.74]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.74
 [0.1.75]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.75
+[0.1.76]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.76

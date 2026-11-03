@@ -387,6 +387,9 @@ describe("Java surface", () => {
         "    String unqualified() default NAME;",
         "    int computed() default Constants.COMPUTED;",
         "    int limit() default Constants.LIMIT;",
+        "    int halfConstant() default Constants.HALF;",
+        "    long longHalfConstant() default Constants.LONG_HALF;",
+        "    int negHalfConstant() default Constants.NEG_HALF;",
         "    boolean on() default Constants.ON;",
         "    String missing() default Missing.NAME;",
         "    String required();",
@@ -398,6 +401,9 @@ describe("Java surface", () => {
         "    static final boolean ON = true;",
         "    static final int UNINITIALIZED;",
         "    static final int COMPUTED = 1 + 2;",
+        "    static final int HALF = 7 / 2;",
+        "    static final long LONG_HALF = 7 / 2;",
+        "    static final int NEG_HALF = -7 / 2;",
         "    transient int counter = 1;",
         "    static final int BAD = 1 + @;",
         "}",
@@ -444,6 +450,9 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "unqualified")?.shape.evaluatedDefault).toBe("named");
     expect(result.symbols.find((symbol) => symbol.name === "computed")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "limit")?.shape.evaluatedDefault).toBe(7);
+    expect(result.symbols.find((symbol) => symbol.name === "halfConstant")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "longHalfConstant")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "negHalfConstant")?.shape.evaluatedDefault).toBe(-3);
     expect(result.symbols.find((symbol) => symbol.name === "on")?.shape.evaluatedDefault).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "missing")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "empty")?.shape.evaluatedDefault).toEqual([]);

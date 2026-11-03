@@ -63,8 +63,8 @@ interface CorpusEntry {
   constantMutations?: Array<{
     file: string;
     field: string;
-    from: string;
-    to: string;
+    from: string | number;
+    to: string | number;
     symbol: string;
     expectedRule?: string;
   }>;
@@ -248,7 +248,12 @@ function replaceAnnotationString(
   return replaceStringInParens(source, tokens, open, `@${annotation}`, from, to, element);
 }
 
-function replaceConstantString(source: string, field: string, from: string, to: string): string {
+function replaceConstantString(
+  source: string,
+  field: string,
+  from: string | number,
+  to: string | number,
+): string {
   const tokens = lex(source, "java").tokens;
   const index = tokens.findIndex(
     (token, cursor) => token.value === field && tokens[cursor + 1]?.value === "=",
@@ -270,19 +275,27 @@ function replaceConstantString(source: string, field: string, from: string, to: 
   const bodyStart = tokens[equals]?.end as number;
   const bodyEnd = tokens[cursor]?.start as number;
   const body = source.slice(bodyStart, bodyEnd);
-  const matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
-    .map((match) => ({ text: match[0], index: match.index as number }))
-    .filter((match) => {
-      try {
-        return JSON.parse(match.text) === from;
-      } catch {
-        return false;
-      }
-    });
+  let matches: Array<{ text: string; index: number }>;
+  if (typeof from === "number") {
+    matches = [...body.matchAll(/(?<![\w.])(?:\d+(?:\.\d*)?|\.\d+)(?![\w.])/gu)]
+      .map((match) => ({ text: match[0], index: match.index as number }))
+      .filter((match) => Number(match.text) === from);
+  } else {
+    matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
+      .map((match) => ({ text: match[0], index: match.index as number }))
+      .filter((match) => {
+        try {
+          return JSON.parse(match.text) === from;
+        } catch {
+          return false;
+        }
+      });
+  }
   if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in constant ${field}, found ${matches.length}`);
   const match = matches[0] as { text: string; index: number };
   const start = bodyStart + match.index;
-  return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
+  const replacement = typeof to === "number" ? String(to) : JSON.stringify(to);
+  return `${source.slice(0, start)}${replacement}${source.slice(start + match.text.length)}`;
 }
 
 function replaceDefaultString(

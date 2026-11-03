@@ -888,19 +888,6 @@ class JavaParser {
     while (nameIndex >= start && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
     const name = nameIndex >= start ? (tokens[nameIndex] as Token).value : "";
     if (!name) return;
-    if (constant) {
-      if (equals >= 0) {
-        const initializer = this.context.source
-          .slice((tokens[equals] as Token).end, (tokens[semicolon] as Token).start)
-          .trim();
-        const parsed = annotationLiteral(initializer);
-        const evaluated = evaluateArgument({ value: initializer, ...parsed }, this.context.constants);
-        if (evaluated !== undefined) {
-          this.context.constants.set(name, evaluated);
-          this.context.constants.set(`${typePath}.${name}`, evaluated);
-        }
-      }
-    }
     const type = tokens
       .slice(start, Math.max(start, nameIndex))
       .map((token) => token.value)
@@ -909,6 +896,24 @@ class JavaParser {
       .replace(/\s*<\s*/gu, "<")
       .replace(/\s*>\s*/gu, ">")
       .trim();
+    if (constant) {
+      if (equals >= 0) {
+        const initializer = this.context.source
+          .slice((tokens[equals] as Token).end, (tokens[semicolon] as Token).start)
+          .trim();
+        const parsed = annotationLiteral(initializer);
+        const evaluated = evaluateArgument(
+          { value: initializer, ...parsed },
+          this.context.constants,
+          undefined,
+          isIntegralType(type),
+        );
+        if (evaluated !== undefined) {
+          this.context.constants.set(name, evaluated);
+          this.context.constants.set(`${typePath}.${name}`, evaluated);
+        }
+      }
+    }
     this.context.drafts.push({
       name,
       kind: "property",
