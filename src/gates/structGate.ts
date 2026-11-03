@@ -30,6 +30,7 @@ export const REQUIRED_FILES = [
   "src/surface/rust.ts",
   "src/surface/rustdoc.ts",
   "src/surface/go.ts",
+  "src/surface/java.ts",
   "src/surface/lex.ts",
   "src/shape/compat.ts",
   "src/docs/infer.ts",

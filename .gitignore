@@ -8,4 +8,4 @@ PLAN.md
 .opencode/plan/
 .corpus/
 
-corpus/precision-*.json
+corpus/precision-[0-9]*.json

@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.47] - 2026-11-03
+
+### Added
+
+- Opt-in Javadoc scanning via `"javadoc": true`.
+- Minimal Java surface extraction: public classes, interfaces, methods, fields, and constructors.
+- Javadoc `{@link}`, `{@code}`, and backtick literals become anchors on the Java source file.
+- Local `java-javadoc-fixture`: 2 of 2 anchors bound, 2 of 2 mutations detected.
+
+### Limits
+
+- Java extraction covers public top-level types and their public members. Nested types, annotations, and non-public members are skipped.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.46] - 2026-11-03
 
 ### Added
@@ -881,3 +895,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.44]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.44
 [0.1.45]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.45
 [0.1.46]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.46
+[0.1.47]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.47

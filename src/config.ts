@@ -38,6 +38,7 @@ export const DEFAULT_CONFIG: Config = {
   minConfidence: 0.6,
   docstrings: false,
   asciidoc: false,
+  javadoc: false,
 };
 
 const severitySchema = z.enum(["error", "warning", "note", "off"]);
@@ -71,6 +72,7 @@ const rawConfigSchema = z
     minConfidence: z.number().min(0).max(1).optional(),
     docstrings: z.boolean().optional(),
     asciidoc: z.boolean().optional(),
+    javadoc: z.boolean().optional(),
   })
   .strict();
 
@@ -94,6 +96,7 @@ export function parseConfig(input: unknown): Config {
     minConfidence: raw.minConfidence ?? DEFAULT_CONFIG.minConfidence,
     docstrings: raw.docstrings ?? DEFAULT_CONFIG.docstrings,
     asciidoc: raw.asciidoc ?? DEFAULT_CONFIG.asciidoc,
+    javadoc: raw.javadoc ?? DEFAULT_CONFIG.javadoc,
   };
 }
 

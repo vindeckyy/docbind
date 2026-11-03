@@ -1,6 +1,6 @@
 # Corpus results
 
-`corpus/repos.json` pins five open-source repositories at exact commits and nine local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
+`corpus/repos.json` pins five open-source repositories at exact commits and ten local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -26,8 +26,9 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/rst-fixture (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/python-asciidoc (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
+| local/java-javadoc (local) | Java | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 
-Overall: 800 of 3367 anchors bound, or 23.8%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
+Overall: 802 of 3369 anchors bound, or 23.8%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -47,6 +48,10 @@ Python fences resolve attribute chains through source class fields. A property s
 Python fence parameters are typed three ways: annotated signatures such as `def log(request: Request)`, call arguments such as `log(response.request)`, and base-class methods when a subclass overrides them without annotations. That covers the common `class MyAuth(httpx.Auth): def auth_flow(self, request)` pattern.
 
 httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclared Python builtins are filtered from anchors, so httpx anchors fell from 2972 to 2818. The local Python fixture binds 8 of 9 anchors and detects 5 of 5 mutations, including `L4-renamed` findings on `Request.method` and `Request.url`.
+
+## Javadoc
+
+Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. The local `java-javadoc-fixture` binds 2 of 2 anchors and detects 2 of 2 mutations.
 
 ## AsciiDoc
 
@@ -121,7 +126,7 @@ Python fences then gained local type inference. Source return annotations feed a
 - anyhow binds ten anchors after crate macros and generic type aliases were added. Most of its README still uses standard-library types and prose that do not map to crate symbols.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
-- The corpus uses five external repositories and nine local fixtures. It is evidence, not a benchmark.
+- The corpus uses five external repositories and ten local fixtures. It is evidence, not a benchmark.
 
 Run the harness from the repository root:
 

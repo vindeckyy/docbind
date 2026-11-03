@@ -261,5 +261,23 @@
     },
     "asciidoc": true,
     "mutations": 3
+  },
+  {
+    "name": "java-javadoc-fixture",
+    "repo": "local/java-javadoc",
+    "commit": "fixture-v1",
+    "local": "corpus/fixtures/java-javadoc",
+    "docs": [
+      "docs/**/*.md"
+    ],
+    "exclude": [],
+    "languages": {
+      "typescript": false,
+      "python": false,
+      "rust": false,
+      "go": false
+    },
+    "javadoc": true,
+    "mutations": 2
   }
 ]

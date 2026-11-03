@@ -53,6 +53,9 @@ export function discoverCode(root: string, config: Config): string[] {
   if (config.languages.go) {
     patterns.push("**/*.go");
   }
+  if (config.javadoc) {
+    patterns.push("**/*.java");
+  }
   const files = globSync(patterns, {
     cwd: root,
     ignore: [
@@ -140,6 +143,7 @@ export function modulePathFor(packageRoot: string, filePath: string): string {
     .replace(/\.py$/u, "")
     .replace(/\.rs$/u, "")
     .replace(/\.go$/u, "")
+    .replace(/\.java$/u, "")
     .replace(/\/index$/u, "");
   return relativePath.length === 0 ? "index" : relativePath;
 }

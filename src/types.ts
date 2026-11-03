@@ -224,6 +224,7 @@ export interface Config {
   minConfidence: number;
   docstrings: boolean;
   asciidoc: boolean;
+  javadoc: boolean;
 }
 
 export const RULES: Rule[] = [

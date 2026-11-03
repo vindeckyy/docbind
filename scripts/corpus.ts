@@ -23,6 +23,7 @@ interface CorpusEntry {
   languages: Config["languages"];
   docstrings?: boolean;
   asciidoc?: boolean;
+  javadoc?: boolean;
   mutations: number;
 }
 
@@ -92,9 +93,19 @@ async function materialize(entry: CorpusEntry): Promise<string> {
           languages: entry.languages,
           ...(entry.docstrings ? { docstrings: true } : {}),
     ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
       ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
         ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
+        ...(entry.javadoc ? { javadoc: true } : {}),
           ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
+        ...(entry.javadoc ? { javadoc: true } : {}),
+          ...(entry.javadoc ? { javadoc: true } : {}),
           ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
         }, null, 2)}\n`,
       );
@@ -115,8 +126,14 @@ async function materialize(entry: CorpusEntry): Promise<string> {
         languages: entry.languages,
         ...(entry.docstrings ? { docstrings: true } : {}),
     ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
       ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
         ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
+        ...(entry.javadoc ? { javadoc: true } : {}),
         ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
       }, null, 2)}\n`,
     );
@@ -139,7 +156,10 @@ async function materialize(entry: CorpusEntry): Promise<string> {
       languages: entry.languages,
       ...(entry.docstrings ? { docstrings: true } : {}),
     ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
       ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
+      ...(entry.javadoc ? { javadoc: true } : {}),
       ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
     }, null, 2)}\n`,
   );
@@ -195,6 +215,7 @@ for (const entry of selected) {
     languages: entry.languages,
     ...(entry.docstrings ? { docstrings: true } : {}),
     ...(entry.asciidoc ? { asciidoc: true } : {}),
+    ...(entry.javadoc ? { javadoc: true } : {}),
     ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();

@@ -48,6 +48,14 @@ describe("AsciiDoc docs", () => {
     expect(anchors.map((anchor) => anchor.token)).not.toContain("ignored");
   });
 
+  it("handles missing languages and invalid plus tokens", () => {
+    expect(parseDoc("docs/api.adoc", "", undefined, undefined, true).anchors).toEqual([]);
+    const text = "[source]\nnot a block\n\n[source,]\n----\nclient.get(\"/\")\n----\n\n+two words+ and +Client.get()+\n";
+    const tokens = parseDoc("docs/api.adoc", text, undefined, undefined, true).anchors.map((anchor) => anchor.token);
+    expect(tokens).not.toContain("two words");
+    expect(tokens).toContain("Client.get()");
+  });
+
   it("handles unclosed delimited blocks", () => {
     const text = "[source,python]\n----\nimport httpx\nhttpx.get(\"/\")\n";
     expect(() => parseDoc("docs/api.adoc", text, undefined, undefined, true)).not.toThrow();

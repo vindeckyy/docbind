@@ -60,7 +60,7 @@ function charLiteralEnd(source: string, start: number): number {
   return -1;
 }
 
-export function lex(source: string, language: "rust" | "go"): LexResult {
+export function lex(source: string, language: "rust" | "go" | "java"): LexResult {
   const chars = source.split("");
   let error = false;
   let index = 0;
@@ -119,9 +119,8 @@ export function lex(source: string, language: "rust" | "go"): LexResult {
     if (char === "\"") {
       let end = index + 1;
       while (end < source.length && source[end] !== "\"") {
-        if (language === "rust" && source[end] === "\\") end += 1;
-        if (language === "go" && source[end] === "\\") end += 1;
-        if (language === "go" && source[end] === "\n") {
+        if (source[end] === "\\") end += 1;
+        if ((language === "go" || language === "java") && source[end] === "\n") {
           error = true;
           break;
         }

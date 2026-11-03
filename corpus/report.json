@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T21:37:39.933Z",
+  "generatedAt": "2026-11-03T21:45:28.899Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -711,6 +711,47 @@
         }
       ],
       "hits": 3,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "java-javadoc-fixture",
+      "repo": "local/java-javadoc",
+      "commit": "fixture-v1",
+      "nameOnlyFalsePositives": 0,
+      "docs": 1,
+      "anchors": 2,
+      "bound": 2,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "status",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "get",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
       "misses": 0,
       "collateral": 0
     }

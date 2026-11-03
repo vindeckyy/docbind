@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-11-03T21:43:01.512Z",
+  "scope": "all",
+  "fixtures": "corpus/repos.json",
+  "rows": [
+    {
+      "threshold": 0.4,
+      "anchors": 3369,
+      "bound": 819,
+      "baselineFindings": 0,
+      "docEditFindings": 0,
+      "hits": 74,
+      "mutations": null,
+      "collateral": 0,
+      "nameOnlyFalsePositives": 2863,
+      "bindRate": 0.24309884238646481,
+      "selections": 74,
+      "recall": 1
+    },
+    {
+      "threshold": 0.5,
+      "anchors": 3369,
+      "bound": 819,
+      "baselineFindings": 0,
+      "docEditFindings": 0,
+      "hits": 74,
+      "mutations": null,
+      "collateral": 0,
+      "nameOnlyFalsePositives": 2863,
+      "bindRate": 0.24309884238646481,
+      "selections": 74,
+      "recall": 1
+    },
+    {
+      "threshold": 0.55,
+      "anchors": 3369,
+      "bound": 803,
+      "baselineFindings": 0,
+      "docEditFindings": 0,
+      "hits": 74,
+      "mutations": null,
+      "collateral": 0,
+      "nameOnlyFalsePositives": 2863,
+      "bindRate": 0.2383496586524191,
+      "selections": 74,
+      "recall": 1
+    },
+    {
+      "threshold": 0.6,
+      "anchors": 3369,
+      "bound": 802,
+      "baselineFindings": 0,
+      "docEditFindings": 0,
+      "hits": 74,
+      "mutations": null,
+      "collateral": 0,
+      "nameOnlyFalsePositives": 2863,
+      "bindRate": 0.23805283466904126,
+      "selections": 74,
+      "recall": 1
+    },
+    {
+      "threshold": 0.7,
+      "anchors": 3369,
+      "bound": 643,
+      "baselineFindings": 0,
+      "docEditFindings": 0,
+      "hits": 72,
+      "mutations": null,
+      "collateral": 0,
+      "nameOnlyFalsePositives": 2863,
+      "bindRate": 0.190857821311962,
+      "selections": 72,
+      "recall": 1
+    },
+    {
+      "threshold": 0.8,
+      "anchors": 3369,
+      "bound": 602,
+      "baselineFindings": 0,
+      "docEditFindings": 0,
+      "hits": 65,
+      "mutations": null,
+      "collateral": 0,
+      "nameOnlyFalsePositives": 2863,
+      "bindRate": 0.17868803799346988,
+      "selections": 65,
+      "recall": 1
+    }
+  ]
+}

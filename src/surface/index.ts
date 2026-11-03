@@ -3,6 +3,7 @@ import { extractPython } from "./python.js";
 import { extractRust } from "./rust.js";
 import { extractRustdoc } from "./rustdoc.js";
 import { extractGo } from "./go.js";
+import { extractJava } from "./java.js";
 import type { DocstringEntry, ExtractResult } from "./protocol.js";
 import { extractTypescript } from "./typescript.js";
 
@@ -10,6 +11,7 @@ export function extractSurface(root: string, files: string[], config: Config): E
   const pythonFiles = files.filter((file) => file.endsWith(".py"));
   const rustFiles = files.filter((file) => file.endsWith(".rs"));
   const goFiles = files.filter((file) => file.endsWith(".go"));
+  const javaFiles = files.filter((file) => file.endsWith(".java"));
   const scriptFiles = files.filter((file) => !/\.(?:py|rs|go)$/u.test(file));
   const results: ExtractResult[] = [];
 
@@ -28,15 +30,20 @@ export function extractSurface(root: string, files: string[], config: Config): E
   if (config.languages.go && goFiles.length > 0) {
     results.push(extractGo(root, goFiles));
   }
+  if (config.javadoc && javaFiles.length > 0) {
+    results.push(extractJava(root, javaFiles));
+  }
 
   const symbols: Symbol[] = [];
   const docstrings: DocstringEntry[] = [];
+  const javadocs: DocstringEntry[] = [];
   let parseFailures = 0;
   let filesScanned = 0;
   const errors: string[] = [];
   for (const result of results) {
     symbols.push(...result.symbols);
     docstrings.push(...(result.docstrings ?? []));
+    javadocs.push(...(result.javadocs ?? []));
     parseFailures += result.parseFailures;
     filesScanned += result.filesScanned;
     if (result.error) errors.push(result.error);
@@ -62,11 +69,12 @@ export function extractSurface(root: string, files: string[], config: Config): E
   return {
     symbols: finalSymbols,
     docstrings,
+    javadocs,
     parseFailures,
     filesScanned,
     ...(errors.length > 0 ? { error: errors.join("; ") } : {}),
   };
 }
 
-export { extractTypescript, extractPython, extractRust, extractRustdoc, extractGo };
+export { extractTypescript, extractPython, extractRust, extractRustdoc, extractGo, extractJava };
 export type { DocstringEntry, ExtractResult };

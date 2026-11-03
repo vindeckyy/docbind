@@ -838,6 +838,47 @@ describe("check pipeline", () => {
     expect(checkProject(root, disabled).pending).toEqual([]);
   });
 
+  it("scans Javadoc comments only when enabled", () => {
+    const root = tempProject({
+      "pom.xml": "<project></project>\n",
+      "src/main/java/example/Client.java": [
+        "package example;",
+        "",
+        "public class Client {",
+        "    /** Read {@code Client#status} after {@link #get()}. */",
+        "    public int status;",
+        "",
+        "    public String get() { return \"\"; }",
+        "}",
+        "",
+      ].join("\n"),
+      "docs/api.md": "Prose without code anchors.\n",
+    });
+    const enabled = parseConfig({ javadoc: true });
+    const result = checkProject(root, enabled);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(expect.arrayContaining(["status", "get"]));
+    expect(result.pending[0]?.anchor.docPath).toBe("src/main/java/example/Client.java");
+    lockNow(root, enabled);
+    writeFileSync(
+      join(root, "src/main/java/example/Client.java"),
+      [
+        "package example;",
+        "",
+        "public class Client {",
+        "    /** Read {@code Client#status} after {@link #get()}. */",
+        "    public int statusCode;",
+        "",
+        "    public String get() { return \"\"; }",
+        "}",
+        "",
+      ].join("\n"),
+    );
+    expect(checkProject(root, enabled).findings.some((finding) => finding.rule === "L4-renamed")).toBe(true);
+    const disabled = parseConfig({});
+    expect(checkProject(root, disabled).pending).toEqual([]);
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

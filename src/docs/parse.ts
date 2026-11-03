@@ -403,6 +403,57 @@ function parseAdocDoc(
   return { anchors: assignOccurrences(kept), parseFailures: 0 };
 }
 
+const JAVADOC_LINK_RE = /\{@(?:link|linkplain)\s+([^\s}]+)[^}]*\}/gu;
+const JAVADOC_CODE_RE = /\{@code\s+([^}]+)\}/gu;
+
+export function parseJavadoc(docPath: string, text: string, startLine: number): DocParseResult {
+  const lines = text.split(/\r?\n/u);
+  const heading = lines.find((line) => line.trim().length > 0)?.trim() ?? "";
+  const anchors: DocAnchor[] = [];
+  const add = (token: string, lineIndex: number, column: number, surface: DocAnchor["surface"]): void => {
+    const target = token.trim().replace(/^#/u, "");
+    /* v8 ignore next */
+    if (target.length === 0) return;
+    anchors.push({
+      docPath,
+      line: startLine + lineIndex,
+      column,
+      length: target.length,
+      token: target,
+      occurrence: 0,
+      surface,
+      contextFp: contextFingerprint([heading, lines[lineIndex] as string], target),
+      importTable: {},
+      localDecls: [],
+      fragment: false,
+    });
+  };
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex] as string;
+    const used: Array<[number, number]> = [];
+    for (const match of line.matchAll(JAVADOC_LINK_RE)) {
+      const index = match.index as number;
+      used.push([index, index + match[0].length]);
+      add(match[1] as string, lineIndex, index + 1, "explicitRef");
+    }
+    for (const match of line.matchAll(JAVADOC_CODE_RE)) {
+      const index = match.index as number;
+      used.push([index, index + match[0].length]);
+      add(match[1] as string, lineIndex, index + 1, "inlineCode");
+    }
+    for (const match of line.matchAll(SINGLE_LITERAL_RE)) {
+      const index = match.index as number;
+      if (used.some(([from, to]) => index >= from && index < to)) continue;
+      add(match[1] as string, lineIndex, index + 2, "inlineCode");
+    }
+  }
+  const kept = anchors.filter((anchor) => {
+    const window = lines.slice(Math.max(0, anchor.line - startLine - 4), anchor.line - startLine + 3).join(" ");
+    return !hasNegativeCue(window);
+  });
+  return { anchors: assignOccurrences(kept), parseFailures: 0 };
+}
+
 const SINGLE_LITERAL_RE = /(?<!`)`(?!`)([^`\n]+)`(?!`)/gu;
 
 export function parseDocstring(

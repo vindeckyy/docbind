@@ -1,7 +1,7 @@
 import { buildIndex, resolveAnchor } from "./resolve/resolve.js";
 import { matchTombstone } from "./resolve/tombstone.js";
 import { inferRename, modulePathFromId, parseShapeText } from "./resolve/rename.js";
-import { parseDocstring, parseDocs } from "./docs/parse.js";
+import { parseDocstring, parseDocs, parseJavadoc } from "./docs/parse.js";
 import { buildGoTypeHints, buildPythonTypeHints } from "./docs/infer.js";
 import { anchorKey } from "./docs/anchors.js";
 import { compareShapeClaims } from "./shape/compat.js";
@@ -206,10 +206,15 @@ export function checkProject(root: string, config: Config, options: CheckProject
           (entry) => parseDocstring(entry.filePath, entry.text, entry.line, pythonHints, goHints).anchors,
         )
       : [];
+  const javadocAnchors = config.javadoc
+    ? (surface.javadocs ?? []).flatMap(
+        (entry) => parseJavadoc(entry.filePath, entry.text, entry.line).anchors,
+      )
+    : [];
   const loadedLock = readLock(root);
   const lock = options.ignoreBaseline ? { ...loadedLock, anchors: [] } : loadedLock;
   const index = buildIndex(surface.symbols);
-  const anchors = [...parsedDocs.anchors, ...docstringAnchors];
+  const anchors = [...parsedDocs.anchors, ...docstringAnchors, ...javadocAnchors];
   const byKey = new Map(anchors.map((anchor) => [anchorKey(anchor), anchor]));
   const repeated = repeatedTokens(anchors);
   const findings: Finding[] = [];

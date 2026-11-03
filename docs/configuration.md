@@ -23,7 +23,8 @@
   "maxFindings": 200,
   "minConfidence": 0.6,
   "docstrings": false,
-  "asciidoc": false
+  "asciidoc": false,
+  "javadoc": false
 }
 ```
 
@@ -42,6 +43,10 @@ Set `"docstrings": true` to scan Python module, class, and function docstrings. 
 ## AsciiDoc
 
 Set `"asciidoc": true` and include `.adoc` or `.asciidoc` paths in `docs`. Backtick and `+monospace+` literals become anchors, and `[source,<lang>]` blocks with `----` or `....` delimiters are parsed as fences. It is off by default because single backticks and plus signs are common in prose.
+
+## Javadoc
+
+Set `"javadoc": true` to extract public Java types and scan Javadoc comments. `{@link}`, `{@code}`, and backtick literals become anchors on the Java source file. Java discovery is enabled by the same flag. It is off by default because Java projects usually keep their docs in a generator.
 
 ## Severity
 
