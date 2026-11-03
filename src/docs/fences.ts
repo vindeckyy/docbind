@@ -3,9 +3,12 @@ import type { Code } from "mdast";
 import { contextFingerprint, hasNegativeCue } from "./context.js";
 import type { DocAnchor, ImportRef, Shape } from "../types.js";
 import { snippetSignature } from "../surface/typescript.js";
+import { lex } from "../surface/lex.js";
 
 const TS_LANGS = new Set(["ts", "typescript", "tsx", "js", "javascript", "jsx", "mjs", "cjs"]);
 const PY_LANGS = new Set(["py", "python"]);
+const RUST_LANGS = new Set(["rs", "rust"]);
+const GO_LANGS = new Set(["go", "golang"]);
 const PY_KEYWORDS = new Set([
   "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del",
   "elif", "else", "except", "False", "finally", "for", "from", "global", "if", "import",
@@ -297,16 +300,74 @@ function pyFenceAnchors(node: Code, docPath: string, heading: string): FenceResu
   return { anchors, imports };
 }
 
+function lexFenceAnchors(
+  node: Code,
+  docPath: string,
+  heading: string,
+  language: "rust" | "go",
+): FenceResult {
+  const value = node.value;
+  const lexed = lex(value, language);
+  const imports: Record<string, ImportRef> = {};
+  const locals = new Set<string>();
+  for (const line of value.split("\n")) {
+    if (language === "rust") {
+      const use = /^\s*use\s+([\w:]+)(?:\s+as\s+(\w+))?;/u.exec(line);
+      if (use?.[1]) {
+        const imported = use[1].split("::").pop() ?? use[1];
+        imports[use[2] ?? imported] = { source: use[1], imported };
+      }
+      const local = /\b(?:fn|struct|enum|trait|type|const|static|let|mod)\s+([A-Za-z_]\w*)/u.exec(line);
+      if (local?.[1]) locals.add(local[1]);
+    } else {
+      const use = /^\s*import\s+(?:(\w+)\s+)?"([^"]+)"/u.exec(line);
+      if (use?.[2]) {
+        const imported = use[2].split("/").pop() ?? use[2];
+        imports[use[1] ?? imported] = { source: use[2], imported };
+      }
+      const local = /\b(?:func|type|var|const)\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/u.exec(line);
+      if (local?.[1]) locals.add(local[1]);
+    }
+  }
+  const startLine = node.position?.start.line ?? 1;
+  const anchors: DocAnchor[] = [];
+  const seen = new Set<string>();
+  for (const token of lexed.tokens) {
+    if (token.value.length < 2 || !/^[A-Za-z_]/u.test(token.value)) continue;
+    if (locals.has(token.value) || seen.has(`${token.start}`)) continue;
+    const position = lexed.masked.slice(0, token.start).split("\n").length - 1;
+    const column = token.start - lexed.masked.lastIndexOf("\n", token.start - 1);
+    seen.add(`${token.start}`);
+    anchors.push(
+      makeAnchor(
+        docPath,
+        token.value,
+        startLine + 1 + position,
+        column,
+        "fenceToken",
+        [heading, contextLine(value, position)],
+        imports,
+        [...locals],
+        lexed.error || /\.\.\./u.test(value),
+        node.lang ?? undefined,
+      ),
+    );
+  }
+  return { anchors, imports };
+}
+
 export function fenceAnchors(node: Code, docPath: string, heading: string): FenceResult {
   const lang = (node.lang ?? "").toLowerCase();
   if (TS_LANGS.has(lang)) return tsFenceAnchors(node, docPath, heading);
   if (PY_LANGS.has(lang)) return pyFenceAnchors(node, docPath, heading);
+  if (RUST_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "rust");
+  if (GO_LANGS.has(lang)) return lexFenceAnchors(node, docPath, heading, "go");
   return { anchors: [], imports: {} };
 }
 
 export function isSupportedFence(lang: string | null | undefined): boolean {
   const normalized = (lang ?? "").toLowerCase();
-  return TS_LANGS.has(normalized) || PY_LANGS.has(normalized);
+  return TS_LANGS.has(normalized) || PY_LANGS.has(normalized) || RUST_LANGS.has(normalized) || GO_LANGS.has(normalized);
 }
 
 export function isHistoricalContext(heading: string, line: string): boolean {

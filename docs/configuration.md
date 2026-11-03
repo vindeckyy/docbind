@@ -1,0 +1,44 @@
+# Configuration
+
+`docbind.json` is optional. Defaults cover a normal repository.
+
+```json
+{
+  "docs": ["README.md", "docs/**/*.md", "**/*.md"],
+  "exclude": ["CHANGELOG.md", "docs/migration/**"],
+  "languages": {
+    "typescript": true,
+    "python": true,
+    "rust": true,
+    "go": false
+  },
+  "severity": {
+    "L1-broken": "error",
+    "L2-moved": "error",
+    "L3-reshaped": "error",
+    "L4-renamed": "error",
+    "S1-deprecated": "off"
+  },
+  "maxFindings": 200
+}
+```
+
+## Historical docs
+
+`CHANGELOG.md`, `HISTORY*`, `releases/**`, `docs/migration*`, and `docs/upgrade*` are excluded by default. Old names in those files are correct.
+
+## Language switches
+
+TypeScript, Python, and Rust are on by default. Go is off. Turn off a language to reduce scan time or to avoid vendor generated sources.
+
+## Severity
+
+Set a rule to `off`, `note`, `warning`, or `error`. Only `error` fails the default check. `--strict` fails on any finding.
+
+## Lock behavior
+
+The lock stores the shape the doc last asserted. `check` never writes it. `lock` updates bindings after doc edits. An engine upgrade prints one warning; use `lock --refresh` to rebind everything.
+
+## Thresholds
+
+Scoring weights and binding thresholds are fixed in the engine. Per-repo tuning would make published precision numbers meaningless.

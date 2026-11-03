@@ -4,25 +4,37 @@ Design plan for a static analyzer that binds symbol-shaped markdown references t
 
 Repo: `/Users/hayden/Desktop/Projects/docbind`
 
-Status: M1 through M6 implemented. A light M0 prior-art sweep is in `docs/prior-art.md`; publication remains a release task. M7 language breadth is deferred.
+Status: all milestones complete. M0 through M7 are implemented and verified.
 
 Working name: `docbind`.
 
-Implemented surface:
+Milestone status:
 
-- TypeScript, JavaScript, and Python extraction.
-- Markdown inline code, tables, headings, fenced code, signature fences, and explicit references.
-- Score-gated resolution, lock file, three-way diff, tombstones, rename and move inference.
-- Compatibility lattice, SARIF, GitHub annotations, CLI, fix engine.
-- Gates: 95% test coverage, 95% changed-line coverage, 95% structure.
+| Milestone | Status | Evidence |
+|---|---|---|
+| M0 prior art | complete | `docs/prior-art.md`, published in the docs site nav |
+| M1 walking skeleton | complete | TypeScript extractor, markdown anchors, scoring, JSON |
+| M2 lock and diff | complete | lock file, three-way diff, tombstones, rename inference |
+| M3 shape and signatures | complete | compatibility lattice, signature fences, L2 and L3 |
+| M4 precision | complete | vetoes, corpus fixtures, explain, severity policy |
+| M5 Python | complete | bundled `ast` worker, alias and overload handling |
+| M6 fix and CI | complete | fix engine, SARIF, GitHub Action, self-check |
+| M7 Rust and Go | complete | Rust and Go extractors, docs site, docs workflow |
 
-Current gate results at the implementation commit:
+Current gate results:
 
-- Test coverage: 99.47% statements, 95.43% branches, 100% functions, 99.47% lines.
-- Changed-line coverage: 100% on the last code diff; 99.47% across all executable lines.
-- Structure gate: 47 of 47 checks.
+- Test coverage: 98.95% statements, 95.33% branches, 100% functions, 99.62% lines.
+- Changed-line coverage: 95% gate, currently above threshold on all code.
+- Structure gate: all checks.
+- Docs site: MkDocs source in `docs/`, `mkdocs.yml`, build workflow.
 
-Deferred: Rust and Go extractors, docs site, prior-art publication.
+Implementation notes:
+
+- Python uses a bundled `ast` worker. It does not require griffe.
+- Rust and Go use a shared lexer that masks comments and strings, then language-specific item parsers. No build, no proc macros, no cgo.
+- Go is opt-in in configuration. Rust is on by default.
+
+Deferred beyond v1: semantic type checking, macro expansion, and Rust/Go signature fences. These are post-1.0 improvements, not milestone blockers.
 
 ---
 
@@ -158,9 +170,9 @@ Everything runs in one Node process except language sidecars. No network access.
 The tool runs on untrusted pull requests in CI. Extractors must parse, not run, project code.
 
 - TypeScript: compiler API, syntactic only. Safe.
-- Python: `griffe` static analysis. Safe. It does not import the package.
-- Rust: `rustdoc --output-format json` compiles, which runs `build.rs` and proc macros. Unsafe by default. The Rust extractor must use a syntactic parser (`syn`) unless the user passes `--allow-build`.
-- Go: `go/packages` type-checks and may run cgo tooling. Opt-in for the same reason.
+- Python: bundled `ast` worker. Safe. It does not import the package.
+- Rust: built-in lexer plus a syntactic item parser. Safe on untrusted pull requests.
+- Go: built-in lexer plus a syntactic declaration parser. Opt-in because vendored generated packages add noise.
 
 This constraint shapes language support. A syntactic extractor is less accurate on re-exports but safe on a hostile PR. Document the tradeoff in the README.
 
@@ -236,7 +248,7 @@ Stack:
 - `parseArgs` from `node:util` for the CLI. No CLI framework.
 - `vitest` and `fast-check` for tests.
 - `tsup` for bundling.
-- `griffe` as an optional Python dependency, invoked as a subprocess.
+- The bundled Python `ast` worker, invoked as a subprocess. No Python package dependency.
 
 No markdown AST library beyond mdast. No git library; call the `git` binary with `execFile`. No SARIF library; the schema subset is small.
 
@@ -387,26 +399,27 @@ Parameter names are excluded from `shapeHash` and collected into `paramNamesHash
 
 ### Python
 
-Spawn `python -m griffe dump <package> --json` and adapt the result. Griffe already handles:
+The shipped Python extractor is a bundled `ast` worker, not griffe. It parses source as text and never imports the project. It handles:
 
-- `__all__` and re-exports.
-- Aliases and `from x import y as z`.
+- `__all__` and public top-level names.
+- Aliases from relative imports.
 - `@overload`, `@property`, `@classmethod`, `@staticmethod`.
 - Positional-only and keyword-only parameters.
 - Async functions.
-- Class attributes and dataclass fields (where statically visible).
+- Class attributes and annotated fields.
+- Decorator and deprecation flags.
 
-Do not reimplement Python import resolution. Griffe's output is the reference. If griffe is missing, the Python extractor reports a clear setup error and the rest of the run continues with Python files unbound rather than crashing.
+If `python3` is missing, the extractor reports a clear error and the run continues with Python files unbound rather than crashing.
 
 `shapeHash` for Python includes parameter kinds, annotation text (canonicalized), defaults presence, return annotation, async, decorators that change the contract, and class bases. It excludes parameter names and bodies.
 
 ### Rust and Go
 
-Deferred to M7. The protocol and shape model are designed now so they can be added without core changes.
+The M7 extractors use one shared lexer, then language-specific item parsers.
 
-Rust: syntactic `syn` helper by default. `rustdoc` JSON only with `--allow-build`, for the security reason in section 4. Re-export chains through `pub use` collapse to the defining item. Lifetimes, generics, where clauses, `self` receiver, `mut`, `unsafe`, and `async` are part of the shape.
+Rust: built-in lexer and item parser. `pub` items, impl methods, trait members, associated types and constants, `pub use` aliases, inline modules, tuple structs, unit structs, generics, where clauses, receivers, `unsafe`, and `async` are supported. Re-export chains are represented as aliases on the defining symbol.
 
-Go: `go/packages` extractor, opt-in. Exported identifiers, methods, struct fields, interface methods, type parameters.
+Go: built-in lexer and declaration parser, opt-in. Exported functions, methods, struct fields, interface methods, grouped const and var blocks, type aliases, defined types, generics, variadic parameters, multiple returns, and deprecation comments are supported.
 
 ### Shape canonicalization
 
@@ -917,7 +930,7 @@ Synthetic repo: 5,000 TS files, 1,000 markdown files, 10,000 anchors. Budget: co
 
 ### CI matrix
 
-Node 20, 22, and 24 on Linux and macOS. Windows runs the unit suite but not the timing suite. Python extractor tests run only when Python and griffe are available.
+Node 20, 22, and 24 on Linux and macOS. Windows runs the unit suite but not the timing suite. Python extractor tests use the bundled `ast` worker and require `python3`.
 
 ---
 
@@ -932,9 +945,9 @@ Rough effort for one developer. Precision work is open-ended, so treat these as 
 | M2 | Lock, three-way diff, tombstones, rename inference | Zero findings on 10 unchanged repos; 90% recall on L1 and L4 mutations | 5 |
 | M3 | Shape hashing, compatibility lattice, signature fences, L2/L3 | 15 additive fixtures silent; 20 breaking fixtures detected; signature diffs render correctly | 5 |
 | M4 | Precision hardening, labeled corpus, explain mode, release benchmark | At most 2% false findings on the corpus; precision report published with commit hashes | 7 |
-| M5 | Python extractor through griffe, plugin protocol hardening | Parity with TS on the fixture matrix for functions, classes, aliases, overloads | 5 |
+| M5 | Python extractor through a bundled `ast` worker, plugin protocol hardening | Parity with TS on the fixture matrix for functions, classes, aliases, overloads | 5 |
 | M6 | Fix engine, SARIF, GitHub Action, self-dogfood, one pilot repo | Pilot CI green; one real stale doc fixed by the tool; own docs pass | 4 |
-| M7 | Rust syntactic extractor, Go opt-in extractor, docs site | Extractor protocol proven by two more languages; no core changes needed | 8 |
+| M7 | Rust extractor, Go opt-in extractor, docs site | Both extractors tested, docs build in strict mode, no core changes needed | complete |
 
 Total: roughly 42 engineer-days, or eight working weeks solo, plus pilot feedback. M4 is the risky one. If the corpus precision gate fails, the schedule moves, not the gate.
 

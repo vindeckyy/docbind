@@ -47,6 +47,12 @@ export function discoverCode(root: string, config: Config): string[] {
   if (config.languages.python) {
     patterns.push("**/*.py");
   }
+  if (config.languages.rust) {
+    patterns.push("**/*.rs");
+  }
+  if (config.languages.go) {
+    patterns.push("**/*.go");
+  }
   const files = globSync(patterns, {
     cwd: root,
     ignore: [
@@ -132,6 +138,8 @@ export function modulePathFor(packageRoot: string, filePath: string): string {
     .replace(/\\/gu, "/")
     .replace(/\.(?:d\.)?[cm]?[jt]sx?$/u, "")
     .replace(/\.py$/u, "")
+    .replace(/\.rs$/u, "")
+    .replace(/\.go$/u, "")
     .replace(/\/index$/u, "");
   return relativePath.length === 0 ? "index" : relativePath;
 }

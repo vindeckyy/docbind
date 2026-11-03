@@ -85,7 +85,8 @@ export function flagsFromNames(names: string[]): ContractFlag[] {
       cleaned === "generator" ||
       cleaned === "abstract" ||
       cleaned === "readonly" ||
-      cleaned === "static"
+      cleaned === "static" ||
+      cleaned === "unsafe"
     ) {
       flags.push(cleaned);
     }

@@ -104,6 +104,21 @@ describe("Python surface", () => {
     }
   });
 
+  it("combines rust and go only when enabled", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/a.rs": "pub fn rust_item() {}\n",
+      "go.mod": "module example.com/goapp\n",
+      "src/b.go": "package goapp\nfunc GoItem() {}\n",
+    });
+    const all = extractSurface(root, ["src/a.rs", "src/b.go"], parseConfig({ languages: { go: true } }));
+    expect(all.symbols.map((symbol) => symbol.name)).toEqual(expect.arrayContaining(["rust_item", "GoItem"]));
+    const noGo = extractSurface(root, ["src/a.rs", "src/b.go"], parseConfig({ languages: { go: false } }));
+    expect(noGo.symbols.map((symbol) => symbol.name)).toEqual(["rust_item"]);
+    const noRust = extractSurface(root, ["src/a.rs", "src/b.go"], parseConfig({ languages: { rust: false, go: true } }));
+    expect(noRust.symbols.map((symbol) => symbol.name)).toEqual(["GoItem"]);
+  });
+
   it("combines languages and respects config", () => {
     const root = tempProject({
       "package.json": JSON.stringify({ name: "app" }),

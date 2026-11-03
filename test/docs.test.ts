@@ -142,6 +142,13 @@ describe("markdown parsing", () => {
     expect(see.anchors.find((anchor) => anchor.surface === "explicitRef")?.token).toBe("getUser");
   });
 
+  it("ignores literal explicit-reference syntax in code spans", () => {
+    const literal = parseDoc("docs/api.md", "Write `{@link foo}` to link.\n");
+    expect(literal.anchors.filter((anchor) => anchor.surface === "explicitRef")).toHaveLength(0);
+    const real = parseDoc("docs/api.md", "Write {@link foo} to link.\n");
+    expect(real.anchors.filter((anchor) => anchor.surface === "explicitRef")).toHaveLength(1);
+  });
+
   it("ignores invalid explicit references", () => {
     const result = parseDoc("docs/api.md", "{@link } and :func:`a b`\n");
     expect(result.anchors.filter((anchor) => anchor.surface === "explicitRef")).toHaveLength(0);

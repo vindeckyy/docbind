@@ -28,6 +28,9 @@ export const REQUIRED_FILES = [
   "src/types.ts",
   "src/lock/schema.ts",
   "src/surface/index.ts",
+  "src/surface/rust.ts",
+  "src/surface/go.ts",
+  "src/surface/lex.ts",
   "src/shape/compat.ts",
   "src/resolve/score.ts",
   "src/report/sarif.ts",
@@ -35,6 +38,13 @@ export const REQUIRED_FILES = [
   "scripts/changed-coverage.ts",
   "scripts/struct-gate.ts",
   "action/action.yml",
+  "mkdocs.yml",
+  "requirements-docs.txt",
+  "docs/index.md",
+  "docs/usage.md",
+  "docs/configuration.md",
+  "docs/architecture.md",
+  "docs/prior-art.md",
 ];
 
 const REQUIRED_SCRIPTS = ["coverage", "gate:changed", "gate:struct", "gate", "test", "typecheck"];
@@ -43,6 +53,8 @@ const REQUIRED_EXPORTS: Array<{ file: string; marker: string }> = [
   { file: "src/check.ts", marker: "export function checkProject" },
   { file: "src/cli.ts", marker: "export async function runCli" },
   { file: "src/surface/index.ts", marker: "export function extractSurface" },
+  { file: "src/surface/rust.ts", marker: "export function extractRust" },
+  { file: "src/surface/go.ts", marker: "export function extractGo" },
   { file: "src/lock/schema.ts", marker: "export function readLock" },
   { file: "src/lock/schema.ts", marker: "export function writeLock" },
   { file: "src/fix.ts", marker: "export function applyFixes" },
