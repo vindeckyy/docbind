@@ -301,6 +301,16 @@
         "symbol": "routes",
         "expectedRule": "L3-reshaped"
       }
+    ],
+    "annotationMutations": [
+      {
+        "file": "src/main/java/example/Client.java",
+        "annotation": "Routes",
+        "from": "/a",
+        "to": "/z",
+        "symbol": "routes",
+        "expectedRule": "L3-reshaped"
+      }
     ]
   }
 ]

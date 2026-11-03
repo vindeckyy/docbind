@@ -2,6 +2,22 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.67] - 2026-11-03
+
+### Added
+
+- Corpus harness supports annotation mutations located through the Java token stream: find `@Annotation`, bound its parentheses, select the unique string literal with the requested value, and replace it.
+- `java-javadoc-fixture` edits the first `@Routes` array element from `/a` to `/z` through that path and requires `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 95 to 96; `java-javadoc-fixture` runs 24 mutations, all hitting with zero collateral.
+
+### Limits
+
+- Annotation mutation matching handles simple annotation names and one string target; it fails loudly on zero or multiple matches.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.66] - 2026-11-03
 
 ### Added
@@ -1191,3 +1207,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.64]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.64
 [0.1.65]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.65
 [0.1.66]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.66
+[0.1.67]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.67

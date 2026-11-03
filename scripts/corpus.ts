@@ -10,6 +10,8 @@ import { buildGoTypeHints, buildPythonTypeHints } from "../src/docs/infer.js";
 import { parseToken } from "../src/resolve/score.js";
 import { readLock } from "../src/lock/schema.js";
 import { extractSurface } from "../src/surface/index.js";
+import { lex } from "../src/surface/lex.js";
+import { findMatching } from "../src/surface/syntax.js";
 import { runCli } from "../src/cli.js";
 import type { Config, Finding, Symbol } from "../src/types.js";
 
@@ -32,11 +34,19 @@ interface CorpusEntry {
     symbol: string;
     expectedRule?: string;
   }>;
+  annotationMutations?: Array<{
+    file: string;
+    annotation: string;
+    from: string;
+    to: string;
+    symbol: string;
+    expectedRule?: string;
+  }>;
 }
 
 interface MutationResult {
   symbol: string;
-  kind?: "rename" | "value";
+  kind?: "rename" | "value" | "annotation";
   expectedRule?: string;
   rule?: string;
   hit: boolean;
@@ -174,6 +184,38 @@ async function materialize(entry: CorpusEntry): Promise<string> {
   );
   writeFileSync(join(target, "corpus.ready"), entry.commit);
   return target;
+}
+
+function replaceAnnotationString(source: string, annotation: string, from: string, to: string): string {
+  const tokens = lex(source, "java").tokens;
+  let open = -1;
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    if (tokens[index]?.value !== "@" || tokens[index + 1]?.value !== annotation) continue;
+    const paren = tokens.findIndex((token, cursor) => cursor > index + 1 && token.value === "(");
+    if (paren >= 0) {
+      open = paren;
+      break;
+    }
+  }
+  if (open < 0) throw new Error(`annotation not found: @${annotation}`);
+  const close = findMatching(tokens, open, "(", ")");
+  if (close < 0) throw new Error(`unclosed annotation: @${annotation}`);
+  const bodyStart = tokens[open]?.end as number;
+  const bodyEnd = tokens[close]?.start as number;
+  const body = source.slice(bodyStart, bodyEnd);
+  const matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
+    .map((match) => ({ text: match[0], index: match.index as number }))
+    .filter((match) => {
+      try {
+        return JSON.parse(match.text) === from;
+      } catch {
+        return false;
+      }
+    });
+  if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in @${annotation}, found ${matches.length}`);
+  const match = matches[0] as { text: string; index: number };
+  const start = bodyStart + match.index;
+  return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
 }
 
 function mutationTarget(symbol: Symbol): { path: string; lineIndex: number } | undefined {
@@ -330,6 +372,36 @@ for (const entry of selected) {
         symbol: valueMutation.symbol,
         kind: "value",
         ...(valueMutation.expectedRule ? { expectedRule: valueMutation.expectedRule } : {}),
+        rule: relatedFindings[0]?.rule,
+        hit: ruleMatched,
+        findings: findings.length,
+        relatedRules: [...new Set(relatedFindings.map((finding) => finding.rule))],
+        collateral: collateralFindings.length,
+        collateralRules: [...new Set(collateralFindings.map((finding) => finding.rule))],
+      });
+    } finally {
+      writeFileSync(path, original);
+    }
+  }
+
+  for (const annotationMutation of entry.annotationMutations ?? []) {
+    const path = join(".", annotationMutation.file);
+    const original = readFileSync(path, "utf8");
+    writeFileSync(
+      path,
+      replaceAnnotationString(original, annotationMutation.annotation, annotationMutation.from, annotationMutation.to),
+    );
+    try {
+      const findings = findingsFor(checkout, config);
+      const relatedFindings = findings.filter((finding) => finding.message.includes(annotationMutation.symbol));
+      const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));
+      const ruleMatched = annotationMutation.expectedRule
+        ? relatedFindings.some((finding) => finding.rule === annotationMutation.expectedRule)
+        : relatedFindings.length > 0;
+      mutations.push({
+        symbol: annotationMutation.symbol,
+        kind: "annotation",
+        ...(annotationMutation.expectedRule ? { expectedRule: annotationMutation.expectedRule } : {}),
         rule: relatedFindings[0]?.rule,
         hit: ruleMatched,
         findings: findings.length,
