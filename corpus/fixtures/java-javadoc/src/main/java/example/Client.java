@@ -72,10 +72,14 @@ class Internal {
 }
 
 /**
- * Marker docs: {@link Marker#value()} and {@code Marker#count}.
+ * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, and {@link Marker#tags()}.
  */
 public @interface Marker {
     String value() default "default";
 
     int count() default 0;
+
+    boolean flag() default true;
+
+    String[] tags() default {"a", "b"};
 }

@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.59] - 2026-11-03
+
+### Added
+
+- Annotation default values are typed with the same literal classifier as annotation arguments.
+- `defaultKind`, `defaultLiteral`, and `defaultItems` sit alongside the raw `defaultValue`.
+- Unit and fixture assertions cover string, number, boolean, enum, and array defaults.
+- `java-javadoc-fixture` adds boolean and array defaults and detects 17 of 17 mutations.
+
+### Limits
+
+- Default values are still not evaluated; only their source literal is classified.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.58] - 2026-11-03
 
 ### Added
@@ -1065,3 +1079,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.56]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.56
 [0.1.57]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.57
 [0.1.58]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.58
+[0.1.59]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.59

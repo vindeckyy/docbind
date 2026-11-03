@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T22:32:03.979Z",
+  "generatedAt": "2026-11-03T22:35:25.312Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,8 +720,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 15,
-      "bound": 15,
+      "anchors": 17,
+      "bound": 17,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -762,7 +762,7 @@
           "collateralRules": []
         },
         {
-          "symbol": "count",
+          "symbol": "flag",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -806,6 +806,28 @@
           "collateralRules": []
         },
         {
+          "symbol": "tags",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "count",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "routes",
           "rule": "L4-renamed",
           "hit": true,
@@ -818,6 +840,17 @@
         },
         {
           "symbol": "command",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "value",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -845,17 +878,6 @@
           "findings": 1,
           "relatedRules": [
             "L2-moved"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "value",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -894,7 +916,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 15,
+      "hits": 17,
       "misses": 0,
       "collateral": 0
     }

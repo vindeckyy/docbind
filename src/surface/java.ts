@@ -494,12 +494,14 @@ class JavaParser {
       while (cursor < end && !["{", ";"].includes((tokens[cursor] as Token).value)) cursor += 1;
     }
     let defaultValue: string | undefined;
+    let defaultParsed: ReturnType<typeof annotationLiteral> | undefined;
     if ((tokens[cursor] as Token | undefined)?.value === "default") {
       const startOffset = (tokens[cursor] as Token).end;
       cursor += 1;
       while (cursor < end && (tokens[cursor] as Token).value !== ";") cursor += 1;
       const endOffset = cursor < end ? (tokens[cursor] as Token).start : (tokens[end - 1] as Token).end;
       defaultValue = this.context.source.slice(startOffset, endOffset).trim();
+      defaultParsed = annotationLiteral(defaultValue);
     }
     let body = "";
     if ((tokens[cursor] as Token | undefined)?.value === "{") {
@@ -529,7 +531,14 @@ class JavaParser {
           returnType,
           visibility,
           flags: javaFlags(annotations),
-          ...(defaultValue !== undefined ? { defaultValue } : {}),
+          ...(defaultValue !== undefined && defaultParsed
+            ? {
+                defaultValue,
+                defaultKind: defaultParsed.kind,
+                ...(defaultParsed.literal !== undefined ? { defaultLiteral: defaultParsed.literal } : {}),
+                ...(defaultParsed.items !== undefined ? { defaultItems: defaultParsed.items } : {}),
+              }
+            : {}),
           ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
         },
       });

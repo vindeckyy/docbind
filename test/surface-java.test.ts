@@ -297,6 +297,9 @@ describe("Java surface", () => {
         "public @interface Marker {",
         "    String value() default \"x\";",
         "    int count() default 0;",
+        "    boolean flag() default true;",
+        "    Mode mode() default Mode.FAST;",
+        "    String[] tags() default {\"a\", \"b\"};",
         "    String required();",
         "}",
         "",
@@ -308,7 +311,18 @@ describe("Java surface", () => {
     expect(marker?.contractFlags).toContain("annotation-type");
     const value = result.symbols.find((symbol) => symbol.name === "value");
     expect(value?.shape.defaultValue).toBe('"x"');
+    expect(value?.shape.defaultKind).toBe("string");
+    expect(value?.shape.defaultLiteral).toBe("x");
     expect(result.symbols.find((symbol) => symbol.name === "count")?.shape.defaultValue).toBe("0");
+    expect(result.symbols.find((symbol) => symbol.name === "count")?.shape.defaultLiteral).toBe(0);
+    expect(result.symbols.find((symbol) => symbol.name === "flag")?.shape.defaultKind).toBe("boolean");
+    expect(result.symbols.find((symbol) => symbol.name === "flag")?.shape.defaultLiteral).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "mode")?.shape.defaultKind).toBe("enum");
+    expect(result.symbols.find((symbol) => symbol.name === "mode")?.shape.defaultLiteral).toBe("Mode.FAST");
+    expect(result.symbols.find((symbol) => symbol.name === "tags")?.shape.defaultItems).toEqual([
+      { value: '"a"', kind: "string", literal: "a" },
+      { value: '"b"', kind: "string", literal: "b" },
+    ]);
     expect(result.symbols.find((symbol) => symbol.name === "required")?.shape.defaultValue).toBeUndefined();
   });
 
