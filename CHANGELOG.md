@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.70] - 2026-11-03
+
+### Changed
+
+- Replaced in-bounds `?? ""` fallbacks in the Java parser with explicit index guards, removing every uncovered branch in `src/surface/java.ts`.
+- Parameter annotation skipping now consumes exactly the annotation name, arguments, and `final` modifiers instead of scanning to a space the lexer does not emit.
+- Annotated parameters now report their real type; previously the type was blank for `@Deprecated String old`.
+- Branch coverage rose from 95.33% to 95.53%; line coverage from 99.26% to 99.28%.
+
+### Added
+
+- Tests for missing annotation names at end of input, dotted annotation names, parameter annotations, `final` parameters, malformed parameter lists, unnamed methods, and unnamed fields.
+
+### Limits
+
+- The unscoped npm package remains unavailable.
+
 ## [0.1.69] - 2026-11-03
 
 ### Changed
@@ -1237,3 +1254,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.67]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.67
 [0.1.68]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.68
 [0.1.69]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.69
+[0.1.70]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.70

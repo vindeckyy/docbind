@@ -303,6 +303,21 @@ describe("Java surface", () => {
     ]);
   });
 
+  it("skips parameter annotations and final modifiers", () => {
+    const root = tempProject({
+      "src/ParamKinds.java": [
+        "public class ParamKinds {",
+        "    public void run(final String a, @com.example.Marker(b = 1) String b, @123 String c, @Marker() String d) {}",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    const result = extractJava(root, ["src/ParamKinds.java"]);
+    const run = result.symbols.find((symbol) => symbol.name === "run");
+    expect(run?.shape.params?.map((param) => param.name)).toEqual(["a", "b", "c", "d"]);
+    expect(run?.shape.params?.map((param) => param.type)).toEqual(["String", "String", "String", "String"]);
+  });
+
   it("extracts annotation types and default values", () => {
     const root = tempProject({
       "src/Marker.java": [
@@ -401,6 +416,13 @@ describe("Java surface", () => {
       "src/EndTokens.java": "public class EndTokens { public }",
       "src/NoSemiDefault.java": "public @interface NoSemiDefault { int count() default 42 }",
       "src/TrailingEnum.java": "public enum TrailingEnum { A, @Trailing; }",
+      "src/NumberEnum.java": "public enum NumberEnum { A, 1; }",
+      "src/AtEnd.java": "@",
+      "src/DotEnd.java": "@A.",
+      "src/NoParams.java": "public class NoParams { public void run(&&) {} }",
+      "src/NoName.java": "public class NoName { public () {} }",
+      "src/NoField.java": "public class NoField { public ; }",
+      "src/LoneAtParam.java": "public class LoneAtParam { public void run(@) {} }",
     });
     expect(() =>
       extractJava(root, [
@@ -420,6 +442,13 @@ describe("Java surface", () => {
         "src/EndTokens.java",
         "src/NoSemiDefault.java",
         "src/TrailingEnum.java",
+        "src/NumberEnum.java",
+        "src/AtEnd.java",
+        "src/DotEnd.java",
+        "src/NoParams.java",
+        "src/NoName.java",
+        "src/NoField.java",
+        "src/LoneAtParam.java",
       ])
     ).not.toThrow();
   });

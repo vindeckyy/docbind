@@ -212,23 +212,31 @@ function javaParams(tokens: Token[], start: number, end: number): ParamShape[] {
   if (end > segment) parts.push([segment, end]);
   return parts.map(([from, to]) => {
     let cursor = from;
-    while (cursor < to && ["@", "final"].includes((tokens[cursor] as Token).value)) {
+    while (cursor < to) {
+      const qualifier = (tokens[cursor] as Token).value;
+      if (qualifier === "final") {
+        cursor += 1;
+        continue;
+      }
+      if (qualifier !== "@") break;
       cursor += 1;
-      while (cursor < to && (tokens[cursor] as Token).value !== " " && (tokens[cursor] as Token).value !== ",") {
+      if (cursor < to) cursor += 1;
+      while (
+        cursor + 1 < to &&
+        (tokens[cursor] as Token).value === "." &&
+        /^[A-Za-z_]/u.test((tokens[cursor + 1] as Token).value)
+      ) {
+        cursor += 2;
+      }
+      if (cursor < to && (tokens[cursor] as Token).value === "(") {
+        const close = findMatching(tokens, cursor, "(", ")");
         /* v8 ignore next */
-        if (/^[A-Za-z_]/u.test((tokens[cursor] as Token).value) && (tokens[cursor + 1] as Token | undefined)?.value === "(") {
-          const close = findMatching(tokens, cursor + 1, "(", ")");
-          /* v8 ignore next */
-          cursor = close < 0 ? to : close + 1;
-        } else {
-          cursor += 1;
-        }
+        cursor = close < 0 ? to : close + 1;
       }
     }
     let nameIndex = to - 1;
     while (nameIndex >= cursor && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
-    /* v8 ignore next */
-    const name = ((tokens[nameIndex] as Token | undefined)?.value ?? "") as string;
+    const name = nameIndex >= cursor ? (tokens[nameIndex] as Token).value : "";
     const type = tokens
       .slice(cursor, Math.max(cursor, nameIndex))
       .map((token) => token.value)
@@ -305,15 +313,18 @@ class JavaParser {
     const tokens = this.context.lexed.tokens;
     let cursor = index + 1;
     let name = "";
-    if (/^[A-Za-z_]/u.test((tokens[cursor] as Token | undefined)?.value ?? "")) {
-      name = (tokens[cursor] as Token).value;
-      cursor += 1;
+    if (cursor < tokens.length) {
+      const first = tokens[cursor] as Token;
+      if (/^[A-Za-z_]/u.test(first.value)) {
+        name = first.value;
+        cursor += 1;
+      }
     }
-    while (
-      (tokens[cursor] as Token | undefined)?.value === "." &&
-      /^[A-Za-z_]/u.test((tokens[cursor + 1] as Token | undefined)?.value ?? "")
-    ) {
-      name = `${name}.${(tokens[cursor + 1] as Token).value}`;
+    while (cursor + 1 < tokens.length) {
+      const dot = tokens[cursor] as Token;
+      const next = tokens[cursor + 1] as Token;
+      if (dot.value !== "." || !/^[A-Za-z_]/u.test(next.value)) break;
+      name = `${name}.${next.value}`;
       cursor += 2;
     }
     let args: string | undefined;
@@ -525,7 +536,7 @@ class JavaParser {
         annotations = [];
         continue;
       }
-      if (["class", "interface", "enum", "record"].includes((tokens[cursor] as Token | undefined)?.value ?? "")) {
+      if (cursor < end && ["class", "interface", "enum", "record"].includes((tokens[cursor] as Token).value)) {
         index = this.parseType(cursor, `${typePath}.`, annotations);
         annotations = [];
         continue;
@@ -547,7 +558,7 @@ class JavaParser {
         }
         scan += 1;
       }
-      if (paren >= 0 && (boundary < 0 || paren < boundary)) {
+      if (paren >= 0) {
         index = this.parseMethod(typePath, index, cursor, paren, end, visibility, annotations);
         annotations = [];
         continue;
@@ -582,8 +593,7 @@ class JavaParser {
     }
     let nameIndex = paren - 1;
     while (nameIndex >= bodyStart && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
-    const name = ((tokens[nameIndex] as Token | undefined)?.value ?? "") as string;
-    /* v8 ignore next */
+    const name = nameIndex >= bodyStart ? (tokens[nameIndex] as Token).value : "";
     if (!name) return close + 1;
     const constructor = name === typePath.split(".").pop();
     const returnTokens = tokens.slice(bodyStart, Math.max(bodyStart, nameIndex));
@@ -655,8 +665,7 @@ class JavaParser {
     const tokens = this.context.lexed.tokens;
     let nameIndex = semicolon - 1;
     while (nameIndex >= start && !/^[A-Za-z_]/u.test((tokens[nameIndex] as Token).value)) nameIndex -= 1;
-    const name = ((tokens[nameIndex] as Token | undefined)?.value ?? "") as string;
-    /* v8 ignore next */
+    const name = nameIndex >= start ? (tokens[nameIndex] as Token).value : "";
     if (!name) return;
     const type = tokens
       .slice(start, Math.max(start, nameIndex))
