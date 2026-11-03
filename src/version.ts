@@ -1,0 +1,2 @@
+export const ENGINE_NAME = "docbind";
+export const ENGINE_VERSION = "0.1.0";

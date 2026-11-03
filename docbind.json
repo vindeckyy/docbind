@@ -1,0 +1,11 @@
+{
+  "docs": ["README.md", "docs/**/*.md"],
+  "exclude": [
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "PLAN.md"
+  ],
+  "maxFindings": 200
+}
