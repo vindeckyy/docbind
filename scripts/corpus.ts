@@ -55,8 +55,8 @@ interface CorpusEntry {
   defaultMutations?: Array<{
     file: string;
     method: string;
-    from: string;
-    to: string;
+    from: string | number;
+    to: string | number;
     symbol: string;
     expectedRule?: string;
   }>;
@@ -285,7 +285,12 @@ function replaceConstantString(source: string, field: string, from: string, to: 
   return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
 }
 
-function replaceDefaultString(source: string, method: string, from: string, to: string): string {
+function replaceDefaultString(
+  source: string,
+  method: string,
+  from: string | number,
+  to: string | number,
+): string {
   const tokens = lex(source, "java").tokens;
   let open = -1;
   for (let index = 0; index < tokens.length - 1; index += 1) {
@@ -303,19 +308,27 @@ function replaceDefaultString(source: string, method: string, from: string, to: 
   if (cursor >= tokens.length) throw new Error(`default has no terminator: ${method}`);
   const endOffset = tokens[cursor]?.start as number;
   const body = source.slice(startOffset, endOffset);
-  const matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
-    .map((match) => ({ text: match[0], index: match.index as number }))
-    .filter((match) => {
-      try {
-        return JSON.parse(match.text) === from;
-      } catch {
-        return false;
-      }
-    });
+  let matches: Array<{ text: string; index: number }>;
+  if (typeof from === "number") {
+    matches = [...body.matchAll(/(?<![\w.])(?:\d+(?:\.\d*)?|\.\d+)(?![\w.])/gu)]
+      .map((match) => ({ text: match[0], index: match.index as number }))
+      .filter((match) => Number(match.text) === from);
+  } else {
+    matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
+      .map((match) => ({ text: match[0], index: match.index as number }))
+      .filter((match) => {
+        try {
+          return JSON.parse(match.text) === from;
+        } catch {
+          return false;
+        }
+      });
+  }
   if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in default of ${method}, found ${matches.length}`);
   const match = matches[0] as { text: string; index: number };
   const start = startOffset + match.index;
-  return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
+  const replacement = typeof to === "number" ? String(to) : JSON.stringify(to);
+  return `${source.slice(0, start)}${replacement}${source.slice(start + match.text.length)}`;
 }
 
 function replaceEnumArgumentString(source: string, constant: string, from: string, to: string): string {

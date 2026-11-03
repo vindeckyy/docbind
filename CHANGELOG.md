@@ -2,6 +2,31 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.74] - 2026-11-03
+
+### Added
+
+- Java annotation defaults evaluate numeric `+`, `-`, `*`, and `/`, parentheses, and unary minus.
+- `+` concatenates strings, numbers, and string constants.
+- Constants initialised with arithmetic now resolve, including defaults that reference them.
+- Arithmetic nests inside annotation arrays and nested annotation arguments.
+- Corpus adds `Marker.arithmetic()` with default `5 + 2`; editing `2` to `3` must produce `L3-reshaped`.
+
+### Fixed
+
+- String literals are recognised only when the closing quote is the final character, so `"a" + "b"` is no longer classified as the single string `a" + "b`.
+
+### Changed
+
+- Corpus mutations: 99 to 100; `java-javadoc-fixture` runs 28 mutations with 23 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.68%; line coverage is 99.24%.
+
+### Limits
+
+- Division is floating point, not Java integer division.
+- Function calls, casts, and bitwise operators stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.73] - 2026-11-03
 
 ### Added
@@ -1319,3 +1344,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.71]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.71
 [0.1.72]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.72
 [0.1.73]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.73
+[0.1.74]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.74

@@ -357,6 +357,27 @@ describe("Java surface", () => {
         "    int[] empty() default {};",
         "    int calc() default 1 + 2;",
         "    int[] raw() default {1 + 2};",
+        "    int sum() default 1 + 2 * 3;",
+        "    int paren() default (1 + 2) * 3;",
+        "    double half() default 7.0 / 2.0;",
+        "    int neg() default -5 + 8;",
+        "    String joined() default \"a\" + \"b\";",
+        "    String mixed() default \"n=\" + Constants.LIMIT;",
+        "    int divZero() default 1 / 0;",
+        "    String bad() default \"x\" +;",
+        "    int sub() default 5 - 2;",
+        "    int negStr() default -\"x\";",
+        "    int mulBad() default \"a\" * 2;",
+        "    int addBad() default 1 - \"a\";",
+        "    double huge() default 1e999;",
+        "    int at() default 1 + @;",
+        "    int openParen() default (1 + 2;",
+        "    int boolConst() default Constants.ON + 1;",
+        "    String concatEscape() default \"a\\\"\" + \"b\";",
+        "    int[] rawBad() default {1 + @};",
+        "    @Inner innerBad() default @Inner(level = 1 + @);",
+        "    String unclosed() default \"x + 1;",
+        "    int dot() default 1 + .;",
         "    String fromConstant() default Constants.NAME;",
         "    String unqualified() default NAME;",
         "    int computed() default Constants.COMPUTED;",
@@ -373,6 +394,7 @@ describe("Java surface", () => {
         "    static final int UNINITIALIZED;",
         "    static final int COMPUTED = 1 + 2;",
         "    transient int counter = 1;",
+        "    static final int BAD = 1 + @;",
         "}",
         "",
         "enum Mode { FAST, SLOW }",
@@ -405,16 +427,38 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "type")?.shape.evaluatedDefault).toBe("String");
     expect(result.symbols.find((symbol) => symbol.name === "inner")?.shape.evaluatedDefault).toEqual({ level: 1 });
     expect(result.symbols.find((symbol) => symbol.name === "positional")?.shape.evaluatedDefault).toEqual({ arg0: 1 });
-    expect(result.symbols.find((symbol) => symbol.name === "bad")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "bad")?.shape.evaluatedDefault).toEqual({ level: 3 });
+    expect(result.symbols.find((symbol) => symbol.name === "sub")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "concatEscape")?.shape.evaluatedDefault).toBe('a"b');
+    for (const name of ["negStr", "mulBad", "addBad", "huge", "at", "openParen", "boolConst", "rawBad", "innerBad"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
+    expect(result.symbols.find((symbol) => symbol.name === "unclosed")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "dot")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "fromConstant")?.shape.evaluatedDefault).toBe("named");
     expect(result.symbols.find((symbol) => symbol.name === "unqualified")?.shape.evaluatedDefault).toBe("named");
-    expect(result.symbols.find((symbol) => symbol.name === "computed")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "computed")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "limit")?.shape.evaluatedDefault).toBe(7);
     expect(result.symbols.find((symbol) => symbol.name === "on")?.shape.evaluatedDefault).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "missing")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "empty")?.shape.evaluatedDefault).toEqual([]);
-    expect(result.symbols.find((symbol) => symbol.name === "calc")?.shape.evaluatedDefault).toBeUndefined();
-    expect(result.symbols.find((symbol) => symbol.name === "raw")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "calc")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "raw")?.shape.evaluatedDefault).toEqual([3]);
+    expect(result.symbols.find((symbol) => symbol.name === "sum")?.shape.evaluatedDefault).toBe(7);
+    expect(result.symbols.find((symbol) => symbol.name === "paren")?.shape.evaluatedDefault).toBe(9);
+    expect(result.symbols.find((symbol) => symbol.name === "half")?.shape.evaluatedDefault).toBe(3.5);
+    expect(result.symbols.find((symbol) => symbol.name === "neg")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "joined")?.shape.evaluatedDefault).toBe("ab");
+    expect(result.symbols.find((symbol) => symbol.name === "mixed")?.shape.evaluatedDefault).toBe("n=7");
+    expect(result.symbols.find((symbol) => symbol.name === "divZero")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "bad")?.shape.evaluatedDefault).toEqual({ level: 3 });
+    expect(result.symbols.find((symbol) => symbol.name === "sub")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "concatEscape")?.shape.evaluatedDefault).toBe('a"b');
+    for (const name of ["negStr", "mulBad", "addBad", "huge", "at", "openParen", "boolConst", "rawBad", "innerBad"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
+    expect(result.symbols.find((symbol) => symbol.name === "unclosed")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "dot")?.shape.evaluatedDefault).toBeUndefined();
     const off = extractJava(root, ["src/Marker.java"]);
     expect(off.symbols.find((symbol) => symbol.name === "value")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "required")?.shape.defaultValue).toBeUndefined();

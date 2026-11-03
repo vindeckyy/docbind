@@ -134,14 +134,14 @@ function annotationLiteral(raw: string): Pick<AnnotationArgument, "kind" | "lite
   if (text.startsWith("@")) {
     return { kind: "annotation", items: nestedAnnotationArguments(text) };
   }
-  if (text.startsWith("\"") && text.endsWith("\"")) {
+  if (/^"(?:\\\\.|[^"\\\\])*"$/su.test(text)) {
     try {
       return { kind: "string", literal: JSON.parse(text) as string };
     } catch {
       return { kind: "string", literal: text.slice(1, -1) };
     }
   }
-  if (text.startsWith("'") && text.endsWith("'")) {
+  if (/^'(?:\\\\.|[^'\\\\])*'$/su.test(text)) {
     return { kind: "string", literal: text.slice(1, -1) };
   }
   if (text === "true" || text === "false") return { kind: "boolean", literal: text === "true" };
@@ -161,6 +161,151 @@ function annotationArgument(part: string): AnnotationArgument {
 
 function annotationArguments(raw: string): AnnotationArgument[] {
   return splitArguments(raw).map(annotationArgument);
+}
+
+interface ExpressionToken {
+  type: "number" | "string" | "ident" | "op";
+  value: string;
+  number?: number;
+}
+
+function expressionTokens(source: string): ExpressionToken[] | undefined {
+  const tokens: ExpressionToken[] = [];
+  let index = 0;
+  while (index < source.length) {
+    const char = source[index] as string;
+    if (/\s/u.test(char)) {
+      index += 1;
+      continue;
+    }
+    if (char === "\"") {
+      let end = index + 1;
+      while (end < source.length) {
+        if (source[end] === "\\") {
+          end += 2;
+          continue;
+        }
+        if (source[end] === "\"") {
+          end += 1;
+          break;
+        }
+        end += 1;
+      }
+      if (source[end - 1] !== "\"") return undefined;
+      const raw = source.slice(index, end);
+      let value: string;
+      try {
+        value = JSON.parse(raw) as string;
+      } catch {
+        value = raw.slice(1, -1);
+      }
+      tokens.push({ type: "string", value });
+      index = end;
+      continue;
+    }
+    if (/[0-9.]/u.test(char)) {
+      const match = /^(?:0[xX][0-9a-fA-F]+|\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?[fFdDlL]?/u.exec(source.slice(index));
+      if (!match) return undefined;
+      const text = match[0];
+      const numeric = Number(text.replace(/[fFdDlL]$/u, ""));
+      if (!Number.isFinite(numeric)) return undefined;
+      tokens.push({ type: "number", value: text, number: numeric });
+      index += text.length;
+      continue;
+    }
+    if (/[A-Za-z_$]/u.test(char)) {
+      const match = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*/u.exec(source.slice(index));
+      /* v8 ignore next */
+      if (!match) return undefined;
+      tokens.push({ type: "ident", value: match[0] });
+      index += match[0].length;
+      continue;
+    }
+    if ("+-*/()".includes(char)) {
+      tokens.push({ type: "op", value: char });
+      index += 1;
+      continue;
+    }
+    return undefined;
+  }
+  return tokens;
+}
+
+function evaluateExpression(
+  source: string,
+  constants?: Map<string, EvaluatedValue>,
+): EvaluatedValue | undefined {
+  const tokens = expressionTokens(source);
+  if (!tokens || tokens.length === 0) return undefined;
+  let position = 0;
+
+  const parsePrimary = (): EvaluatedValue | undefined => {
+    const token = tokens[position];
+    if (!token) return undefined;
+    if (token.type === "number") {
+      position += 1;
+      return token.number as number;
+    }
+    if (token.type === "string") {
+      position += 1;
+      return token.value;
+    }
+    if (token.type === "ident") {
+      position += 1;
+      const value = constants?.get(token.value);
+      return typeof value === "string" || typeof value === "number" ? value : undefined;
+    }
+    if (token.type === "op" && token.value === "(") {
+      position += 1;
+      const value = parseAdd();
+      if (value === undefined || tokens[position]?.value !== ")") return undefined;
+      position += 1;
+      return value;
+    }
+    /* v8 ignore next */
+    if (token.type === "op" && token.value === "-") {
+      position += 1;
+      const value = parsePrimary();
+      return typeof value === "number" ? -value : undefined;
+    }
+    return undefined;
+  };
+
+  const parseMul = (): EvaluatedValue | undefined => {
+    let left = parsePrimary();
+    while (left !== undefined && tokens[position]?.type === "op") {
+      const operator = tokens[position]?.value as string;
+      if (operator !== "*" && operator !== "/") break;
+      position += 1;
+      const right = parsePrimary();
+      if (typeof left !== "number" || typeof right !== "number") return undefined;
+      if (operator === "/" && right === 0) return undefined;
+      left = operator === "*" ? left * right : left / right;
+    }
+    return left;
+  };
+
+  const parseAdd = (): EvaluatedValue | undefined => {
+    let left = parseMul();
+    while (left !== undefined && tokens[position]?.type === "op") {
+      const operator = tokens[position]?.value as string;
+      if (operator !== "+" && operator !== "-") break;
+      position += 1;
+      const right = parseMul();
+      if (right === undefined) return undefined;
+      if (operator === "+" && (typeof left === "string" || typeof right === "string")) {
+        left = `${left}${right}`;
+        continue;
+      }
+      if (typeof left !== "number" || typeof right !== "number") return undefined;
+      left = operator === "+" ? left + right : left - right;
+    }
+    return left;
+  };
+
+  const result = parseAdd();
+  if (result === undefined || position !== tokens.length) return undefined;
+  return result;
 }
 
 function evaluateArgument(
@@ -187,6 +332,10 @@ function evaluateArgument(
     if (values.some((value) => value === undefined)) return undefined;
     return values as EvaluatedValue[];
   }
+  if (argument.kind === "expression") {
+    return evaluateExpression(argument.value, constants);
+  }
+  /* v8 ignore next */
   if (argument.kind === "annotation") {
     const evaluated: Record<string, EvaluatedValue> = {};
     let position = 0;
@@ -732,7 +881,7 @@ class JavaParser {
           .slice((tokens[equals] as Token).end, (tokens[semicolon] as Token).start)
           .trim();
         const parsed = annotationLiteral(initializer);
-        const evaluated = evaluateArgument({ value: initializer, ...parsed });
+        const evaluated = evaluateArgument({ value: initializer, ...parsed }, this.context.constants);
         if (evaluated !== undefined) {
           this.context.constants.set(name, evaluated);
           this.context.constants.set(`${typePath}.${name}`, evaluated);

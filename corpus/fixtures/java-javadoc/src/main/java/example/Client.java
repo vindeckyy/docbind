@@ -73,7 +73,7 @@ class Internal {
 
 /**
  * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, {@link Marker#tags()},
- * {@link Marker#fromConstant()}, and {@link Marker#fromShared()}.
+ * {@link Marker#fromConstant()}, {@link Marker#fromShared()}, and {@link Marker#arithmetic()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -87,6 +87,8 @@ public @interface Marker {
     String fromConstant() default Constants.NAME;
 
     String fromShared() default SharedConstants.NAME;
+
+    int arithmetic() default 5 + 2;
 }
 
 class Constants {
