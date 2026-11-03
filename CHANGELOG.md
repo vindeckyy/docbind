@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.44] - 2026-11-03
+
+### Fixed
+
+- Threshold sweep recall used the union of mutation targets across floors as its denominator. Each floor locks its own symbols, so targets absent from a floor counted as misses. Recall is now hits divided by that floor's selections.
+- `docs/precision.md` tables show per-floor selections. Every selected target is detected at every floor; higher floors lose tracked anchors, not detections.
+- Corrected the 0.1.43 claim that two union targets were never detected. No target fails at any floor.
+
 ## [0.1.43] - 2026-11-03
 
 ### Added
@@ -11,12 +19,11 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 
 ### Changed
 
-- The default floor stays at 0.60. The sweep shows 0.50 adds 17 anchors whose only evidence is a unique exported name, which the precision model treats as prose. Floors at 0.70 and above lose external mutation recall.
+- The default floor stays at 0.60. The sweep shows 0.50 adds 17 anchors whose only evidence is a unique exported name, which the precision model treats as prose. Floors at 0.70 and above track fewer anchors.
 
 ### Limits
 
 - The full sweep samples six floors; a finer scan between 0.60 and 0.70 could tighten the edge.
-- Two union mutation targets are never detected at any floor.
 - The unscoped npm package remains unavailable.
 
 ## [0.1.42] - 2026-11-03
@@ -842,3 +849,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.41]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.41
 [0.1.42]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.42
 [0.1.43]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.43
+[0.1.44]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.44

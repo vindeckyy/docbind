@@ -33,7 +33,7 @@ A binding also fails when the best score is within `0.05` of the second candidat
 
 ## Threshold sweep
 
-`npm run thresholds` replays the five non-rustdoc local fixtures at each floor. Mutation targets are the union across runs, so recall is measured against a fixed set of 47. Each row reports the baseline findings on the unchanged tree, which are false positives by definition.
+`npm run thresholds` replays the five non-rustdoc local fixtures at each floor. Each floor locks its own symbols, so the mutation set changes with the floor. Recall is measured against the targets that floor actually locked. Baseline findings on the unchanged tree are false positives by definition.
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
@@ -42,38 +42,38 @@ A binding also fails when the best score is within `0.05` of the second candidat
 | 0.50 | 71 | 72 | 98.6% | 0 | 47/47 | 0 |
 | 0.55 | 71 | 72 | 98.6% | 0 | 47/47 | 0 |
 | **0.60** | **71** | **72** | **98.6%** | **0** | **47/47** | **0** |
-| 0.65 | 70 | 72 | 97.2% | 0 | 46/47 | 0 |
-| 0.70 | 70 | 72 | 97.2% | 0 | 46/47 | 0 |
-| 0.75 | 70 | 72 | 97.2% | 0 | 46/47 | 0 |
-| 0.80 | 64 | 72 | 88.9% | 0 | 40/47 | 0 |
-| 0.85 | 62 | 72 | 86.1% | 0 | 40/47 | 0 |
-| 0.90 | 62 | 72 | 86.1% | 0 | 40/47 | 0 |
+| 0.65 | 70 | 72 | 97.2% | 0 | 46/46 | 0 |
+| 0.70 | 70 | 72 | 97.2% | 0 | 46/46 | 0 |
+| 0.75 | 70 | 72 | 97.2% | 0 | 46/46 | 0 |
+| 0.80 | 64 | 72 | 88.9% | 0 | 40/40 | 0 |
+| 0.85 | 62 | 72 | 86.1% | 0 | 40/40 | 0 |
+| 0.90 | 62 | 72 | 86.1% | 0 | 40/40 | 0 |
 
-The local fixtures do not separate floors from 0.30 through 0.60. The first local loss appears at 0.65.
+Recall is 100% at every local floor. The floors separate on coverage: 0.65 drops one bound anchor and its mutation target; 0.80 drops seven.
 
 ## Full-corpus sweep
 
-The same sweep over all twelve corpus cases gives a sharper edge. Floors of 0.40 and 0.50 bind 17 more anchors than 0.60 with zero baseline findings. Those 17 have exactly one form of evidence: a unique exported name, score `0.35 + 0.15 = 0.50`. At 0.70 the bound count drops by 158 anchors and recall falls from 67 to 66 of the 69 union targets collected across floors.
+The same sweep over all twelve corpus cases gives a sharper coverage edge. Floors of 0.40 and 0.50 bind 17 more anchors than 0.60 with zero baseline findings. Those 17 have exactly one form of evidence: a unique exported name, score `0.35 + 0.15 = 0.50`. At 0.70 the bound count drops by 158 anchors. Recall stays 100% at every floor because the harness mutates only symbols that floor locked.
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.40 | 810 | 3360 | 24.1% | 0 | 67/69 | 0 |
-| 0.50 | 810 | 3360 | 24.1% | 0 | 67/69 | 0 |
-| 0.55 | 794 | 3360 | 23.6% | 0 | 67/69 | 0 |
-| **0.60** | **793** | **3360** | **23.6%** | **0** | **67/69** | **0** |
-| 0.70 | 635 | 3360 | 18.9% | 0 | 66/69 | 0 |
-| 0.80 | 594 | 3360 | 17.7% | 0 | 59/69 | 0 |
+| 0.40 | 810 | 3360 | 24.1% | 0 | 67/67 | 0 |
+| 0.50 | 810 | 3360 | 24.1% | 0 | 67/67 | 0 |
+| 0.55 | 794 | 3360 | 23.6% | 0 | 67/67 | 0 |
+| **0.60** | **793** | **3360** | **23.6%** | **0** | **67/67** | 0 |
+| 0.70 | 635 | 3360 | 18.9% | 0 | 66/66 | 0 |
+| 0.80 | 594 | 3360 | 17.7% | 0 | 59/59 | 0 |
 
 The default stays at 0.60. Lowering to 0.50 would add 17 anchors, but each is a bare name with no import, qualification, signature, or API-doc context. The precision model treats name-only matches in prose as noise, and the test suite pins that rule. The 17 extra anchors are not evidence that the floor should move; they are the class of binding the floor exists to reject.
 
-At 0.70 recall drops, so 0.60 is the lowest floor that keeps the name-only band silent while retaining full recall.
+Raising the floor costs tracked anchors, not detections, on this corpus. 0.60 is the lowest floor that keeps the name-only band silent while retaining the full lock.
 
-Two union targets are never detected at any floor. Both are mutation selections that only entered the lock at a single threshold, not missed references in the current lock.
+The union across floors is 69 targets; no floor selects all 69, and every selected target is detected. Per-floor selection size is the honest denominator.
 
 Raw rows are in `corpus/precision.json` for the local sweep and `corpus/precision-external.json` for the full sweep.
 
 ## Caveats
 
 - The local sweep covers 72 anchors across five fixtures. The full sweep covers all 3360 anchors but only five floors.
-- Recall here means detecting a seeded rename of a symbol the lock already references. It does not measure whether every doc sentence should have bound in the first place.
+- Recall here means detecting a seeded rename of a symbol that floor locked. It says nothing about symbols the floor did not bind.
 - The full sweep samples five floors. A finer scan between 0.50 and 0.70 could locate a tighter edge.

@@ -95,19 +95,16 @@ for (const { threshold, report } of runs) {
     threshold,
     ...totals,
     bindRate: totals.anchors === 0 ? 0 : totals.bound / totals.anchors,
-    selections: [...targets].filter((key) =>
-      report.some((item) =>
-        item.mutations.some((mutation) => `${item.name}\u0000${mutation.symbol}` === key)
-      )
-    ).length,
-    recall: totals.hits / targets.size,
+    selections: report.reduce((sum, item) => sum + item.mutations.length, 0),
+    recall: totals.hits / Math.max(1, report.reduce((sum, item) => sum + item.mutations.length, 0)),
   });
 }
 
 writeFileSync(reportPath, `${JSON.stringify({ generatedAt: new Date().toISOString(), scope: all ? "all" : "local", fixtures: all ? "corpus/repos.json" : fixtures, rows }, null, 2)}\n`);
 console.log("\nthreshold sweep");
 console.log(`scope: ${all ? "all" : "local"}`);
-console.log("threshold\tbound\tanchors\tbindRate\tbaseline\thits\ttargets\trecall\tnameOnlyFP\tcollateral");
+console.log(`union targets: ${targets.size}`);
+console.log("threshold\tbound\tanchors\tbindRate\tbaseline\thits\tselections\trecall\tnameOnlyFP\tcollateral");
 for (const row of rows) {
   console.log(
     [
@@ -117,7 +114,7 @@ for (const row of rows) {
       `${(row.bindRate * 100).toFixed(1)}%`,
       row.baselineFindings,
       row.hits,
-      targets.size,
+      row.selections,
       `${(row.recall * 100).toFixed(1)}%`,
       row.nameOnlyFalsePositives,
       row.collateral,

@@ -1,5 +1,6 @@
 {
-  "generatedAt": "2026-11-03T21:07:07.634Z",
+  "generatedAt": "2026-11-03T21:25:29.333Z",
+  "scope": "local",
   "fixtures": "macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture",
   "rows": [
     {
@@ -84,7 +85,7 @@
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9722222222222222,
       "selections": 46,
-      "recall": 0.9787234042553191
+      "recall": 1
     },
     {
       "threshold": 0.7,
@@ -98,7 +99,7 @@
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9722222222222222,
       "selections": 46,
-      "recall": 0.9787234042553191
+      "recall": 1
     },
     {
       "threshold": 0.75,
@@ -112,7 +113,7 @@
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9722222222222222,
       "selections": 46,
-      "recall": 0.9787234042553191
+      "recall": 1
     },
     {
       "threshold": 0.8,
@@ -126,7 +127,7 @@
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.8888888888888888,
       "selections": 40,
-      "recall": 0.851063829787234
+      "recall": 1
     },
     {
       "threshold": 0.85,
@@ -140,7 +141,7 @@
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.8611111111111112,
       "selections": 40,
-      "recall": 0.851063829787234
+      "recall": 1
     },
     {
       "threshold": 0.9,
@@ -154,7 +155,7 @@
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.8611111111111112,
       "selections": 40,
-      "recall": 0.851063829787234
+      "recall": 1
     }
   ]
 }
