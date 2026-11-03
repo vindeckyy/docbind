@@ -6,7 +6,7 @@
 - bind rate for the pinned docs
 - doc-edit noise: append a word to an anchored doc line without changing code
 - mutation recall: rename one bound symbol in code, leave docs alone, count findings that mention the old name
-- value mutations: edit a typed literal such as an enum constructor argument and require an expected rule, for example `L3-reshaped`
+- value mutations: edit a typed literal such as an enum constructor argument or an annotation argument and require an expected rule, for example `L3-reshaped`
 - macro fixture: cross-file `#[macro_export]` repetition macros, with two seeded mutations
 - collateral findings: findings for unrelated symbols during each mutation
 

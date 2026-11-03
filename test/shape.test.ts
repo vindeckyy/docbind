@@ -285,6 +285,10 @@ describe("shape compatibility", () => {
       { kind: "enumMember", literalKind: "string" },
       { kind: "enumMember", literalKind: "number" },
     ).breaking).toBe(true);
+    expect(compareShapeClaims(
+      { kind: "method", flags: ['annotation:Command(value = "run")'] },
+      { kind: "method", flags: ['annotation:Command(value = "go")'] },
+    ).breaking).toBe(true);
     const stringArg = { kind: "enumMember" as const, enumArgs: [{ value: '"a"', kind: "string" as const, literal: "a" }] };
     expect(compareShapeClaims(stringArg, {
       kind: "enumMember",

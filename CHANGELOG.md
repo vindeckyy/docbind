@@ -2,6 +2,22 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.65] - 2026-11-03
+
+### Added
+
+- Corpus value mutations now cover annotation arguments: `@Command(value = "run")` is edited to `"go"` and must yield `L3-reshaped`.
+- Shape tests assert that annotation-flag edits are breaking.
+
+### Changed
+
+- Corpus mutations: 93 to 94; `java-javadoc-fixture` runs 22 mutations, all hitting with zero collateral.
+
+### Limits
+
+- Value mutations remain literal text replacements.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.64] - 2026-11-03
 
 ### Added
@@ -1158,3 +1174,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.62]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.62
 [0.1.63]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.63
 [0.1.64]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.64
+[0.1.65]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.65
