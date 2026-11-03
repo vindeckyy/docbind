@@ -512,6 +512,19 @@ describe("check pipeline", () => {
     );
   });
 
+  it("binds Go wrapped function selectors", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/client/client.go": "package client\nfunc Target(value int) int { return value }\n",
+      "root.go": "package app\nimport \"example.com/app/internal/client\"\nfunc Wrap(value int) int { return client.Target(value) }\n",
+      "docs/api.md": "Call `app.Wrap(1)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("Target");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

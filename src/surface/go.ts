@@ -44,6 +44,14 @@ interface GoContext {
   failures: { count: number };
 }
 
+function wrapperReexport(body: string): { packageName: string; name: string } | undefined {
+  const inner = body.trim().replace(/^\{/u, "").replace(/\}$/u, "").trim();
+  const match = /^return\s+([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\(([\s\S]*)\)\s*$/u.exec(inner);
+  return match?.[1] && match[2]
+    ? { packageName: match[1], name: match[2] }
+    : undefined;
+}
+
 function goParams(tokens: Token[], start: number, end: number, masked: string): ParamShape[] {
   const parts = splitTopLevel(tokens, start, end, ",").map(([from, to]) => {
     const values = tokens.slice(from, to).map((token) => token.value);
@@ -195,6 +203,7 @@ class GoParser {
         kind: "receiver",
       });
     }
+    const wrapper = receiver ? undefined : wrapperReexport(body);
     this.context.drafts.push({
       name: nameToken.value,
       kind: receiver ? "method" : "function",
@@ -211,6 +220,7 @@ class GoParser {
       start: nameToken.start,
       body,
       parentName: receiver,
+      ...(wrapper ? { reexport: wrapper } : {}),
       enabled: exported,
       exported,
     });

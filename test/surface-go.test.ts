@@ -136,6 +136,19 @@ describe("Go surface", () => {
     expect(limit?.aliases).toEqual(expect.arrayContaining(["root.Limit", "app.Limit"]));
   });
 
+  it("resolves wrapper-function re-exports", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "internal/client/client.go": "package client\nfunc Target(value int) int { return value }\n",
+      "root.go": "package app\nimport \"example.com/app/internal/client\"\nfunc Wrap(value int) int { return client.Target(value) }\n",
+    });
+    const result = extractGo(root, ["internal/client/client.go", "root.go"]);
+    const targets = result.symbols.filter((symbol) => symbol.name === "Target");
+    expect(targets).toHaveLength(1);
+    expect(targets[0].aliases).toContain("app.Wrap");
+    expect(result.symbols.some((symbol) => symbol.name === "Wrap")).toBe(false);
+  });
+
   it("falls back when the re-export file matches the package name", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

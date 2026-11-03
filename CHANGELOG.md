@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.19] - 2026-11-03
+
+### Added
+
+- Go wrapper functions that only return a call to another package attach the wrapper selector to the target function.
+- Local Go fixture covers `viper.Wrap(1)` through `func Wrap(...) { return client.Target(...) }`.
+
+### Improved
+
+- Go fixture grew from 5 to 6 bound anchors and from 5 to 6 detected mutations.
+- Corpus now detects 33 of 33 seeded mutations with zero collateral findings.
+- Branch coverage rose from 95.00% to 95.01%.
+
+### Limits
+
+- Go multi-step re-export chains are not followed.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.18] - 2026-11-03
 
 ### Added
@@ -349,3 +367,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.16]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.16
 [0.1.17]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.17
 [0.1.18]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.18
+[0.1.19]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.19
