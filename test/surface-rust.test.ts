@@ -77,6 +77,12 @@ pub struct Account {
     pub name: String,
 }
 `,
+    "src/impls.rs": `
+use crate::users::User;
+impl User {
+    pub fn display(&self) -> String { String::new() }
+}
+`,
     "src/bad.rs": 'pub fn broken( { let x = "open;',
   });
 }
@@ -84,7 +90,7 @@ pub struct Account {
 describe("Rust surface", () => {
   it("extracts public items, methods and fields", () => {
     const root = rustProject();
-    const result = extractRust(root, ["src/lib.rs", "src/users.rs"]);
+    const result = extractRust(root, ["src/lib.rs", "src/users.rs", "src/impls.rs"]);
     const names = result.symbols.map((symbol) => symbol.name);
     expect(names).toEqual(expect.arrayContaining([
       "User", "Pair", "Role", "Repo", "fetch_user", "dangerous", "VERSION",
@@ -102,6 +108,7 @@ describe("Rust surface", () => {
       expect.arrayContaining(["Account", "GlobalAccount", "GroupAccount"]),
     );
     expect(result.symbols.find((symbol) => symbol.name === "User")?.modulePath).toBe("src/lib");
+    expect(result.symbols.find((symbol) => symbol.name === "display")?.parentId).toContain("User");
   });
 
   it("builds signatures and receiver shapes", () => {

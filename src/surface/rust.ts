@@ -619,15 +619,13 @@ class RustParser {
   }
 }
 
-function buildSymbols(context: ParserContext): Symbol[] {
-  const top = context.drafts.filter((draft) => draft.enabled && draft.exported && !draft.parentName);
+function buildRustTopSymbols(context: ParserContext): Symbol[] {
   const result: Symbol[] = [];
-  const byKey = new Map<string, Symbol>();
-  const childCounts = new Map<string, number>();
-  for (const draft of top) {
+  for (const draft of context.drafts) {
+    if (!draft.enabled || !draft.exported || draft.parentName) continue;
     const shapeText = canonicalShape(draft.shape);
     const qualified = `${context.packageName}.${context.modulePath.replace(/\//gu, ".")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`;
-    const symbol: Symbol = {
+    result.push({
       id: `${context.packageName}|${context.modulePath}|${draft.kind}|${draft.namespace}${draft.name}|0`,
       name: draft.name,
       kind: draft.kind,
@@ -646,25 +644,29 @@ function buildSymbols(context: ParserContext): Symbol[] {
       contractFlags: draft.shape.flags ?? [],
       line: lineOf(context.source, draft.start),
       filePath: context.filePath,
-    };
-    result.push(symbol);
-    byKey.set(`${draft.namespace}${draft.name}`, symbol);
+    });
   }
+  return result;
+}
+
+function buildRustChildren(context: ParserContext, parents: Map<string, Symbol>): Symbol[] {
+  const result: Symbol[] = [];
+  const childCounts = new Map<string, number>();
   for (const draft of context.drafts) {
     if (!draft.enabled || !draft.exported || !draft.parentName) continue;
-    const parent = byKey.get(`${draft.namespace}${draft.parentName}`);
+    const parent = parents.get(`${context.packageName}\0${draft.namespace}${draft.parentName}`);
     if (!parent) continue;
     const key = `${draft.namespace}${draft.parentName}.${draft.name}`;
     const index = childCounts.get(key) ?? 0;
     childCounts.set(key, index + 1);
     const shapeText = canonicalShape(draft.shape);
-    const symbol: Symbol = {
-      id: `${context.packageName}|${context.modulePath}|${draft.kind}|${draft.parentName}.${draft.name}|${index}`,
+    result.push({
+      id: `${parent.packageName}|${parent.modulePath}|${draft.kind}|${draft.parentName}.${draft.name}|${index}`,
       name: draft.name,
       kind: draft.kind,
-      modulePath: context.modulePath,
-      packageName: context.packageName,
-      packageRoot: context.packageRoot,
+      modulePath: parent.modulePath,
+      packageName: parent.packageName,
+      packageRoot: parent.packageRoot,
       qualifiedName: `${parent.qualifiedName}.${draft.name}`,
       aliases: [`${draft.parentName}.${draft.name}`],
       shape: draft.shape,
@@ -676,20 +678,13 @@ function buildSymbols(context: ParserContext): Symbol[] {
       parentId: parent.id,
       line: lineOf(context.source, draft.start),
       filePath: context.filePath,
-    };
-    result.push(symbol);
-  }
-  for (const alias of context.aliases) {
-    const targets = result.filter((symbol) => symbol.name === alias.target);
-    for (const symbol of targets) {
-      if (!symbol.aliases.includes(alias.alias)) symbol.aliases.push(alias.alias);
-    }
+    });
   }
   return result;
 }
 
 export function extractRust(root: string, files: string[]): ExtractResult {
-  const symbols: Symbol[] = [];
+  const contexts: ParserContext[] = [];
   const globalAliases: UseAlias[] = [];
   let parseFailures = 0;
   let filesScanned = 0;
@@ -719,9 +714,14 @@ export function extractRust(root: string, files: string[]): ExtractResult {
     parser.parseRange(0, lexed.tokens.length, "", true);
     parseFailures += context.failures.count;
     globalAliases.push(...context.aliases);
-    symbols.push(...buildSymbols(context));
+    contexts.push(context);
     filesScanned += 1;
   }
+  const symbols = contexts.flatMap(buildRustTopSymbols);
+  const parents = new Map(
+    symbols.map((symbol) => [`${symbol.packageName}\0${symbol.name}`, symbol]),
+  );
+  symbols.push(...contexts.flatMap((context) => buildRustChildren(context, parents)));
   for (const alias of globalAliases) {
     for (const symbol of symbols) {
       if (symbol.packageName === alias.packageName && symbol.name === alias.target && !symbol.aliases.includes(alias.alias)) {

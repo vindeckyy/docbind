@@ -425,6 +425,18 @@ describe("check pipeline", () => {
     expect(result.pending[0]?.symbol.name).toBe("Add");
   });
 
+  it("binds Rust methods declared in another file", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "rsapp"\n',
+      "src/lib.rs": "pub struct User;\npub mod users;\n",
+      "src/users.rs": "impl User { pub fn display(&self) -> String { String::new() } }\n",
+      "docs/api.md": "Call `User.display()`.\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("display");
+  });
+
   it("detects Go receiver mutability changes", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",
