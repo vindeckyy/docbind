@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.75] - 2026-11-03
+
+### Added
+
+- Annotation defaults whose method returns `int`, `long`, `short`, or `byte` use truncating integer division, for example `7 / 2` becomes `3`.
+- Decimal points and `f`/`d` suffixes switch that expression back to floating division; `L` suffixes stay integral.
+- Corpus adds `Marker.intDiv()` with default `7 / 2`; editing `2` to `4` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 100 to 101; `java-javadoc-fixture` runs 29 mutations with 24 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.69%; line coverage is 99.24%.
+
+### Limits
+
+- Integer division applies to annotation defaults only, not to constant initialisers.
+- Function calls, casts, and bitwise operators stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.74] - 2026-11-03
 
 ### Added
@@ -1345,3 +1364,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.72]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.72
 [0.1.73]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.73
 [0.1.74]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.74
+[0.1.75]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.75

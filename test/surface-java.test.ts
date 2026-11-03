@@ -363,6 +363,11 @@ describe("Java surface", () => {
         "    int neg() default -5 + 8;",
         "    String joined() default \"a\" + \"b\";",
         "    String mixed() default \"n=\" + Constants.LIMIT;",
+        "    int idiv() default 7 / 2;",
+        "    long ldiv() default 7L / 2L;",
+        "    int constDiv() default Constants.LIMIT / 2;",
+        "    int negDiv() default -7 / 2;",
+        "    int mixedDiv() default 7.0 / 2.0;",
         "    int divZero() default 1 / 0;",
         "    String bad() default \"x\" +;",
         "    int sub() default 5 - 2;",
@@ -450,6 +455,11 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "neg")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "joined")?.shape.evaluatedDefault).toBe("ab");
     expect(result.symbols.find((symbol) => symbol.name === "mixed")?.shape.evaluatedDefault).toBe("n=7");
+    expect(result.symbols.find((symbol) => symbol.name === "idiv")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "ldiv")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "constDiv")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "negDiv")?.shape.evaluatedDefault).toBe(-3);
+    expect(result.symbols.find((symbol) => symbol.name === "mixedDiv")?.shape.evaluatedDefault).toBe(3.5);
     expect(result.symbols.find((symbol) => symbol.name === "divZero")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "bad")?.shape.evaluatedDefault).toEqual({ level: 3 });
     expect(result.symbols.find((symbol) => symbol.name === "sub")?.shape.evaluatedDefault).toBe(3);

@@ -333,6 +333,14 @@
         "to": 3,
         "symbol": "arithmetic",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "intDiv",
+        "from": 2,
+        "to": 4,
+        "symbol": "intDiv",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

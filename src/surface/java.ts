@@ -231,12 +231,24 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
   return tokens;
 }
 
+function isIntegralType(type: string | undefined): boolean {
+  return Boolean(type && /^(?:int|long|short|byte)$/u.test(type.trim()));
+}
+
 function evaluateExpression(
   source: string,
   constants?: Map<string, EvaluatedValue>,
+  integral = false,
 ): EvaluatedValue | undefined {
   const tokens = expressionTokens(source);
   if (!tokens || tokens.length === 0) return undefined;
+  const integerDivision =
+    integral &&
+    tokens.every(
+      (token) =>
+        token.type !== "number" ||
+        /^(?:0[xX][0-9a-fA-F]+|\d+)[lL]?$/u.test(token.value),
+    );
   let position = 0;
 
   const parsePrimary = (): EvaluatedValue | undefined => {
@@ -280,7 +292,7 @@ function evaluateExpression(
       const right = parsePrimary();
       if (typeof left !== "number" || typeof right !== "number") return undefined;
       if (operator === "/" && right === 0) return undefined;
-      left = operator === "*" ? left * right : left / right;
+      left = operator === "*" ? left * right : integerDivision ? Math.trunc(left / right) : left / right;
     }
     return left;
   };
@@ -312,6 +324,7 @@ function evaluateArgument(
   argument: AnnotationArgument,
   constants?: Map<string, EvaluatedValue>,
   enumLabels?: Set<string>,
+  integral = false,
 ): EvaluatedValue | undefined {
   if (argument.kind === "string" || argument.kind === "number" || argument.kind === "boolean") {
     return argument.literal as EvaluatedValue;
@@ -327,20 +340,20 @@ function evaluateArgument(
   }
   if (argument.kind === "array") {
     const values = (argument.items as AnnotationArgument[]).map((item) =>
-      evaluateArgument(item, constants, enumLabels),
+      evaluateArgument(item, constants, enumLabels, integral),
     );
     if (values.some((value) => value === undefined)) return undefined;
     return values as EvaluatedValue[];
   }
   if (argument.kind === "expression") {
-    return evaluateExpression(argument.value, constants);
+    return evaluateExpression(argument.value, constants, integral);
   }
   /* v8 ignore next */
   if (argument.kind === "annotation") {
     const evaluated: Record<string, EvaluatedValue> = {};
     let position = 0;
     for (const item of argument.items as AnnotationArgument[]) {
-      const value = evaluateArgument(item, constants, enumLabels);
+      const value = evaluateArgument(item, constants, enumLabels, integral);
       if (value === undefined) return undefined;
       evaluated[item.name ?? `arg${position}`] = value;
       position += 1;
@@ -1016,6 +1029,7 @@ export function extractJava(root: string, files: string[], evaluateDefaults = fa
           { value: draft.defaultValue, ...draft.defaultParsed },
           constants,
           enumLabels,
+          isIntegralType(draft.shape.returnType),
         );
         if (evaluated !== undefined) draft.shape.evaluatedDefault = evaluated;
       }
