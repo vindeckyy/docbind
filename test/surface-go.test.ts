@@ -56,6 +56,8 @@ func Old() {}
 
 func (u *User) hiddenMethod() {}
 `,
+    "pkg/types.go": "package users\ntype Team struct{}\n",
+    "pkg/team_methods.go": "package users\nfunc (t *Team) Add(name string) {}\n",
     "pkg/bad.go": "func broken( {",
   });
 }
@@ -94,6 +96,14 @@ describe("Go surface", () => {
     const rename = result.symbols.find((symbol) => symbol.name === "Rename");
     expect(rename?.shape.params?.[0]).toMatchObject({ name: "receiver", type: "*User" });
     expect(rename?.shape.params?.[1]).toMatchObject({ name: "name", type: "string" });
+  });
+
+  it("attaches methods declared in another file", () => {
+    const root = goProject();
+    const result = extractGo(root, ["pkg/types.go", "pkg/team_methods.go"]);
+    const method = result.symbols.find((symbol) => symbol.name === "Add");
+    expect(method?.parentId).toContain("Team");
+    expect(method?.modulePath).toBe("pkg/types");
   });
 
   it("handles type aliases and value blocks", () => {

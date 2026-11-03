@@ -583,14 +583,12 @@ class GoParser {
   }
 }
 
-function buildGoSymbols(context: GoContext): Symbol[] {
-  const top = context.drafts.filter((draft) => draft.enabled && draft.exported && !draft.parentName);
+function buildGoTopSymbols(context: GoContext): Symbol[] {
   const result: Symbol[] = [];
-  const byName = new Map<string, Symbol>();
-  const childCounts = new Map<string, number>();
-  for (const draft of top) {
+  for (const draft of context.drafts) {
+    if (!draft.enabled || !draft.exported || draft.parentName) continue;
     const shapeText = canonicalShape(draft.shape);
-    const symbol: Symbol = {
+    result.push({
       id: `${context.packageName}|${context.modulePath}|${draft.kind}|${draft.name}|0`,
       name: draft.name,
       kind: draft.kind,
@@ -607,25 +605,29 @@ function buildGoSymbols(context: GoContext): Symbol[] {
       contractFlags: draft.shape.flags ?? [],
       line: lineOf(context.source, draft.start),
       filePath: context.filePath,
-    };
-    result.push(symbol);
-    byName.set(draft.name, symbol);
+    });
   }
+  return result;
+}
+
+function buildGoChildren(context: GoContext, parents: Map<string, Symbol>): Symbol[] {
+  const result: Symbol[] = [];
+  const childCounts = new Map<string, number>();
   for (const draft of context.drafts) {
     if (!draft.enabled || !draft.exported || !draft.parentName) continue;
-    const parent = byName.get(draft.parentName);
+    const parent = parents.get(`${context.packageName}\0${draft.parentName}`);
     if (!parent) continue;
     const key = `${draft.parentName}.${draft.name}`;
     const index = childCounts.get(key) ?? 0;
     childCounts.set(key, index + 1);
     const shapeText = canonicalShape(draft.shape);
     result.push({
-      id: `${context.packageName}|${context.modulePath}|${draft.kind}|${key}|${index}`,
+      id: `${parent.packageName}|${parent.modulePath}|${draft.kind}|${key}|${index}`,
       name: draft.name,
       kind: draft.kind,
-      modulePath: context.modulePath,
-      packageName: context.packageName,
-      packageRoot: context.packageRoot,
+      modulePath: parent.modulePath,
+      packageName: parent.packageName,
+      packageRoot: parent.packageRoot,
       qualifiedName: `${parent.qualifiedName}.${draft.name}`,
       aliases: [key],
       shape: draft.shape,
@@ -643,7 +645,7 @@ function buildGoSymbols(context: GoContext): Symbol[] {
 }
 
 export function extractGo(root: string, files: string[]): ExtractResult {
-  const symbols: Symbol[] = [];
+  const contexts: GoContext[] = [];
   let parseFailures = 0;
   let filesScanned = 0;
   for (const rel of files) {
@@ -669,9 +671,14 @@ export function extractGo(root: string, files: string[]): ExtractResult {
     };
     new GoParser(context).parseRange(0, lexed.tokens.length);
     parseFailures += context.failures.count;
-    symbols.push(...buildGoSymbols(context));
+    contexts.push(context);
     filesScanned += 1;
   }
+  const symbols = contexts.flatMap(buildGoTopSymbols);
+  const parents = new Map(
+    symbols.map((symbol) => [`${symbol.packageName}\0${symbol.name}`, symbol]),
+  );
+  symbols.push(...contexts.flatMap((context) => buildGoChildren(context, parents)));
   return { symbols, parseFailures, filesScanned };
 }
 

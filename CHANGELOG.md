@@ -13,6 +13,7 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 - Go receiver mutability in method shapes.
 - TypeScript namespace re-exports such as `export * as api from "./mod"`.
 - Rust cross-file and grouped `pub use` aliases.
+- Go methods declared in a different file from their receiver type.
 
 ## [0.1.0] - 2026-11-03
 

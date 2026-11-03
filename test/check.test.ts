@@ -412,6 +412,19 @@ describe("check pipeline", () => {
     expect(checkProject(root, goConfig).findings[0]?.rule).toBe("L3-reshaped");
   });
 
+  it("binds Go methods declared in another file", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "pkg/types.go": "package users\ntype Team struct{}\n",
+      "pkg/methods.go": "package users\nfunc (t *Team) Add(name string) {}\n",
+      "docs/api.md": "Call `Team.Add(name)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("Add");
+  });
+
   it("detects Go receiver mutability changes", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",
