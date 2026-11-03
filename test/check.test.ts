@@ -448,6 +448,16 @@ describe("check pipeline", () => {
     expect(result.pending[0]?.symbol.name).toBe("Add");
   });
 
+  it("accepts crate-qualified Rust paths without a move", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "anyhow"\n',
+      "src/lib.rs": "pub type Result<T> = core::result::Result<T, Error>;\npub struct Error;\n",
+      "docs/api.md": "Return `anyhow::Result<T>`.\n",
+    });
+    lockNow(root);
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
   it("binds Rust methods declared in another file", () => {
     const root = tempProject({
       "Cargo.toml": '[package]\nname = "rsapp"\n',

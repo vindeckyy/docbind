@@ -6,7 +6,7 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 
 ### Added
 
-- Pinned open-source corpus harness in `corpus/`. It measures baseline findings, bind rate, mutation recall, and collateral findings.
+- Pinned open-source corpus harness in `corpus/`. It measures baseline findings, doc-edit noise, bind rate, mutation recall, and collateral findings.
 - Corpus report and methodology page.
 
 ### Fixed
@@ -18,6 +18,7 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 ### Improved
 
 - Rust and Go fenced code keeps qualified chains such as `viper.SetConfigName` and `User::new` instead of splitting them into unrelated identifiers. The viper corpus bind rate rose from 0 to 53 anchors.
+- Rust crate-name aliases such as `anyhow::Result`, plus `::` and `.` path normalization, raised the anyhow corpus bind rate from 0 to 4 anchors.
 
 ## [0.1.1] - 2026-11-03
 

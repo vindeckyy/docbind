@@ -50,16 +50,21 @@ function preferredPath(symbol: Symbol): string {
 function movedFinding(entry: LockEntry, anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
   const base = parseToken(anchor.token).base;
   if (!/[.#]|::/u.test(base)) return undefined;
-  if (renderedForms(symbol).some((form) => form === base || form.endsWith(`.${base}`) || form.endsWith(base))) {
+  const normalized = base.replace(/::/gu, ".");
+  const forms = renderedForms(symbol).map((form) => form.replace(/::/gu, "."));
+  if (forms.some((form) => form === normalized || form.endsWith(`.${normalized}`) || form.endsWith(normalized))) {
     return undefined;
   }
+  const target = base.includes("::")
+    ? preferredPath(symbol).replace(/\./gu, "::")
+    : preferredPath(symbol);
   return makeFinding(
     {
       rule: "L2-moved",
       anchor,
       symbol,
-      message: `${anchor.token} moved to ${preferredPath(symbol)}`,
-      fix: { kind: "replacePath", from: base, to: preferredPath(symbol) },
+      message: `${anchor.token} moved to ${target}`,
+      fix: { kind: "replacePath", from: base, to: target },
     },
     config,
   );

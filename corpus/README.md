@@ -4,6 +4,7 @@
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
+- doc-edit noise: append a word to an anchored doc line without changing code
 - mutation recall: rename one bound symbol in code, leave docs alone, count findings that mention the old name
 - collateral findings: findings for unrelated symbols during each mutation
 

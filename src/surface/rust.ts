@@ -635,6 +635,8 @@ function buildRustTopSymbols(context: ParserContext): Symbol[] {
       qualifiedName: qualified,
       aliases: [
         `${context.modulePath.replace(/\//gu, ".")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`,
+        `${context.packageName.replace(/-/gu, "_")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`,
+        `${context.packageName.replace(/-/gu, "_")}.${draft.name}`,
       ],
       shape: draft.shape,
       shapeText,

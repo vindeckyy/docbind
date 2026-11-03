@@ -40,6 +40,8 @@ interface RepoReport {
   bindRate: number;
   baselineFindings: number;
   baselineRules: string[];
+  docEditFindings: number;
+  docEditRules: string[];
   mutations: MutationResult[];
   hits: number;
   misses: number;
@@ -159,6 +161,27 @@ for (const entry of selected) {
     .filter((symbol) => symbol!.name.length > 2 && !symbol!.name.endsWith("Mutation"))
     .slice(0, entry.mutations);
 
+  let docEditFindings = 0;
+  let docEditRules: string[] = [];
+  const firstAnchor = lock.anchors[0];
+  if (firstAnchor) {
+    const docPath = join(".", firstAnchor.docPath);
+    const originalDoc = readFileSync(docPath, "utf8");
+    const docLines = originalDoc.split(/\r?\n/u);
+    const anchorLine = docLines[firstAnchor.line - 1] ?? "";
+    if (anchorLine.length > 0) {
+      docLines[firstAnchor.line - 1] = `${anchorLine} updated`;
+      writeFileSync(docPath, docLines.join("\n"));
+      try {
+        const findings = findingsFor(checkout, config);
+        docEditFindings = findings.length;
+        docEditRules = [...new Set(findings.map((finding) => finding.rule))];
+      } finally {
+        writeFileSync(docPath, originalDoc);
+      }
+    }
+  }
+
   const mutations: MutationResult[] = [];
   for (const symbol of unique) {
     const restore = mutate(symbol);
@@ -204,6 +227,8 @@ for (const entry of selected) {
     bindRate: anchors === 0 ? 0 : baseline.stats.bound / anchors,
     baselineFindings: baseline.findings.length,
     baselineRules: [...new Set(baseline.findings.map((finding) => finding.rule))],
+    docEditFindings,
+    docEditRules,
     mutations,
     hits: mutations.filter((mutation) => mutation.hit).length,
     misses: mutations.filter((mutation) => !mutation.hit).length,
@@ -218,7 +243,7 @@ console.log("\ncorpus summary");
 for (const item of report) {
   console.log(
     `${item.name}: docs=${item.docs} anchors=${item.anchors} bound=${item.bound} ` +
-    `baselineFindings=${item.baselineFindings} mutations=${item.mutations.length} ` +
+    `baselineFindings=${item.baselineFindings} docEditFindings=${item.docEditFindings} mutations=${item.mutations.length} ` +
     `hits=${item.hits} misses=${item.misses} collateral=${item.collateral}`,
   );
 }

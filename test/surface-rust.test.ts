@@ -108,6 +108,7 @@ describe("Rust surface", () => {
       expect.arrayContaining(["Account", "GlobalAccount", "GroupAccount"]),
     );
     expect(result.symbols.find((symbol) => symbol.name === "User")?.modulePath).toBe("src/lib");
+    expect(result.symbols.find((symbol) => symbol.name === "User")?.aliases).toContain("rustapp.User");
     expect(result.symbols.find((symbol) => symbol.name === "display")?.parentId).toContain("User");
   });
 

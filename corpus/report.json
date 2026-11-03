@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T16:42:38.531Z",
+  "generatedAt": "2026-11-03T16:45:44.036Z",
   "report": [
     {
       "name": "slugify",
@@ -11,6 +11,8 @@
       "bindRate": 0.4827586206896552,
       "baselineFindings": 0,
       "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
       "mutations": [
         {
           "symbol": "slugify",
@@ -45,12 +47,37 @@
       "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
       "docs": 1,
       "anchors": 79,
-      "bound": 0,
-      "bindRate": 0,
+      "bound": 4,
+      "bindRate": 0.05063291139240506,
       "baselineFindings": 0,
       "baselineRules": [],
-      "mutations": [],
-      "hits": 0,
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "Result",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Error",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
       "misses": 0,
       "collateral": 0
     },
@@ -64,6 +91,8 @@
       "bindRate": 0.18088737201365188,
       "baselineFindings": 0,
       "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
       "mutations": [
         {
           "symbol": "ReadInConfig",
@@ -113,6 +142,8 @@
       "bindRate": 0.01338055883510429,
       "baselineFindings": 0,
       "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
       "mutations": [
         {
           "symbol": "NetRCAuth",
