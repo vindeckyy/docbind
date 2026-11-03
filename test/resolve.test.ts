@@ -295,6 +295,22 @@ describe("indexing and scoring", () => {
     expect(scoreCandidates(anchor("x"), index).reason).toBe("unbound");
   });
 
+  it("binds a unique top-level export over same-named methods", () => {
+    const top = symbol("Unmarshal", { packageExport: true });
+    const method = symbol("Unmarshal", {
+      id: "method",
+      kind: "method",
+      parentId: "parent",
+      qualifiedName: "app.Viper.Unmarshal",
+      aliases: ["Viper.Unmarshal"],
+    });
+    const index = buildIndex([top, method]);
+    const result = scoreCandidates(anchor("Unmarshal"), index);
+    expect(result.reason).toBe("bound");
+    expect(result.binding?.symbol.id).toBe(top.id);
+    expect(result.binding?.evidence).toContain("package export");
+  });
+
   it("penalizes ambiguous candidates", () => {
     const index = buildIndex([
       symbol("getUser"),

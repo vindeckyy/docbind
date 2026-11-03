@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.16] - 2026-11-03
+
+### Added
+
+- Unique bare exported Go identifiers receive package-export evidence, resolving names such as `SetDefault`, `GetInt`, `Unmarshal`, and `FlagValue` even when a method shares the name.
+
+### Fixed
+
+- Corpus harness refreshes lock entries on every run, so stale bindings cannot inflate counts.
+
+### Improved
+
+- viper corpus bind rate rose from 66 to 94 anchors. Mutation coverage rose from 5 to 8.
+- Corpus now detects 29 of 29 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go package aliases do not model re-exports through a separate package.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.15] - 2026-11-03
 
 ### Added
@@ -288,3 +308,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.13]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.13
 [0.1.14]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.14
 [0.1.15]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.15
+[0.1.16]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.16

@@ -151,7 +151,7 @@ for (const entry of selected) {
     languages: entry.languages,
   });
   const lockRun = capture();
-  const lockCode = await runCli(["lock"], {
+  const lockCode = await runCli(["lock", "--refresh"], {
     cwd: checkout,
     stdout: lockRun.stdout,
     stderr: lockRun.stderr,

@@ -14,7 +14,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
 | dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
-| spf13/viper | Go | 2 | 293 | 66 | 0 | 5 | 5 | 0 | 0 |
+| spf13/viper | Go | 2 | 293 | 94 | 0 | 8 | 8 | 0 | 0 |
 | encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
@@ -34,7 +34,9 @@ The same run also found a missed mutation. Removing the typed declaration for `s
 
 ## Go package selectors and constants
 
-Go docs use the declared package name, while the extractor's module path follows the file path. Symbols now carry a package-clause alias such as `viper.ReadRemoteConfig` in addition to their file-based alias. Viper bind count rose from 53 to 66 anchors, and mutation coverage grew from 3 to 5. A local Go fixture also exercises a package selector and a constant: `viper.ReadRemoteConfig` and `viper.SupportedExts` both bind, and both mutations are detected.
+Go docs use the declared package name, while the extractor's module path follows the file path. Symbols carry a package-clause alias such as `viper.ReadRemoteConfig` in addition to their file-based alias. This raised viper from 53 to 66 anchors.
+
+Unique bare exported identifiers now earn package-export evidence. Names such as `SetDefault`, `GetInt`, `Unmarshal`, and `FlagValue` bind to the package-level symbol even when a same-named method exists. Viper reached 94 bound anchors and mutation coverage grew from 3 to 8. A local Go fixture also exercises a package selector and a constant: `viper.ReadRemoteConfig` and `viper.SupportedExts` both bind, and both mutations are detected.
 
 ## Crate macros and generic aliases
 

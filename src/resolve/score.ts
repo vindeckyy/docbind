@@ -224,6 +224,8 @@ export function scoreCandidates(
 
   const named = uniqueById(index.byName.get(base) ?? []);
   for (const symbol of named) add(symbol, 0.35, "exported name");
+  const topLevelNamed = named.filter((symbol) => !symbol.parentId && symbol.name === base);
+  const packageExport = topLevelNamed.length === 1 ? topLevelNamed[0] : undefined;
 
   if (candidates.size === 1) {
     for (const candidate of candidates.values()) candidate.score += 0.15;
@@ -257,6 +259,15 @@ export function scoreCandidates(
     if (candidate.symbol.kind === "type" && /^[A-Z]/u.test(base)) {
       candidate.score += 0.2;
       candidate.evidence.push("type alias");
+    }
+    if (
+      candidate.symbol.packageExport === true &&
+      packageExport?.id === candidate.symbol.id &&
+      /^[A-Z]/u.test(base) &&
+      ["function", "class", "interface", "type", "enum", "const"].includes(candidate.symbol.kind)
+    ) {
+      candidate.score += 0.4;
+      candidate.evidence.push("package export");
     }
     if (anchor.localDecls.includes(base)) {
       candidate.score -= 0.6;

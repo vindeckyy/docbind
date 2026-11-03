@@ -607,6 +607,7 @@ function buildGoTopSymbols(context: GoContext): Symbol[] {
       paramNamesHash: paramNamesHash(draft.shape.params),
       bodyHash: bodyHash(draft.body),
       contractFlags: draft.shape.flags ?? [],
+      packageExport: true,
       line: lineOf(context.source, draft.start),
       filePath: context.filePath,
     });

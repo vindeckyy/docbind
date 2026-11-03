@@ -56,7 +56,7 @@
       "rust": false,
       "go": true
     },
-    "mutations": 5
+    "mutations": 8
   },
   {
     "name": "httpx",
