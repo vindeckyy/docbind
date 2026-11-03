@@ -2,6 +2,34 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.42] - 2026-11-03
+
+### Added
+
+- `minConfidence` config field sets the binding floor; default is now 0.60, down from an engine constant of 0.70.
+- reStructuredText input: double-backtick literals, roles such as `:func:` and `:attr:`, and `code-block` directives.
+- `docs/precision.md` publishes scoring weights, the threshold sweep, and the derivation of the default floor.
+- `docs/performance.md` publishes median check runtime for httpx, viper, and thiserror.
+- `npm run corpus:fixtures` runs the network-free fixtures in CI and fails on baseline findings, doc-edit noise, missed mutations, or collateral findings.
+- Corpus report now includes a name-only false-positive count for comparison against a naive baseline.
+- Corpus rows publish bind rate.
+
+### Changed
+
+- The default binding floor moved to 0.60 after the sweep showed 0.65 is where mutation recall first drops. Full-corpus bound anchors rose from 417 to 559 on httpx, 10 to 14 on anyhow, and 12 to 23 on thiserror with zero baseline findings.
+- The prior-art page now includes that empirical baseline comparison.
+
+### Fixed
+
+- Corpus cache hits rewrite `docbind.json`, so a previous threshold run cannot leak into later runs.
+
+### Limits
+
+- The threshold sweep covers 72 local anchors, not the external repositories. The fixtures do not separate floors from 0.30 through 0.60.
+- Docstrings, AsciiDoc, and Javadoc are still unread.
+- Prose claims and example execution remain out of scope.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.41] - 2026-11-03
 
 ### Added
@@ -795,3 +823,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.39]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.39
 [0.1.40]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.40
 [0.1.41]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.41
+[0.1.42]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.42

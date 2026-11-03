@@ -20,7 +20,7 @@ export const DEFAULT_EXCLUDES = [
   "docs/upgrade*",
 ];
 
-export const DEFAULT_DOCS = ["README.md", "docs/**/*.md", "**/*.md"];
+export const DEFAULT_DOCS = ["README.md", "docs/**/*.md", "docs/**/*.rst", "**/*.md", "**/*.rst"];
 
 export const DEFAULT_CONFIG: Config = {
   docs: DEFAULT_DOCS,
@@ -35,6 +35,7 @@ export const DEFAULT_CONFIG: Config = {
     "S1-deprecated": "off",
   },
   maxFindings: 200,
+  minConfidence: 0.6,
 };
 
 const severitySchema = z.enum(["error", "warning", "note", "off"]);
@@ -65,6 +66,7 @@ const rawConfigSchema = z
       .strict()
       .optional(),
     maxFindings: z.number().int().positive().optional(),
+    minConfidence: z.number().min(0).max(1).optional(),
   })
   .strict();
 
@@ -85,6 +87,7 @@ export function parseConfig(input: unknown): Config {
     },
     severity,
     maxFindings: raw.maxFindings ?? DEFAULT_CONFIG.maxFindings,
+    minConfidence: raw.minConfidence ?? DEFAULT_CONFIG.minConfidence,
   };
 }
 

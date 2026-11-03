@@ -1,7 +1,7 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.1.41",
-  "description": "Static analysis for stale symbol references in markdown. Supports TypeScript, JavaScript, Python, Rust, and Go.",
+  "version": "0.1.42",
+  "description": "Static analysis for stale symbol references in markdown and reStructuredText. Supports TypeScript, JavaScript, Python, Rust, and Go.",
   "type": "module",
   "bin": {
     "docbind": "./dist/main.js"
@@ -22,7 +22,10 @@
     "demo": "tsx scripts/demo.ts",
     "corpus": "tsx scripts/corpus.ts",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run gate"
+    "prepublishOnly": "npm run gate",
+    "bench": "tsx scripts/bench.ts",
+    "thresholds": "tsx scripts/threshold-sweep.ts",
+    "corpus:fixtures": "tsx scripts/corpus.ts --local-only --strict --only macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture"
   },
   "dependencies": {
     "ignore": "^7.0.14",

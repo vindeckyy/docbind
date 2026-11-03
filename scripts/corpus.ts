@@ -1,10 +1,13 @@
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { checkProject } from "../src/check.js";
 import { parseConfig } from "../src/config.js";
-import { discoverCode } from "../src/discover.js";
+import { discoverCode, discoverDocs } from "../src/discover.js";
+import { parseDocs } from "../src/docs/parse.js";
+import { buildGoTypeHints, buildPythonTypeHints } from "../src/docs/infer.js";
+import { parseToken } from "../src/resolve/score.js";
 import { readLock } from "../src/lock/schema.js";
 import { extractSurface } from "../src/surface/index.js";
 import { runCli } from "../src/cli.js";
@@ -35,6 +38,7 @@ interface RepoReport {
   name: string;
   repo: string;
   commit: string;
+  nameOnlyFalsePositives: number;
   docs: number;
   anchors: number;
   bound: number;
@@ -52,10 +56,17 @@ interface RepoReport {
 const root = process.cwd();
 const cache = join(root, ".corpus");
 const args = process.argv.slice(2);
-const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : undefined;
+const onlyArg = args.includes("--only") ? args[args.indexOf("--only") + 1] : undefined;
+const only = onlyArg ? new Set(onlyArg.split(",")) : undefined;
 const refresh = args.includes("--refresh");
+const localOnly = args.includes("--local-only");
+const strict = args.includes("--strict");
+const thresholdArg = args.includes("--threshold") ? Number(args[args.indexOf("--threshold") + 1]) : undefined;
+const outArg = args.includes("--out") ? args[args.indexOf("--out") + 1] : "corpus/report.json";
 const entries = JSON.parse(readFileSync(join(root, "corpus/repos.json"), "utf8")) as CorpusEntry[];
-const selected = only ? entries.filter((entry) => entry.name === only) : entries;
+const selected = entries
+  .filter((entry) => !only || only.has(entry.name))
+  .filter((entry) => !localOnly || Boolean(entry.local));
 
 function capture(): { stdout: (value: string) => void; stderr: (value: string) => void; text: () => string } {
   const lines: string[] = [];
@@ -71,6 +82,15 @@ async function materialize(entry: CorpusEntry): Promise<string> {
   if (!refresh) {
     try {
       readFileSync(join(target, "corpus.ready"), "utf8");
+      writeFileSync(
+        join(target, "docbind.json"),
+        `${JSON.stringify({
+          docs: entry.docs,
+          exclude: entry.exclude,
+          languages: entry.languages,
+          ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
+        }, null, 2)}\n`,
+      );
       return target;
     } catch {
       // Download below.
@@ -82,7 +102,12 @@ async function materialize(entry: CorpusEntry): Promise<string> {
     cpSync(join(root, entry.local), target, { recursive: true });
     writeFileSync(
       join(target, "docbind.json"),
-      `${JSON.stringify({ docs: entry.docs, exclude: entry.exclude, languages: entry.languages }, null, 2)}\n`,
+      `${JSON.stringify({
+        docs: entry.docs,
+        exclude: entry.exclude,
+        languages: entry.languages,
+        ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
+      }, null, 2)}\n`,
     );
     writeFileSync(join(target, "corpus.ready"), entry.commit);
     return target;
@@ -97,7 +122,12 @@ async function materialize(entry: CorpusEntry): Promise<string> {
   if (unpack.status !== 0) throw new Error(`${entry.name}: tar failed`);
   writeFileSync(
     join(target, "docbind.json"),
-    `${JSON.stringify({ docs: entry.docs, exclude: entry.exclude, languages: entry.languages }, null, 2)}\n`,
+    `${JSON.stringify({
+      docs: entry.docs,
+      exclude: entry.exclude,
+      languages: entry.languages,
+      ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
+    }, null, 2)}\n`,
   );
   writeFileSync(join(target, "corpus.ready"), entry.commit);
   return target;
@@ -149,6 +179,7 @@ for (const entry of selected) {
     docs: entry.docs,
     exclude: entry.exclude,
     languages: entry.languages,
+    ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();
   const lockCode = await runCli(["lock", "--refresh"], {
@@ -165,6 +196,16 @@ for (const entry of selected) {
   const lock = readLock(checkout);
   const surface = extractSurface(checkout, discoverCode(checkout, config), config);
   const byId = new Map(surface.symbols.map((symbol) => [symbol.id, symbol]));
+  const symbolNames = new Set(surface.symbols.map((symbol) => symbol.name));
+  const parsedAnchors = parseDocs(
+    checkout,
+    discoverDocs(checkout, config),
+    buildPythonTypeHints(surface.symbols),
+    buildGoTypeHints(surface.symbols),
+  ).anchors;
+  const nameOnlyFalsePositives = parsedAnchors.filter(
+    (anchor) => !symbolNames.has(parseToken(anchor.token).base),
+  ).length;
   const unique = [...new Map(lock.anchors.map((anchor) => [anchor.symbolId, anchor])).values()]
     .map((anchor) => byId.get(anchor.symbolId))
     .filter((symbol): symbol is Symbol => Boolean(symbol))
@@ -230,6 +271,7 @@ for (const entry of selected) {
     name: entry.name,
     repo: entry.repo,
     commit: entry.commit,
+    nameOnlyFalsePositives,
     docs: baseline.stats.docsScanned,
     anchors,
     bound: baseline.stats.bound,
@@ -245,14 +287,29 @@ for (const entry of selected) {
   });
 }
 
-mkdirSync(join(root, "corpus"), { recursive: true });
-writeFileSync(join(root, "corpus/report.json"), `${JSON.stringify({ generatedAt: new Date().toISOString(), report }, null, 2)}\n`);
+const outPath = isAbsolute(outArg) ? outArg : join(root, outArg);
+mkdirSync(dirname(outPath), { recursive: true });
+writeFileSync(outPath, `${JSON.stringify({ generatedAt: new Date().toISOString(), report }, null, 2)}\n`);
 
 console.log("\ncorpus summary");
 for (const item of report) {
   console.log(
     `${item.name}: docs=${item.docs} anchors=${item.anchors} bound=${item.bound} ` +
     `baselineFindings=${item.baselineFindings} docEditFindings=${item.docEditFindings} mutations=${item.mutations.length} ` +
-    `hits=${item.hits} misses=${item.misses} collateral=${item.collateral}`,
+    `hits=${item.hits} misses=${item.misses} collateral=${item.collateral} nameOnlyFP=${item.nameOnlyFalsePositives}`,
   );
+}
+
+if (strict) {
+  const failures: string[] = [];
+  for (const item of report) {
+    if (item.baselineFindings > 0) failures.push(`${item.name}: ${item.baselineFindings} baseline findings`);
+    if (item.docEditFindings > 0) failures.push(`${item.name}: ${item.docEditFindings} doc-edit findings`);
+    if (item.misses > 0) failures.push(`${item.name}: ${item.misses} missed mutations`);
+    if (item.collateral > 0) failures.push(`${item.name}: ${item.collateral} collateral findings`);
+  }
+  if (failures.length > 0) {
+    console.error(`\nstrict corpus failed:\n${failures.join("\n")}`);
+    process.exit(1);
+  }
 }

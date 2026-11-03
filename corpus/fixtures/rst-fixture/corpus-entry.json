@@ -1,0 +1,10 @@
+{
+  "name": "rst-fixture",
+  "repo": "local/rst-fixture",
+  "commit": "fixture-v1",
+  "local": "corpus/fixtures/rst-fixture",
+  "docs": ["docs/**/*.rst"],
+  "exclude": [],
+  "languages": { "typescript": false, "python": true, "rust": false, "go": false },
+  "mutations": 3
+}

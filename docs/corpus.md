@@ -1,6 +1,6 @@
 # Corpus results
 
-`corpus/repos.json` pins five open-source repositories at exact commits and six local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
+`corpus/repos.json` pins five open-source repositories at exact commits and seven local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -10,21 +10,24 @@
 
 Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/main/corpus/report.json)
 
-| Repository | Language | Docs | Anchors | Bound | Baseline findings | Mutations | Hits | Misses | Collateral |
-|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
-| dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
-| spf13/viper | Go | 2 | 167 | 94 | 0 | 8 | 8 | 0 | 0 |
-| encode/httpx | Python | 23 | 2818 | 417 | 0 | 3 | 3 | 0 | 0 |
-| dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
-| macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
-| proc-macro-fixture (local) | Rust | 1 | 3 | 3 | 0 | 1 | 1 | 0 | 0 |
-| go-package-fixture (local) | Go | 1 | 45 | 45 | 0 | 28 | 28 | 0 | 0 |
-| go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
-| thiserror-derived-fixture (local) | Rust | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 |
-| python-fields-fixture (local) | Python | 1 | 9 | 8 | 0 | 5 | 5 | 0 | 0 |
+| Repository | Language | Docs | Anchors | Bound | Bind rate | Baseline findings | Mutations | Hits | Misses | Collateral |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 48.3% | 0 | 2 | 2 | 0 | 0 |
+| dtolnay/anyhow | Rust | 1 | 79 | 14 | 17.7% | 0 | 3 | 3 | 0 | 0 |
+| spf13/viper | Go | 2 | 167 | 94 | 56.3% | 0 | 8 | 8 | 0 | 0 |
+| encode/httpx | Python | 23 | 2818 | 559 | 19.8% | 0 | 3 | 3 | 0 | 0 |
+| local/macro-crate (local) | Rust | 1 | 11 | 11 | 100.0% | 0 | 9 | 9 | 0 | 0 |
+| dtolnay/thiserror | Rust | 1 | 162 | 23 | 14.2% | 0 | 2 | 2 | 0 | 0 |
+| local/proc-macro-crate (local) | Rust | 1 | 3 | 3 | 100.0% | 0 | 1 | 1 | 0 | 0 |
+| local/go-package (local) | Go | 1 | 45 | 45 | 100.0% | 0 | 28 | 28 | 0 | 0 |
+| local/go-cycle (local) | Go | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
+| local/thiserror-derived (local) | Rust | 1 | 1 | 1 | 100.0% | 0 | 1 | 1 | 0 | 0 |
+| local/python-fields (local) | Python | 1 | 9 | 8 | 88.9% | 0 | 5 | 5 | 0 | 0 |
+| local/rst-fixture (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 
-Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
+Overall: 793 of 3360 anchors bound, or 23.6%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
+
+Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
 ## What the corpus found
 
@@ -42,6 +45,10 @@ Python fences resolve attribute chains through source class fields. A property s
 Python fence parameters are typed three ways: annotated signatures such as `def log(request: Request)`, call arguments such as `log(response.request)`, and base-class methods when a subclass overrides them without annotations. That covers the common `class MyAuth(httpx.Auth): def auth_flow(self, request)` pattern.
 
 httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclared Python builtins are filtered from anchors, so httpx anchors fell from 2972 to 2818. The local Python fixture binds 8 of 9 anchors and detects 5 of 5 mutations, including `L4-renamed` findings on `Request.method` and `Request.url`.
+
+## reStructuredText
+
+`.rst` files are parsed directly. Double-backtick literals become inline anchors, roles such as `:func:` and `:attr:` become explicit references, and `.. code-block:: <lang>` bodies go through the same fence parser as markdown. The local `rst-fixture` binds 5 of 5 anchors and detects 3 of 3 mutations. It is the first non-markdown format; docstrings, AsciiDoc, and Javadoc remain unread.
 
 ## Go package selectors and constants
 
@@ -104,7 +111,7 @@ Python fences then gained local type inference. Source return annotations feed a
 - anyhow binds ten anchors after crate macros and generic type aliases were added. Most of its README still uses standard-library types and prose that do not map to crate symbols.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
-- The corpus uses five external repositories and six local fixtures. It is evidence, not a benchmark.
+- The corpus uses five external repositories and seven local fixtures. It is evidence, not a benchmark.
 
 Run the harness from the repository root:
 

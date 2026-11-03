@@ -4,7 +4,7 @@
 
 ```json
 {
-  "docs": ["README.md", "docs/**/*.md", "**/*.md"],
+  "docs": ["README.md", "docs/**/*.md", "docs/**/*.rst", "**/*.md", "**/*.rst"],
   "exclude": ["CHANGELOG.md", "docs/migration/**"],
   "languages": {
     "typescript": true,
@@ -20,7 +20,8 @@
     "L4-renamed": "error",
     "S1-deprecated": "off"
   },
-  "maxFindings": 200
+  "maxFindings": 200,
+  "minConfidence": 0.6
 }
 ```
 
@@ -42,4 +43,4 @@ The lock stores the shape the doc last asserted. `check` never writes it. `lock`
 
 ## Thresholds
 
-Scoring weights and binding thresholds are fixed in the engine. Per-repo tuning would make published precision numbers meaningless.
+`minConfidence` sets the binding floor. The default is `0.6`. The weights and the measured sweep behind that value are in [Precision evidence](precision.md). Lower it only with corpus evidence: below `0.6` the published fixtures bind nothing new, and above `0.65` mutation recall drops.

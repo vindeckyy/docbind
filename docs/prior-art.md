@@ -33,6 +33,14 @@ The paper's approach targets references that survive after all source definition
 
 Fraco (Ratol and Robillard, 2017) detects fragile source comments after identifier renames. It is close in spirit but targets comments, not markdown.
 
+## Empirical baseline
+
+The Tan detector has no public implementation to run against the same corpus, so this comparison uses a name-only baseline with the same inputs: it flags any backticked identifier whose base name has no exact match among exported symbol names. It has no shape comparison, no ambiguity check, and no lock.
+
+On the five non-rustdoc local fixtures, name-only flags 49 baseline anchors; `docbind` flags 0. Both detect the same 47 seeded mutations. Shape checks and the lock buy silence on tokens that merely look like symbols; they do not cost recall on this set.
+
+That is a baseline, not a head-to-head with the paper's tool.
+
 ## Positioning
 
 The audit's "open hole" framing is fair for shipped, maintained, multi-language tooling with CI integration. It is not fair if read as "no research exists". docbind competes on precision and workflow, not on being the first static analysis of the problem.

@@ -154,6 +154,7 @@ interface CandidateState {
 
 export interface ScoreOptions {
   repeated?: boolean;
+  threshold?: number;
 }
 
 export function scoreCandidates(
@@ -292,7 +293,7 @@ export function scoreCandidates(
   if (scored.length === 0) return { candidates: [], reason: "unbound" };
   const best = scored[0];
   const second = scored[1];
-  if (best.score < 0.7) return { candidates: scored, reason: "unbound" };
+  if (best.score < (options.threshold ?? 0.6)) return { candidates: scored, reason: "unbound" };
   if (second && best.score - second.score <= 0.05) {
     return { candidates: scored, reason: "ambiguous" };
   }

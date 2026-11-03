@@ -1,8 +1,8 @@
 # docbind
 
-Symbol-level documentation staleness detection for markdown.
+Symbol-level documentation staleness detection for markdown and reStructuredText.
 
-`docbind` binds symbol-shaped inline code in markdown to exported code symbols. It stores the claim, then reports when the code contract changes and the sentence does not.
+`docbind` binds symbol-shaped inline code in markdown and reStructuredText to exported code symbols. It stores the claim, then reports when the code contract changes and the sentence does not.
 
 This is static analysis. No build, no project code execution, no network.
 
@@ -48,7 +48,7 @@ The doc anchor did not change. The symbol contract it referenced did. The tool r
 
 `docbind` checks symbol contracts, not prose claims. A backticked `getUser` binds the symbol; the tool verifies that it exists and that its parameters and return type still match. It does not check what the surrounding sentence asserts. A line saying `getUser` returns `Email` passes while the signature returns `string`.
 
-Markdown is the only input format. Docstrings, reStructuredText, AsciiDoc, and Javadoc are not read.
+Markdown and reStructuredText are the supported input formats. Docstrings, AsciiDoc, and Javadoc are not read.
 
 Examples are parsed, never run. Example-output drift is invisible.
 

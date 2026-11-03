@@ -221,6 +221,7 @@ export interface Config {
   languages: LanguageConfig;
   severity: Record<Rule, Severity>;
   maxFindings: number;
+  minConfidence: number;
 }
 
 export const RULES: Rule[] = [

@@ -10,6 +10,8 @@ nav:
   - Configuration: configuration.md
   - Architecture: architecture.md
   - Corpus: corpus.md
+  - Precision: precision.md
+  - Performance: performance.md
   - Prior art: prior-art.md
 markdown_extensions:
   - tables

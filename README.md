@@ -4,7 +4,7 @@
 
 <h1 align="center">docbind</h1>
 
-<p align="center">Catch stale symbol references in markdown.</p>
+<p align="center">Catch stale symbol references in markdown and reStructuredText.</p>
 
 <p align="center">
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml/badge.svg"></a>
@@ -14,7 +14,7 @@
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
-Markdown docs name symbols. Code renames them. `docbind` reports the mismatch.
+Docs name symbols. Code renames them. `docbind` reports the mismatch.
 
 It binds symbol-shaped inline code to exported code symbols, stores the contract shape in `docbind.lock.json`, and reports only cases where the code changed and the sentence did not.
 
@@ -59,13 +59,13 @@ A name lookup is not enough. `getUser` can still exist while its return type, re
 ## How it works
 
 ```text
-markdown ──> anchors ──┐
+docs ─────> anchors ──┐
                        ├──> resolve ──> diff(lock, code, docs) ──> findings
 code ──────> symbols ──┘
 ```
 
 1. Extract exported symbols from source.
-2. Parse markdown and collect inline code, headings, tables, fenced code, signature fences, and explicit references.
+2. Parse markdown and reStructuredText, then collect inline code, headings, tables, fenced code, signature fences, and explicit references.
 3. Resolve tokens with import, qualified-name, alias, arity, and API-context evidence.
 4. Store confirmed bindings with the shape the doc last asserted.
 5. Compare current code with the stored shape on later runs.
@@ -117,7 +117,7 @@ Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or genera
 
 The tool errs toward silence. A wrong finding costs more trust than a missed one.
 
-- Binding needs a confidence score of at least 0.70.
+- Binding needs a confidence score of at least 0.60. The measured threshold sweep is in [docs/precision.md](docs/precision.md).
 - Ambiguous symbols never fail CI.
 - Prose words, URLs, paths, versions, flags, globs, and regexes are vetoed before scoring.
 - Historical context cues such as "removed", "renamed", and "migration" withdraw a claim.
@@ -130,7 +130,7 @@ The full design is in [docs/architecture.md](docs/architecture.md).
 
 `docbind` checks symbol contracts, not prose claims. A doc sentence that names `getUser` binds the symbol. The tool verifies that the symbol still exists and that its parameters and return type still match. It does not check what the sentence says about them: a line claiming `getUser` returns `Email` passes while the signature returns `string`.
 
-Markdown is the only input format. `docbind` reads inline code, headings, tables, fenced code, signature fences, and explicit references from markdown files. Docstrings, reStructuredText, AsciiDoc, and Javadoc are not read.
+Markdown and reStructuredText are the supported input formats. `docbind` reads inline code, headings, tables, fenced code, signature fences, and explicit references, plus RST literals, roles, and `code-block` directives. Docstrings, AsciiDoc, and Javadoc are not read.
 
 It does not execute anything. Examples are parsed, never run. Example-output drift, such as a printed value that no longer matches the code, is invisible.
 
@@ -200,11 +200,12 @@ The repository also ships a composite action in [`action/action.yml`](action/act
     "L4-renamed": "error",
     "S1-deprecated": "off"
   },
-  "maxFindings": 200
+  "maxFindings": 200,
+  "minConfidence": 0.6
 }
 ```
 
-Thresholds and scoring weights are fixed in the engine. Per-repo tuning would make precision claims meaningless.
+The confidence floor is `minConfidence`, default `0.6`. The weights behind it and the measured threshold sweep are in [docs/precision.md](docs/precision.md). Raising the floor trades bind rate for margin; lowering it does not add bindings on the published fixtures.
 
 ## Corpus
 
@@ -215,7 +216,9 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and six local fixtures produce zero baseline findings, zero doc-edit findings, and 64 of 64 seeded mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and seven local fixtures produce zero baseline findings, zero doc-edit findings, and 67 of 67 seeded mutation hits with no collateral findings. Bind rates are published per case in [docs/corpus.md](docs/corpus.md).
+
+Local fixtures run in CI with `npm run corpus:fixtures`, which fails on baseline findings, doc-edit noise, missed mutations, or collateral findings. External repositories stay manual because they need network access.
 
 ## Development
 
@@ -241,24 +244,24 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.41 tree:
+Measured on the 0.1.42 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 327 passing |
-| Statements | 98.70% |
-| Branches | 95.1% |
-| Functions | 99.55% |
-| Lines | 99.38% |
-| Changed-line coverage, feature diff | 99.88% |
-| Structure gate | 73 of 73 checks |
+| Tests | 332 passing |
+| Statements | 98.67% |
+| Branches | 95.07% |
+| Functions | 99.56% |
+| Lines | 99.42% |
+| Changed-line coverage, feature diff | 99.43% |
+| Structure gate | 81 of 81 checks |
 | Docs build | `mkdocs build --strict` passes |
 
-These are repository gates, not benchmark claims. They will change as the code changes.
+These are repository gates, not benchmark claims. They will change as the code changes. Runtime measurements are in [docs/performance.md](docs/performance.md).
 
 ## Prior art
 
-Tan, Wagner, and Treude published a detector for outdated code element references in 2022. It targets references that survive after source definitions disappear. `docbind` adds contract shapes, rename inference, a binding lock, and CI-grade precision for handwritten markdown.
+Tan, Wagner, and Treude published a detector for outdated code element references in 2022. It targets references that survive after source definitions disappear. `docbind` adds contract shapes, rename inference, a binding lock, and CI-grade precision for handwritten docs.
 
 See [docs/prior-art.md](docs/prior-art.md) for the honest comparison.
 

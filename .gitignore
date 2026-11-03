@@ -7,3 +7,5 @@ dist/
 PLAN.md
 .opencode/plan/
 .corpus/
+
+corpus/precision-*.json

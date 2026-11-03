@@ -36,7 +36,7 @@ export function explain(root: string, config: Config, target: ExplainTarget): st
   const index = buildIndex(surface.symbols);
   const base = parseToken(anchor.token).base;
   const repeated = parsed.anchors.filter((candidate) => parseToken(candidate.token).base === base).length > 1;
-  const resolved = resolveAnchor(anchor, index, { repeated });
+  const resolved = resolveAnchor(anchor, index, { repeated, threshold: config.minConfidence });
   const lock = readLock(root);
   const locked = lock.anchors.find((entry) => anchorKey(entry) === anchorKey(anchor));
   const lines = [

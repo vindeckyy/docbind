@@ -122,7 +122,7 @@ describe("vetoes", () => {
       shape: { kind: "property", typeShape: "string" },
       id: "prop",
     })]);
-    expect(scoreCandidates(anchor("VERSION", { docPath: "docs/api.md" }), property).reason).toBe("unbound");
+    expect(scoreCandidates(anchor("VERSION", { docPath: "docs/api.md" }), property, { threshold: 0.7 }).reason).toBe("unbound");
   });
 
   it("covers remaining veto edges", () => {

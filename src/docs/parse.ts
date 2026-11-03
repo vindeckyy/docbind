@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Content, Heading, Root, Table, TableRow } from "mdast";
+import type { Code, Content, Heading, Root, Table, TableRow } from "mdast";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { gfmFromMarkdown } from "mdast-util-gfm";
 import { gfm } from "micromark-extension-gfm";
@@ -199,12 +199,120 @@ export interface DocParseResult {
   parseFailures: number;
 }
 
+const RST_ROLE_RE = /:(?:func|class|meth|attr|mod|data|exc|obj):`([^`\n]+)`/gu;
+const RST_LITERAL_RE = /``([^`\n]+)``/gu;
+const RST_DIRECTIVE_RE = /^\s*\.\.\s+(?:code-block|sourcecode)::\s*(\S*)\s*$/u;
+
+function parseRstDoc(
+  docPath: string,
+  text: string,
+  pythonHints?: PythonTypeHints,
+  goHints?: GoTypeHints,
+): DocParseResult {
+  const lines = text.split(/\r?\n/u);
+  const anchors: DocAnchor[] = [];
+  const blockLines = new Set<number>();
+  let heading = "";
+  let index = 0;
+  while (index < lines.length) {
+    const line = lines[index] as string;
+    const underline = lines[index + 1] ?? "";
+    if (line.trim().length > 0 && /^[=\-~^"'`#*+]{3,}\s*$/u.test(underline)) {
+      heading = line.trim();
+      index += 2;
+      continue;
+    }
+    const directive = RST_DIRECTIVE_RE.exec(line);
+    if (directive?.[1]) {
+      let cursor = index + 1;
+      while (cursor < lines.length && /^\s*:.*:\s*$/u.test((lines[cursor] as string).trim())) cursor += 1;
+      while (cursor < lines.length && (lines[cursor] as string).trim().length === 0) cursor += 1;
+      const start = cursor;
+      while (cursor < lines.length) {
+        const candidate = lines[cursor] as string;
+        if (candidate.trim().length > 0 && !/^\s/u.test(candidate)) break;
+        cursor += 1;
+      }
+      while (cursor > start && (lines[cursor - 1] as string).trim().length === 0) cursor -= 1;
+      const indent = Math.min(
+        ...lines.slice(start, cursor).filter((value) => value.trim().length > 0).map((value) => value.length - value.trimStart().length),
+      );
+      const value = lines
+        .slice(start, cursor)
+        .map((value) => value.slice(Number.isFinite(indent) ? indent : 0))
+        .join("\n");
+      for (let lineIndex = start; lineIndex < cursor; lineIndex += 1) blockLines.add(lineIndex);
+      if (isSupportedFence(directive[1]) && value.trim().length > 0) {
+        const node = {
+          type: "code",
+          lang: directive[1],
+          value,
+          position: {
+            start: { line: start + 1, column: 1, offset: 0 },
+            end: { line: cursor + 1, column: 1, offset: 0 },
+          },
+        } as Code;
+        const result = fenceAnchors(node, docPath, heading, pythonHints, goHints);
+        anchors.push(...result.anchors);
+      }
+      index = cursor;
+      continue;
+    }
+    index += 1;
+  }
+
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    if (blockLines.has(lineIndex)) continue;
+    const line = lines[lineIndex] as string;
+    if (line.trim().length > 0 && /^[=\-~^"'`#*+]{3,}\s*$/u.test(lines[lineIndex + 1] ?? "")) {
+      heading = line.trim();
+      continue;
+    }
+    const addInline = (token: string, column: number, surface: DocAnchor["surface"]): void => {
+      const target = token.trim().replace(/^~/u, "");
+      if (target.length === 0) return;
+      anchors.push({
+        docPath,
+        line: lineIndex + 1,
+        column,
+        length: target.length,
+        token: target,
+        occurrence: 0,
+        surface,
+        contextFp: contextFingerprint([heading, line], target),
+        importTable: {},
+        localDecls: [],
+        fragment: false,
+      });
+    };
+    for (const match of line.matchAll(RST_LITERAL_RE)) {
+      /* v8 ignore next */
+      if (match.index === undefined) continue;
+      addInline(match[1] as string, match.index + 3, "inlineCode");
+    }
+    for (const match of line.matchAll(RST_ROLE_RE)) {
+      /* v8 ignore next */
+      if (match.index === undefined) continue;
+      addInline(match[1] as string, match.index + 1, "explicitRef");
+    }
+  }
+
+  const kept = anchors.filter((anchor) => {
+    const window = lines.slice(Math.max(0, anchor.line - 4), anchor.line + 3).join(" ");
+    return !hasNegativeCue(window);
+  });
+  return { anchors: assignOccurrences(kept), parseFailures: 0 };
+}
+
 export function parseDoc(
   docPath: string,
   text: string,
   pythonHints?: PythonTypeHints,
   goHints?: GoTypeHints,
 ): DocParseResult {
+  if (docPath.toLowerCase().endsWith(".rst")) {
+    return parseRstDoc(docPath, text, pythonHints, goHints);
+  }
   let root: Root;
   try {
     root = fromMarkdown(text, {

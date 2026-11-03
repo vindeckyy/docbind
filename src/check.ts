@@ -245,6 +245,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
           const candidate = sameLine[0][1];
           const resolved = resolveAnchor(candidate, index, {
             repeated: repeated.has(parseToken(candidate.token).base),
+            threshold: config.minConfidence,
           });
           if (!resolved.binding) {
             matchedKey = sameLine[0][0] as string;
@@ -294,7 +295,10 @@ export function checkProject(root: string, config: Config, options: CheckProject
   for (const anchor of byKey.values()) {
     const base = parseToken(anchor.token).base;
     if (anchor.surface === "explicitRef") {
-      const resolved = resolveAnchor(anchor, index, { repeated: repeated.has(base) });
+      const resolved = resolveAnchor(anchor, index, {
+        repeated: repeated.has(base),
+        threshold: config.minConfidence,
+      });
       if (resolved.binding) {
         pending.push(resolved.binding);
         referenced.add(resolved.binding.symbol.id);
@@ -350,7 +354,10 @@ export function checkProject(root: string, config: Config, options: CheckProject
       continue;
     }
 
-    const resolved = resolveAnchor(anchor, index, { repeated: repeated.has(base) });
+    const resolved = resolveAnchor(anchor, index, {
+      repeated: repeated.has(base),
+      threshold: config.minConfidence,
+    });
     if (!resolved.binding) continue;
     if (anchor.surface === "signatureFence") {
       const signature = signatureFinding(anchor, resolved.binding.symbol, config);

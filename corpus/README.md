@@ -1,6 +1,6 @@
 # Corpus harness
 
-`corpus/repos.json` pins real repositories at exact commits and one local macro fixture. The harness downloads a source tarball, writes a temporary `docbind.json`, runs `lock`, then measures:
+`corpus/repos.json` pins five real repositories at exact commits and seven local fixtures. The harness downloads a source tarball, writes a temporary `docbind.json`, runs `lock`, then measures:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -23,4 +23,21 @@ npm run corpus -- --refresh
 
 Checkouts live in `.corpus/`, which is ignored. `corpus/report.json` is the latest measured snapshot.
 
-The corpus is not part of CI. It needs network access and parses full external repositories.
+Run the network-free fixtures with a strict gate:
+
+```sh
+npm run corpus:fixtures
+```
+
+CI runs that subset on every push. It fails on baseline findings, doc-edit noise, missed mutations, or collateral findings. External repositories stay manual because they need network access.
+
+Flags:
+
+- `--local-only` skips repositories that need a download.
+- `--only a,b` limits the run to named entries.
+- `--threshold 0.6` overrides the binding floor for the run.
+- `--out path` writes the report somewhere other than `corpus/report.json`.
+- `--strict` exits nonzero on any regression metric.
+- `--refresh` re-downloads or re-copies every checkout.
+
+`npm run thresholds` sweeps binding floors over the local fixtures and writes `corpus/precision.json`. The results are published in [docs/precision.md](../docs/precision.md).
