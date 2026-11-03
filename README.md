@@ -204,7 +204,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Four pinned repositories produce zero baseline findings and 5 of 5 mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+The latest snapshot is in [corpus/report.json](corpus/report.json). Four pinned repositories produce zero baseline findings and 8 of 8 mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
 
 ## Development
 
@@ -234,9 +234,9 @@ Measured on the 0.1.1 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 231 passing |
+| Tests | 233 passing |
 | Statements | 98.97% |
-| Branches | 95.01% |
+| Branches | 95.05% |
 | Functions | 99.7% |
 | Lines | 99.68% |
 | Changed-line coverage, feature diff | 99.88% |

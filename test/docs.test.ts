@@ -80,6 +80,15 @@ describe("markdown parsing", () => {
     expect(result.anchors[0].importTable.getUser).toEqual({ source: "./users", imported: "getUser" });
   });
 
+  it("keeps qualified chains in rust and go fences", () => {
+    const rust = parseDoc("docs/api.md", "```rust\nlet user = User::new(id);\n```\n");
+    expect(rust.anchors.map((anchor) => anchor.token)).toEqual(expect.arrayContaining(["User.new"]));
+    const go = parseDoc("docs/api.md", "```go\nviper.SetConfigName(\"config\")\n```\n");
+    expect(go.anchors.map((anchor) => anchor.token)).toEqual(expect.arrayContaining(["viper.SetConfigName"]));
+    const broken = parseDoc("docs/api.md", "```rust\nlet user = User::;\n```\n");
+    expect(broken.anchors.map((anchor) => anchor.token)).toContain("User");
+  });
+
   it("parses python fences", () => {
     const text = "```python\nfrom users import get_user as fetch_user\nresult = fetch_user(1)\n```\n";
     const result = parseDoc("docs/api.md", text);

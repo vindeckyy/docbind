@@ -359,8 +359,20 @@ function lexFenceAnchors(
 
   const anchors: DocAnchor[] = [];
   const seen = new Set<string>();
-  for (const token of lexed.tokens) {
+  for (let index = 0; index < lexed.tokens.length; index += 1) {
+    const token = lexed.tokens[index];
     if (token.value.length < 2 || !/^[A-Za-z_]/u.test(token.value)) continue;
+    let chain = token.value;
+    let chainEnd = index;
+    while (
+      lexed.tokens[chainEnd + 1]?.value === "." ||
+      (language === "rust" && lexed.tokens[chainEnd + 1]?.value === "::")
+    ) {
+      const next = lexed.tokens[chainEnd + 2];
+      if (!next || !/^[A-Za-z_]/u.test(next.value)) break;
+      chain += `.${next.value}`;
+      chainEnd += 2;
+    }
     if (locals.has(token.value) || seen.has(`${token.start}`)) continue;
     const position = lexed.masked.slice(0, token.start).split("\n").length - 1;
     const column = token.start - lexed.masked.lastIndexOf("\n", token.start - 1);
@@ -368,7 +380,7 @@ function lexFenceAnchors(
     anchors.push(
       makeAnchor(
         docPath,
-        token.value,
+        chain,
         startLine + 1 + position,
         column,
         "fenceToken",
@@ -379,6 +391,7 @@ function lexFenceAnchors(
         node.lang ?? undefined,
       ),
     );
+    index = chainEnd;
   }
   return { anchors, imports };
 }

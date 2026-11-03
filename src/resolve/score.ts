@@ -121,10 +121,14 @@ export function buildIndex(symbols: Symbol[]): SymbolIndex {
     for (const name of new Set([symbol.name, ...symbol.aliases])) {
       const target = name.includes(".") || name.includes("::") || name.includes("#") ? byQualified : byName;
       pushUnique(target, name, symbol);
+      if (name.includes("::")) pushUnique(byQualified, name.replace(/::/gu, "."), symbol);
+      if (name.includes(".")) pushUnique(byQualified, name.replace(/\./gu, "::"), symbol);
     }
     for (const qualified of new Set([symbol.qualifiedName, ...symbol.aliases])) {
       if (!qualified.includes(".") && !qualified.includes("::") && !qualified.includes("#")) continue;
       pushUnique(byQualified, qualified, symbol);
+      if (qualified.includes("::")) pushUnique(byQualified, qualified.replace(/::/gu, "."), symbol);
+      if (qualified.includes(".")) pushUnique(byQualified, qualified.replace(/\./gu, "::"), symbol);
     }
   }
   return { byId, byName, byQualified };

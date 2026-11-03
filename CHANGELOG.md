@@ -15,6 +15,10 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 - Python property getter and setter pairs no longer produce duplicate class members.
 - Removing a type annotation from a documented symbol is now a breaking change instead of a silent pass.
 
+### Improved
+
+- Rust and Go fenced code keeps qualified chains such as `viper.SetConfigName` and `User::new` instead of splitting them into unrelated identifiers. The viper corpus bind rate rose from 0 to 53 anchors.
+
 ## [0.1.1] - 2026-11-03
 
 ### Added

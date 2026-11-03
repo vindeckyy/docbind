@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T16:39:32.786Z",
+  "generatedAt": "2026-11-03T16:42:38.531Z",
   "report": [
     {
       "name": "slugify",
@@ -44,7 +44,7 @@
       "repo": "dtolnay/anyhow",
       "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
       "docs": 1,
-      "anchors": 90,
+      "anchors": 79,
       "bound": 0,
       "bindRate": 0,
       "baselineFindings": 0,
@@ -59,13 +59,47 @@
       "repo": "spf13/viper",
       "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
       "docs": 2,
-      "anchors": 382,
-      "bound": 0,
-      "bindRate": 0,
+      "anchors": 293,
+      "bound": 53,
+      "bindRate": 0.18088737201365188,
       "baselineFindings": 0,
       "baselineRules": [],
-      "mutations": [],
-      "hits": 0,
+      "mutations": [
+        {
+          "symbol": "ReadInConfig",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "AddConfigPath",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "SetConfigType",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 3,
       "misses": 0,
       "collateral": 0
     },

@@ -385,6 +385,18 @@ describe("check pipeline", () => {
     expect(checkProject(root, config).findings).toEqual([]);
   });
 
+  it("binds qualified package chains in Go docs", () => {
+    const root = tempProject({
+      "go.mod": "module example.com/app\n",
+      "pkg/viper.go": "package viper\nfunc SetConfigName(name string) {}\n",
+      "docs/api.md": "Call `viper.SetConfigName(name)`.\n",
+    });
+    const goConfig = parseConfig({ languages: { go: true } });
+    const result = checkProject(root, goConfig);
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.name).toBe("SetConfigName");
+  });
+
   it("binds TypeScript namespace re-exports", () => {
     const root = tempProject({
       "package.json": JSON.stringify({ name: "app" }),

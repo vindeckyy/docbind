@@ -12,8 +12,8 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | Repository | Language | Docs | Anchors | Bound | Baseline findings | Mutations | Hits | Misses | Collateral |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
-| dtolnay/anyhow | Rust | 1 | 90 | 0 | 0 | 0 | 0 | 0 | 0 |
-| spf13/viper | Go | 2 | 382 | 0 | 0 | 0 | 0 | 0 | 0 |
+| dtolnay/anyhow | Rust | 1 | 79 | 0 | 0 | 0 | 0 | 0 | 0 |
+| spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
 | encode/httpx | Python | 23 | 2541 | 34 | 0 | 3 | 3 | 0 | 0 |
 
 ## What the corpus found
@@ -25,9 +25,13 @@ The first run produced two false positives on unchanged code.
 
 The same run also found a missed mutation. Removing the typed declaration for `slugifyWithCounter` was treated as compatible because a value with no type is not a value that contradicts a type. The compatibility lattice now treats type erasure as breaking.
 
+## Bind-rate improvement
+
+The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`, and the fence parser was splitting it into `viper` and `SetConfigName`. Capturing qualified chains raised viper to 53 bound anchors and exposed three mutations, all detected.
+
 ## Limits
 
-- anyhow and viper have no bound anchors in these snapshots. Their docs use macros and ambiguous package and method names, so the confidence floor stays silent.
+- anyhow has no bound anchors in this snapshot. Its README is built around macros and types without a unique exported name. Their docs use macros and ambiguous package and method names, so the confidence floor stays silent.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
 - The corpus uses four repositories. It is evidence, not a benchmark.
 

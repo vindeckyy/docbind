@@ -164,6 +164,9 @@ describe("indexing and scoring", () => {
     expect(index.byName.get("getUser")).toHaveLength(1);
     expect(index.byName.get("fetchUser")).toHaveLength(1);
     expect(index.byQualified.get("users.fetchUser")).toHaveLength(1);
+    const scoped = buildIndex([symbol("getUser", { aliases: ["users::fetchUser"] })]);
+    expect(scoped.byQualified.get("users::fetchUser")).toHaveLength(1);
+    expect(scoped.byQualified.get("users.fetchUser")).toHaveLength(1);
   });
 
   it("binds a unique call in an API doc", () => {
