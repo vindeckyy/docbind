@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.27] - 2026-11-03
+
+### Added
+
+- Go fence function parameters infer their types from the signature, including grouped parameters such as `v, w *Viper`.
+- Local Go fixture covers a typed-parameter method with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 18 to 20 bound anchors and from 15 to 16 detected mutations.
+- Corpus now detects 45 of 45 seeded mutations with zero collateral findings.
+- Viper anchors fell from 196 to 194 while keeping 94 bound symbols.
+
+### Limits
+
+- Go fence inference does not type externally supplied values.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.26] - 2026-11-03
 
 ### Added
@@ -503,3 +521,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.24]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.24
 [0.1.25]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.25
 [0.1.26]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.26
+[0.1.27]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.27

@@ -10,4 +10,6 @@ func (v *Viper) Swap(key string) any { return nil }
 
 func (v *Viper) Copied(key string) any { return nil }
 
+func (v *Viper) Param(key string) any { return nil }
+
 func New() *Viper { return &Viper{} }

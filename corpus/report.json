@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:26:27.703Z",
+  "generatedAt": "2026-11-03T19:32:02.637Z",
   "report": [
     {
       "name": "slugify",
@@ -97,9 +97,9 @@
       "repo": "spf13/viper",
       "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
       "docs": 2,
-      "anchors": 196,
+      "anchors": 194,
       "bound": 94,
-      "bindRate": 0.47959183673469385,
+      "bindRate": 0.4845360824742268,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -429,8 +429,8 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 18,
-      "bound": 18,
+      "anchors": 20,
+      "bound": 20,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -452,7 +452,7 @@
           "symbol": "Viper",
           "rule": "L1-broken",
           "hit": true,
-          "findings": 3,
+          "findings": 4,
           "relatedRules": [
             "L1-broken",
             "L4-renamed"
@@ -571,6 +571,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "Param",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Wrapped",
           "rule": "L4-renamed",
           "hit": true,
@@ -604,7 +615,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 15,
+      "hits": 16,
       "misses": 0,
       "collateral": 0
     },

@@ -400,6 +400,39 @@ function goAnnotationType(annotation: string): string | undefined {
   return names[names.length - 1];
 }
 
+function goFunctionParameters(value: string): Map<string, string> {
+  const result = new Map<string, string>();
+  for (const match of value.matchAll(/\bfunc\s+(?:\([^)]*\)\s*)?[A-Za-z_]\w*\s*\(([\s\S]*?)\)/gu)) {
+    const parts: string[] = [];
+    let depth = 0;
+    let start = 0;
+    const source = match[1] as string;
+    for (let index = 0; index < source.length; index += 1) {
+      const char = source[index];
+      if (char === "(" || char === "[" || char === "{") depth += 1;
+      else if (char === ")" || char === "]" || char === "}") depth = Math.max(0, depth - 1);
+      else if (char === "," && depth === 0) {
+        parts.push(source.slice(start, index));
+        start = index + 1;
+      }
+    }
+    if (start < source.length) parts.push(source.slice(start));
+    let current: string | undefined;
+    for (let index = parts.length - 1; index >= 0; index -= 1) {
+      const part = (parts[index] as string).trim();
+      const named = /^([A-Za-z_]\w*)\s+(.+)$/u.exec(part);
+      if (named) {
+        current = goAnnotationType(named[2] as string);
+        if (current) result.set(named[1] as string, current);
+        continue;
+      }
+      const bare = /^([A-Za-z_]\w*)$/u.exec(part);
+      if (bare && current) result.set(bare[1] as string, current);
+    }
+  }
+  return result;
+}
+
 function lexFenceAnchors(
   node: Code,
   docPath: string,
@@ -411,6 +444,7 @@ function lexFenceAnchors(
   const lexed = lex(value, language);
   const imports: Record<string, ImportRef> = {};
   const locals = new Set<string>();
+  const parameters = language === "go" ? goFunctionParameters(value) : new Map<string, string>();
   for (const line of value.split("\n")) {
     if (language === "rust") {
       const use = /^\s*use\s+([\w:]+)(?:\s+as\s+(\w+))?;/u.exec(line);
@@ -432,7 +466,8 @@ function lexFenceAnchors(
       if (short?.[1]) locals.add(short[1]);
     }
   }
-  const localTypes = new Map<string, string>();
+  for (const name of parameters.keys()) locals.add(name);
+  const localTypes = new Map<string, string>(parameters);
   const inferGoValue = (expression: string): string | undefined => {
     const alias = /^([A-Za-z_]\w*)$/u.exec(expression.trim());
     if (alias?.[1]) return localTypes.get(alias[1]);

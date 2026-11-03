@@ -185,6 +185,25 @@ describe("Go fence inference", () => {
     expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(8);
   });
 
+  it("types function parameters from their signatures", () => {
+    const result = fenceAnchors(
+      { ...code("func f(v *Viper) {\n    v.Get(\"key\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Viper.Get");
+  });
+
+  it("handles grouped and nested parameter types", () => {
+    const result = fenceAnchors(
+      { ...code("func grouped(v, w *Viper, lookup map[string]int) {\n    v.Get(\"a\")\n    w.Get(\"b\")\n}\n"), lang: "go" } as unknown as Code,
+      "docs/api.md",
+      "API",
+    );
+    const tokens = result.anchors.map((anchor) => anchor.token);
+    expect(tokens.filter((token) => token === "Viper.Get")).toHaveLength(2);
+  });
+
   it("drops conflicting Go constructor return types", () => {
     const viper = symbol("Viper", {
       id: "viper", kind: "class", packageName: "viper",

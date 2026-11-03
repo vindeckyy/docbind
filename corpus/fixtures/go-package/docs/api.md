@@ -28,3 +28,9 @@ var s *Viper
 s = viper.New()
 s.Swap("key")
 ```
+
+```go
+func f(v *Viper) {
+    v.Param("key")
+}
+```
