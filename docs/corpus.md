@@ -5,7 +5,7 @@
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
 - doc-edit noise: append a word to an anchored doc line, with code unchanged
-- mutation recall: rename a bound symbol, edit a typed literal, edit a named annotation argument, or edit an enum constant argument; token-located modes find the target through the Java token stream rather than the annotation text
+- mutation recall: rename a bound symbol, edit a named annotation argument, edit an annotation array element by value or index, or edit an enum constant argument; every Java edit finds its target through the token stream
 - collateral findings: findings for unrelated symbols during each mutation
 
 Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/main/corpus/report.json)
@@ -51,7 +51,7 @@ httpx rose from 379 to 417 bound anchors with zero baseline findings. Predeclare
 
 ## Javadoc
 
-Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 20 of 20 anchors with 22 of 22 mutations, including token-located edits to an enum constant argument, a named annotation argument, and an annotation array element, plus a raw value edit, each required to produce `L3-reshaped`. Java enums keep constant constructor arguments, typed constant argument values, and members declared in constant bodies.
+Javadoc scanning is opt-in with `"javadoc": true`. Java files are extracted for public classes, interfaces, methods, and fields, and Javadoc comments contribute anchors for `{@link}`, `{@code}`, and backtick literals. Relative links such as `{@link #get()}` qualify with the enclosing type, and parameter lists with spaces are stripped before resolution. The local `java-javadoc-fixture` includes public nested types with duplicate names and annotated members including private and package-private types, and binds 20 of 20 anchors with 22 of 22 mutations, including token-located edits to an enum constant argument, a named annotation argument, and two annotation array elements selected by value and by index, each required to produce `L3-reshaped`. Java enums keep constant constructor arguments, typed constant argument values, and members declared in constant bodies.
 
 ## AsciiDoc
 

@@ -37,8 +37,9 @@ interface CorpusEntry {
   annotationMutations?: Array<{
     file: string;
     annotation: string;
-    from: string;
+    from?: string;
     to: string;
+    element?: number;
     symbol: string;
     expectedRule?: string;
   }>;
@@ -205,30 +206,56 @@ function replaceStringInParens(
   tokens: JavaToken[],
   open: number,
   label: string,
-  from: string,
+  from: string | undefined,
   to: string,
+  element?: number,
 ): string {
   const close = findMatching(tokens, open, "(", ")");
   if (close < 0) throw new Error(`unclosed arguments: ${label}`);
   const bodyStart = tokens[open]?.end as number;
   const bodyEnd = tokens[close]?.start as number;
   const body = source.slice(bodyStart, bodyEnd);
-  const matches = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)]
-    .map((match) => ({ text: match[0], index: match.index as number }))
-    .filter((match) => {
+  const literals = [...body.matchAll(/"(?:\\\\.|[^"\\\\])*"/gu)].map((match) => ({
+    text: match[0],
+    index: match.index as number,
+  }));
+  let match: { text: string; index: number } | undefined;
+  if (element !== undefined) {
+    match = literals[element];
+    if (!match) throw new Error(`${label} has no string element ${element}`);
+    if (from !== undefined) {
+      let value: unknown;
       try {
-        return JSON.parse(match.text) === from;
+        value = JSON.parse(match.text);
+      } catch {
+        value = undefined;
+      }
+      if (value !== from) {
+        throw new Error(`${label} element ${element} is ${match.text}, expected ${JSON.stringify(from)}`);
+      }
+    }
+  } else {
+    const matches = literals.filter((literal) => {
+      try {
+        return JSON.parse(literal.text) === from;
       } catch {
         return false;
       }
     });
-  if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in ${label}, found ${matches.length}`);
-  const match = matches[0] as { text: string; index: number };
+    if (matches.length !== 1) throw new Error(`expected one ${JSON.stringify(from)} in ${label}, found ${matches.length}`);
+    match = matches[0];
+  }
   const start = bodyStart + match.index;
   return `${source.slice(0, start)}${JSON.stringify(to)}${source.slice(start + match.text.length)}`;
 }
 
-function replaceAnnotationString(source: string, annotation: string, from: string, to: string): string {
+function replaceAnnotationString(
+  source: string,
+  annotation: string,
+  from: string | undefined,
+  to: string,
+  element?: number,
+): string {
   const tokens = lex(source, "java").tokens;
   let open = -1;
   for (let index = 0; index < tokens.length - 1; index += 1) {
@@ -240,7 +267,7 @@ function replaceAnnotationString(source: string, annotation: string, from: strin
     }
   }
   if (open < 0) throw new Error(`annotation not found: @${annotation}`);
-  return replaceStringInParens(source, tokens, open, `@${annotation}`, from, to);
+  return replaceStringInParens(source, tokens, open, `@${annotation}`, from, to, element);
 }
 
 function replaceEnumArgumentString(source: string, constant: string, from: string, to: string): string {
@@ -423,7 +450,13 @@ for (const entry of selected) {
     const original = readFileSync(path, "utf8");
     writeFileSync(
       path,
-      replaceAnnotationString(original, annotationMutation.annotation, annotationMutation.from, annotationMutation.to),
+      replaceAnnotationString(
+        original,
+        annotationMutation.annotation,
+        annotationMutation.from,
+        annotationMutation.to,
+        annotationMutation.element,
+      ),
     );
     try {
       const findings = findingsFor(checkout, config);

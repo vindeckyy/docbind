@@ -279,15 +279,6 @@
     },
     "javadoc": true,
     "mutations": 20,
-    "valueMutations": [
-      {
-        "file": "src/main/java/example/Client.java",
-        "find": "@Routes({\"/a\", \"/b\"})",
-        "replace": "@Routes({\"/a\", \"/c\"})",
-        "symbol": "routes",
-        "expectedRule": "L3-reshaped"
-      }
-    ],
     "annotationMutations": [
       {
         "file": "src/main/java/example/Client.java",
@@ -302,6 +293,15 @@
         "annotation": "Routes",
         "from": "/a",
         "to": "/z",
+        "symbol": "routes",
+        "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "annotation": "Routes",
+        "from": "/b",
+        "to": "/c",
+        "element": 1,
         "symbol": "routes",
         "expectedRule": "L3-reshaped"
       }

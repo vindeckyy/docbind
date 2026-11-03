@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.69] - 2026-11-03
+
+### Changed
+
+- Annotation mutations accept an `element` index, so `@Routes` array elements are selected by position instead of by unique string value.
+- The last raw value mutation is gone; every Java fixture edit now locates its target through the token stream.
+- Mutation count stays 96: 20 renames and 4 token-located edits for the Java fixture.
+
+### Limits
+
+- Index selection still requires a unique annotation name and a string literal at that position.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.68] - 2026-11-03
 
 ### Changed
@@ -1223,3 +1236,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.66]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.66
 [0.1.67]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.67
 [0.1.68]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.68
+[0.1.69]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.69

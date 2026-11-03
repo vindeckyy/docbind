@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T23:10:56.622Z",
+  "generatedAt": "2026-11-03T23:14:01.920Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -950,8 +950,8 @@
           "collateralRules": []
         },
         {
-          "symbol": "routes",
-          "kind": "value",
+          "symbol": "command",
+          "kind": "annotation",
           "expectedRule": "L3-reshaped",
           "rule": "L3-reshaped",
           "hit": true,
@@ -963,7 +963,7 @@
           "collateralRules": []
         },
         {
-          "symbol": "command",
+          "symbol": "routes",
           "kind": "annotation",
           "expectedRule": "L3-reshaped",
           "rule": "L3-reshaped",
