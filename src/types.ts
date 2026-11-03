@@ -41,6 +41,16 @@ export interface EnumMemberShape {
   value: string;
 }
 
+export interface AnnotationArgument {
+  name?: string;
+  value: string;
+}
+
+export interface AnnotationShape {
+  name: string;
+  args?: AnnotationArgument[];
+}
+
 export interface Shape {
   kind: SymbolKind;
   async?: boolean;
@@ -57,6 +67,7 @@ export interface Shape {
   typeShape?: string;
   literalKind?: string;
   enumMembers?: EnumMemberShape[];
+  annotations?: AnnotationShape[];
   overload?: number;
 }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { join } from "node:path";
 import { extractJava } from "../src/surface/java.js";
 import { tempProject } from "./helpers.js";
 
@@ -168,6 +169,8 @@ describe("Java surface", () => {
         "@SuppressWarnings(\"unused\")",
         "@NoArgs",
         "@Empty()",
+        "@Named(value = \"x\", count = 2)",
+        "@Values({\"a,b\", \"c\"})",
         "public class Annotated {",
         "    @Deprecated",
         "    public void old() {}",
@@ -182,10 +185,30 @@ describe("Java surface", () => {
     expect(type?.contractFlags).toContain("annotation:Audited");
     expect(type?.contractFlags).toContain('annotation:SuppressWarnings("unused")');
     expect(type?.contractFlags).toContain("annotation:NoArgs");
+    const annotations = type?.shape.annotations ?? [];
+    expect(annotations.find((annotation) => annotation.name === "SuppressWarnings")?.args).toEqual([
+      { value: '"unused"' },
+    ]);
+    expect(annotations.find((annotation) => annotation.name === "Named")?.args).toEqual([
+      { name: "value", value: '"x"' },
+      { name: "count", value: "2" },
+    ]);
+    expect(annotations.find((annotation) => annotation.name === "Values")?.args).toEqual([
+      { value: '{"a,b", "c"}' },
+    ]);
     expect(type?.contractFlags).toContain("annotation:Empty");
     expect(result.symbols.find((symbol) => symbol.name === "old")?.contractFlags).toContain("deprecated");
     expect(result.javadocs?.some((entry) => entry.owner === undefined)).toBe(true);
     expect(() => extractJava(tempProject({ "src/Odd.java": "@123\npublic class Odd {}" }), ["src/Odd.java"])).not.toThrow();
+  });
+
+  it("exposes structured arguments on the corpus fixture", () => {
+    const root = join(process.cwd(), "corpus/fixtures/java-javadoc");
+    const result = extractJava(root, ["src/main/java/example/Client.java"]);
+    const helper = result.symbols.find((symbol) => symbol.name === "helper");
+    expect(helper?.shape.annotations).toEqual([
+      { name: "SuppressWarnings", args: [{ value: '"unused"' }] },
+    ]);
   });
 
   it("survives malformed files", () => {

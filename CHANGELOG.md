@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.55] - 2026-11-03
+
+### Added
+
+- Java shapes store structured annotation entries alongside contract flags.
+- Positional arguments become `{ value }`; named arguments become `{ name, value }`.
+- Commas inside strings or nested brackets do not split arguments.
+- `java-javadoc-fixture` adds a named-argument command method and detects 12 of 12 mutations.
+
+### Limits
+
+- Argument values stay as source text, including quotes; no type coercion.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.54] - 2026-11-03
 
 ### Added
@@ -1005,3 +1019,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.52]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.52
 [0.1.53]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.53
 [0.1.54]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.54
+[0.1.55]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.55

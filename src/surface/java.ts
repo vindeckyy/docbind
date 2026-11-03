@@ -10,7 +10,14 @@ import {
 import { findMatching } from "./syntax.js";
 import { lex, type LexResult, type Token } from "./lex.js";
 import type { DocstringEntry, ExtractResult } from "./protocol.js";
-import type { ContractFlag, ParamShape, Shape, Symbol } from "../types.js";
+import type {
+  AnnotationArgument,
+  AnnotationShape,
+  ContractFlag,
+  ParamShape,
+  Shape,
+  Symbol,
+} from "../types.js";
 
 interface JavaDraft {
   name: string;
@@ -38,6 +45,62 @@ interface JavaContext {
 interface JavaAnnotation {
   name: string;
   args?: string;
+}
+
+function annotationArguments(raw: string): AnnotationArgument[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let quote = "";
+  let start = 0;
+  for (let index = 0; index < raw.length; index += 1) {
+    const char = raw[index] as string;
+    if (quote) {
+      if (char === quote && raw[index - 1] !== "\\") quote = "";
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (["(", "[", "{"].includes(char)) depth += 1;
+    else if ([")", "]", "}"].includes(char)) depth = Math.max(0, depth - 1);
+    else if (char === "," && depth === 0) {
+      parts.push(raw.slice(start, index));
+      start = index + 1;
+    }
+  }
+  parts.push(raw.slice(start));
+  return parts
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      let nested = 0;
+      let stringQuote = "";
+      for (let index = 0; index < part.length; index += 1) {
+        const char = part[index] as string;
+        if (stringQuote) {
+          if (char === stringQuote && part[index - 1] !== "\\") stringQuote = "";
+          continue;
+        }
+        if (char === "\"" || char === "'") {
+          stringQuote = char;
+          continue;
+        }
+        if (["(", "[", "{"].includes(char)) nested += 1;
+        else if ([")", "]", "}"].includes(char)) nested = Math.max(0, nested - 1);
+        else if (char === "=" && nested === 0) {
+          return { name: part.slice(0, index).trim(), value: part.slice(index + 1).trim() };
+        }
+      }
+      return { value: part };
+    });
+}
+
+function javaAnnotations(annotations: JavaAnnotation[]): AnnotationShape[] {
+  return annotations.map((annotation) => ({
+    name: annotation.name.split(".").pop() as string,
+    ...(annotation.args ? { args: annotationArguments(annotation.args) } : {}),
+  }));
 }
 
 function javaFlags(annotations: JavaAnnotation[]): ContractFlag[] {
@@ -242,6 +305,7 @@ class JavaParser {
         members: [],
         flags: javaFlags(annotations),
         visibility,
+        ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
       },
       start: nameToken.start,
       body: tokensText(this.context.source, tokens, brace, close + 1),
@@ -381,6 +445,7 @@ class JavaParser {
           returnType,
           visibility,
           flags: javaFlags(annotations),
+          ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
         },
       });
     }
@@ -415,7 +480,13 @@ class JavaParser {
       parentPath: typePath,
       start: (tokens[nameIndex] as Token).start,
       body: "",
-      shape: { kind: "property", typeShape: type, visibility, flags: javaFlags(annotations) },
+      shape: {
+        kind: "property",
+        typeShape: type,
+        visibility,
+        flags: javaFlags(annotations),
+        ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
+      },
     });
   }
 }

@@ -19,6 +19,10 @@ public class Client {
     @SuppressWarnings("unused")
     public void helper() {}
 
+    /** Command: {@link #command()}. */
+    @Command(value = "run", retries = 2)
+    public void command() {}
+
     /** Legacy call: {@link #legacy()}. */
     @Deprecated
     public void legacy() {}
