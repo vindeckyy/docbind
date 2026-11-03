@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -14,6 +14,7 @@ interface CorpusEntry {
   name: string;
   repo: string;
   commit: string;
+  local?: string;
   docs: string[];
   exclude: string[];
   languages: Config["languages"];
@@ -77,6 +78,15 @@ async function materialize(entry: CorpusEntry): Promise<string> {
   }
   rmSync(target, { recursive: true, force: true });
   mkdirSync(target, { recursive: true });
+  if (entry.local) {
+    cpSync(join(root, entry.local), target, { recursive: true });
+    writeFileSync(
+      join(target, "docbind.json"),
+      `${JSON.stringify({ docs: entry.docs, exclude: entry.exclude, languages: entry.languages }, null, 2)}\n`,
+    );
+    writeFileSync(join(target, "corpus.ready"), entry.commit);
+    return target;
+  }
   const response = await fetch(`https://codeload.github.com/${entry.repo}/tar.gz/${entry.commit}`);
   if (!response.ok) throw new Error(`${entry.name}: download failed with ${response.status}`);
   const archive = join(mkdtempSync(join(tmpdir(), "docbind-corpus-")), "repo.tar.gz");

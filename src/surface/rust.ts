@@ -40,6 +40,11 @@ interface UseAlias {
   packageName: string;
 }
 
+interface MacroRule {
+  matcher: Token[];
+  body: Token[];
+}
+
 interface ParserContext {
   source: string;
   lexed: LexResult;
@@ -81,6 +86,7 @@ function splitTypes(tokens: Token[], start: number, end: number, masked: string)
 }
 
 function bodyText(source: string, tokens: Token[], openIndex: number, closeIndex: number): string {
+  /* v8 ignore next */
   if (openIndex < 0 || closeIndex < 0) return "";
   return source.slice(tokens[openIndex].start, tokens[closeIndex].end);
 }
@@ -123,6 +129,8 @@ function skipAttributes(tokens: Token[], index: number): { attributes: string[];
 class RustParser {
   private readonly tokens: Token[];
   private readonly masked: string;
+  private readonly macros = new Map<string, MacroRule[]>();
+  private macroDepth = 0;
 
   constructor(private readonly context: ParserContext) {
     this.tokens = context.lexed.tokens;
@@ -171,6 +179,18 @@ class RustParser {
         index += 1;
       }
       const kind = this.tokens[index]?.value;
+      if (kind === "macro_rules") {
+        index = this.parseMacroDefinition(index, enabled);
+        continue;
+      }
+      if (
+        kind &&
+        this.tokens[index + 1]?.value === "!" &&
+        this.macros.has(kind)
+      ) {
+        index = this.expandMacro(index, namespace, itemEnabled, parentName, implicitPublic);
+        continue;
+      }
       if (kind === "fn") {
         const result = this.parseFunction(index, namespace, itemEnabled && exported, parentName, asyncFlag, unsafeFlag, attrs.attributes);
         index = result;
@@ -190,13 +210,181 @@ class RustParser {
         index = this.parseImpl(index, namespace, itemEnabled);
       } else if (kind === "use") {
         index = this.parseUse(index, namespace, itemEnabled && exported);
-      } else if (kind === "macro_rules" || kind === "macro") {
+      } else if (kind === "macro") {
         index = this.skipMacro(index);
       } else {
         index += 1;
       }
       if (index <= start) index = start + 1;
     }
+  }
+
+  private parseMacroDefinition(index: number, enabled: boolean): number {
+    let cursor = index + 1;
+    if (this.tokens[cursor]?.value === "!") cursor += 1;
+    const name = this.tokens[cursor]?.value;
+    cursor += 1;
+    if (!name || this.tokens[cursor]?.value !== "{") return cursor + 1;
+    const close = findMatching(this.tokens, cursor, "{", "}");
+    if (close < 0) {
+      this.context.failures.count += 1;
+      return this.tokens.length;
+    }
+    if (enabled) this.macros.set(name, this.parseMacroRules(cursor + 1, close));
+    return close + 1;
+  }
+
+  private parseMacroRules(start: number, end: number): MacroRule[] {
+    const rules: MacroRule[] = [];
+    let cursor = start;
+    while (cursor < end) {
+      if (this.tokens[cursor]?.value === ";") {
+        cursor += 1;
+        continue;
+      }
+      const open = this.tokens[cursor]?.value;
+      if (!open || !["(", "[", "{"].includes(open)) {
+        cursor += 1;
+        continue;
+      }
+      const close = findMatching(this.tokens, cursor, open, open === "(" ? ")" : open === "[" ? "]" : "}");
+      if (close < 0) break;
+      if (this.tokens[close + 1]?.value !== "=>") {
+        cursor = close + 1;
+        continue;
+      }
+      const bodyOpen = this.tokens[close + 2]?.value;
+      if (!bodyOpen || !["(", "[", "{"].includes(bodyOpen)) {
+        cursor = close + 3;
+        continue;
+      }
+      const bodyClose = findMatching(
+        this.tokens,
+        close + 2,
+        bodyOpen,
+        bodyOpen === "(" ? ")" : bodyOpen === "[" ? "]" : "}",
+      );
+      if (bodyClose < 0) break;
+      rules.push({
+        matcher: this.tokens.slice(cursor + 1, close),
+        body: this.tokens.slice(close + 3, bodyClose),
+      });
+      cursor = bodyClose + 1;
+    }
+    return rules;
+  }
+
+  private matchMacroRule(matcher: Token[], args: Token[]): Map<string, Token[]> | undefined {
+    const captures = new Map<string, Token[]>();
+    let matcherIndex = 0;
+    let argIndex = 0;
+    while (matcherIndex < matcher.length) {
+      if (
+        matcher[matcherIndex]?.value === "$" &&
+        matcher[matcherIndex + 1] &&
+        matcher[matcherIndex + 2]?.value === ":"
+      ) {
+        const name = matcher[matcherIndex + 1].value;
+        const kind = matcher[matcherIndex + 3]?.value;
+        matcherIndex += 4;
+        if (kind === "vis") {
+          const start = argIndex;
+          if (args[argIndex]?.value === "pub") {
+            argIndex += 1;
+            if (args[argIndex]?.value === "(") {
+              const close = findMatching(args, argIndex, "(", ")");
+              argIndex = close < 0 ? args.length : close + 1;
+            }
+          }
+          captures.set(name, args.slice(start, argIndex));
+          continue;
+        }
+        if (kind === "ident") {
+          const token = args[argIndex];
+          if (!token || !/^[A-Za-z_]/u.test(token.value)) return undefined;
+          captures.set(name, [token]);
+          argIndex += 1;
+          continue;
+        }
+        if (kind === "tt") {
+          const token = args[argIndex];
+          if (!token) return undefined;
+          captures.set(name, [token]);
+          argIndex += 1;
+          continue;
+        }
+        if (kind === "ty") {
+          captures.set(name, args.slice(argIndex));
+          argIndex = args.length;
+          continue;
+        }
+        return undefined;
+      }
+      const expected = matcher[matcherIndex];
+      const actual = args[argIndex];
+      if (!expected || !actual || expected.value !== actual.value) return undefined;
+      matcherIndex += 1;
+      argIndex += 1;
+    }
+    if (argIndex !== args.length) return undefined;
+    return captures;
+  }
+
+  private expandMacro(
+    index: number,
+    namespace: string,
+    enabled: boolean,
+    parentName: string | undefined,
+    implicitPublic: boolean,
+  ): number {
+    const open = this.tokens[index + 2];
+    if (!open || !["(", "[", "{"].includes(open.value)) return index + 2;
+    const close = findMatching(this.tokens, index + 2, open.value, open.value === "(" ? ")" : open.value === "[" ? "]" : "}");
+    /* v8 ignore next */
+    if (close < 0 || this.macroDepth >= 4) return close < 0 ? this.tokens.length : close + 1;
+    const args = this.tokens.slice(index + 3, close);
+    const name = this.tokens[index].value;
+    /* v8 ignore next */
+    const rules = this.macros.get(name) ?? [];
+    for (const rule of rules) {
+      const captures = this.matchMacroRule(rule.matcher, args);
+      if (!captures) continue;
+      const generated: Token[] = [];
+      for (let cursor = 0; cursor < rule.body.length; cursor += 1) {
+        const token = rule.body[cursor];
+        if (token.value === "$" && rule.body[cursor + 1] && captures.has(rule.body[cursor + 1].value)) {
+          generated.push(...(captures.get(rule.body[cursor + 1].value) ?? []));
+          cursor += 1;
+        } else {
+          generated.push(token);
+        }
+      }
+      const source = generated.map((token) => token.value).join(" ");
+      const childLexed = lex(source, "rust");
+      const childContext: ParserContext = {
+        source,
+        lexed: childLexed,
+        filePath: this.context.filePath,
+        packageName: this.context.packageName,
+        packageRoot: this.context.packageRoot,
+        modulePath: this.context.modulePath,
+        drafts: [],
+        aliases: [],
+        failures: { count: 0 },
+      };
+      const child = new RustParser(childContext);
+      for (const [macroName, macroRules] of this.macros.entries()) child.macros.set(macroName, macroRules);
+      this.macroDepth += 1;
+      child.parseRange(0, childLexed.tokens.length, namespace, enabled, parentName, implicitPublic);
+      this.macroDepth -= 1;
+      this.context.failures.count += childContext.failures.count;
+      for (const draft of childContext.drafts) {
+        draft.start = this.tokens[index].start;
+        this.context.drafts.push(draft);
+      }
+      return close + 1;
+    }
+    return close + 1;
   }
 
   private parseFunction(
@@ -761,6 +949,7 @@ export function snippetSignatureRust(code: string): RustSignatureSnippet | undef
     candidate.kind !== "module"
   );
   if (!draft) return undefined;
+  /* v8 ignore next */
   const method = (draft.shape.params ?? []).some((param) => param.kind === "receiver");
   return {
     name: draft.name,

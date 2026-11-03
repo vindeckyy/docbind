@@ -69,6 +69,18 @@ pub struct Old;
 #[cfg(test)]
 pub fn test_only() {}
 macro_rules! noop { () => {}; }
+macro_rules! make_getter {
+    ($name:ident) => {
+        pub fn $name() -> u8 { 0 }
+    };
+}
+make_getter!(generated);
+macro_rules! make_public {
+    ($vis:vis fn $name:ident()) => {
+        $vis fn $name() -> u8 { 1 }
+    };
+}
+make_public!(pub fn generated_public());
 pub fn text(value: &str) -> &str { value }
 pub fn empty_generic<>() {}
 pub const fn const_fn() {}
@@ -147,6 +159,8 @@ describe("Rust surface edge cases", () => {
     expect(result.symbols.find((symbol) => symbol.name === "Z")).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "text")?.shape.returnType).toBe("&str");
     expect(result.symbols.find((symbol) => symbol.name === "empty_generic")?.shape.typeParams).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "generated")?.shape.returnType).toBe("u8");
+    expect(result.symbols.find((symbol) => symbol.name === "generated_public")?.shape.returnType).toBe("u8");
     expect(result.symbols.find((symbol) => symbol.name === "const_fn")?.shape.async).toBe(false);
     expect(result.symbols.find((symbol) => symbol.name === "lost")).toBeUndefined();
   });

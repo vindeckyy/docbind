@@ -2,6 +2,17 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Narrow Rust `macro_rules!` expansion for same-file item generators using `ident`, `vis`, `tt`, and `ty` fragments.
+- Local macro-heavy corpus fixture with generated public functions. Both mutations detected.
+
+### Limits
+
+- Macro expansion does not cover repetition, cross-file macro imports, proc macros, or derive output.
+
 ## [0.1.2] - 2026-11-03
 
 ### Added

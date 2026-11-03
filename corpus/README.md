@@ -1,11 +1,12 @@
 # Corpus harness
 
-`corpus/repos.json` pins real repositories at exact commits. The harness downloads a source tarball, writes a temporary `docbind.json`, runs `lock`, then measures:
+`corpus/repos.json` pins real repositories at exact commits and one local macro fixture. The harness downloads a source tarball, writes a temporary `docbind.json`, runs `lock`, then measures:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
 - doc-edit noise: append a word to an anchored doc line without changing code
 - mutation recall: rename one bound symbol in code, leave docs alone, count findings that mention the old name
+- macro fixture: same-file `macro_rules!` items, with two seeded mutations
 - collateral findings: findings for unrelated symbols during each mutation
 
 Run one repository:
