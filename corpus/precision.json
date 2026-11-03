@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T22:59:20.366Z",
+  "generatedAt": "2026-11-03T23:02:24.334Z",
   "scope": "local",
   "fixtures": "macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture,python-docstrings-fixture,python-asciidoc-fixture,java-javadoc-fixture",
   "rows": [
@@ -9,12 +9,12 @@
       "bound": 98,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 74,
+      "hits": 75,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.98989898989899,
-      "selections": 74,
+      "selections": 75,
       "recall": 1
     },
     {
@@ -23,12 +23,12 @@
       "bound": 98,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 74,
+      "hits": 75,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.98989898989899,
-      "selections": 74,
+      "selections": 75,
       "recall": 1
     },
     {
@@ -37,12 +37,12 @@
       "bound": 98,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 74,
+      "hits": 75,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.98989898989899,
-      "selections": 74,
+      "selections": 75,
       "recall": 1
     },
     {
@@ -51,12 +51,12 @@
       "bound": 98,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 74,
+      "hits": 75,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.98989898989899,
-      "selections": 74,
+      "selections": 75,
       "recall": 1
     },
     {
@@ -65,12 +65,12 @@
       "bound": 98,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 74,
+      "hits": 75,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.98989898989899,
-      "selections": 74,
+      "selections": 75,
       "recall": 1
     },
     {
@@ -79,12 +79,12 @@
       "bound": 96,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 72,
+      "hits": 73,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9696969696969697,
-      "selections": 72,
+      "selections": 73,
       "recall": 1
     },
     {
@@ -93,12 +93,12 @@
       "bound": 96,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 72,
+      "hits": 73,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9696969696969697,
-      "selections": 72,
+      "selections": 73,
       "recall": 1
     },
     {
@@ -107,12 +107,12 @@
       "bound": 96,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 72,
+      "hits": 73,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9696969696969697,
-      "selections": 72,
+      "selections": 73,
       "recall": 1
     },
     {
@@ -121,12 +121,12 @@
       "bound": 90,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 66,
+      "hits": 67,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.9090909090909091,
-      "selections": 66,
+      "selections": 67,
       "recall": 1
     },
     {
@@ -135,12 +135,12 @@
       "bound": 88,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 66,
+      "hits": 67,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.8888888888888888,
-      "selections": 66,
+      "selections": 67,
       "recall": 1
     },
     {
@@ -149,12 +149,12 @@
       "bound": 88,
       "baselineFindings": 0,
       "docEditFindings": 0,
-      "hits": 66,
+      "hits": 67,
       "mutations": null,
       "collateral": 0,
       "nameOnlyFalsePositives": 49,
       "bindRate": 0.8888888888888888,
-      "selections": 66,
+      "selections": 67,
       "recall": 1
     }
   ]

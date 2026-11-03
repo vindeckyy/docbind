@@ -37,17 +37,17 @@ A binding also fails when the best score is within `0.05` of the second candidat
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.30 | 98 | 99 | 99.0% | 0 | 74/74 | 0 |
-| 0.40 | 98 | 99 | 99.0% | 0 | 74/74 | 0 |
-| 0.50 | 98 | 99 | 99.0% | 0 | 74/74 | 0 |
-| 0.55 | 98 | 99 | 99.0% | 0 | 74/74 | 0 |
-| **0.60** | **98** | **99** | **99.0%** | **0** | **74/74** | **0** |
-| 0.65 | 96 | 99 | 97.0% | 0 | 72/72 | 0 |
-| 0.70 | 96 | 99 | 97.0% | 0 | 72/72 | 0 |
-| 0.75 | 96 | 99 | 97.0% | 0 | 72/72 | 0 |
-| 0.80 | 90 | 99 | 90.9% | 0 | 66/66 | 0 |
-| 0.85 | 88 | 99 | 88.9% | 0 | 66/66 | 0 |
-| 0.90 | 88 | 99 | 88.9% | 0 | 66/66 | 0 |
+| 0.30 | 98 | 99 | 99.0% | 0 | 75/75 | 0 |
+| 0.40 | 98 | 99 | 99.0% | 0 | 75/75 | 0 |
+| 0.50 | 98 | 99 | 99.0% | 0 | 75/75 | 0 |
+| 0.55 | 98 | 99 | 99.0% | 0 | 75/75 | 0 |
+| **0.60** | **98** | **99** | **99.0%** | **0** | **75/75** | **0** |
+| 0.65 | 96 | 99 | 97.0% | 0 | 73/73 | 0 |
+| 0.70 | 96 | 99 | 97.0% | 0 | 73/73 | 0 |
+| 0.75 | 96 | 99 | 97.0% | 0 | 73/73 | 0 |
+| 0.80 | 90 | 99 | 90.9% | 0 | 67/67 | 0 |
+| 0.85 | 88 | 99 | 88.9% | 0 | 67/67 | 0 |
+| 0.90 | 88 | 99 | 88.9% | 0 | 67/67 | 0 |
 
 Recall is 100% at every local floor. The floors separate on coverage: 0.65 drops one bound anchor and its mutation target; 0.80 drops seven.
 
@@ -57,12 +57,12 @@ The same sweep over all twelve corpus cases gives a sharper coverage edge. Floor
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.40 | 837 | 3387 | 24.7% | 0 | 94/94 | 0 |
-| 0.50 | 837 | 3387 | 24.7% | 0 | 94/94 | 0 |
-| 0.55 | 821 | 3387 | 24.2% | 0 | 94/94 | 0 |
-| **0.60** | **820** | **3387** | **24.2%** | 0 | **94/94** | 0 |
-| 0.70 | 661 | 3387 | 19.5% | 0 | 92/92 | 0 |
-| 0.80 | 620 | 3387 | 18.3% | 0 | 85/85 | 0 |
+| 0.40 | 837 | 3387 | 24.7% | 0 | 95/95 | 0 |
+| 0.50 | 837 | 3387 | 24.7% | 0 | 95/95 | 0 |
+| 0.55 | 821 | 3387 | 24.2% | 0 | 95/95 | 0 |
+| **0.60** | **820** | **3387** | **24.2%** | 0 | **95/95** | 0 |
+| 0.70 | 661 | 3387 | 19.5% | 0 | 93/93 | 0 |
+| 0.80 | 620 | 3387 | 18.3% | 0 | 86/86 | 0 |
 
 The default stays at 0.60. Lowering to 0.50 would add 17 anchors, but each is a bare name with no import, qualification, signature, or API-doc context. The precision model treats name-only matches in prose as noise, and the test suite pins that rule. The 17 extra anchors are not evidence that the floor should move; they are the class of binding the floor exists to reject.
 

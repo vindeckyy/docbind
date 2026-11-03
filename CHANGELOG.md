@@ -2,6 +2,21 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.66] - 2026-11-03
+
+### Added
+
+- Third corpus value mutation edits an annotation array element: `@Routes({"/a", "/b"})` to `{"/a", "/c"}` and must yield `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 94 to 95; `java-javadoc-fixture` runs 23 mutations, all hitting with zero collateral.
+
+### Limits
+
+- Value mutations remain literal text replacements.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.65] - 2026-11-03
 
 ### Added
@@ -1175,3 +1190,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.63]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.63
 [0.1.64]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.64
 [0.1.65]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.65
+[0.1.66]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.66
