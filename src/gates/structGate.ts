@@ -19,7 +19,6 @@ export const REQUIRED_FILES = [
   "tsconfig.json",
   "vitest.config.ts",
   "README.md",
-  "PLAN.md",
   ".gitignore",
   "python/docbind_extract.py",
   "src/cli.ts",

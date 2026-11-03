@@ -227,7 +227,7 @@ Measured on the 0.1.0 tree:
 | Functions | 100% |
 | Lines | 99.62% |
 | Changed-line coverage, feature diff | 99.88% |
-| Structure gate | 69 of 69 checks |
+| Structure gate | 68 of 68 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes.
