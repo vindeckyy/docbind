@@ -49,10 +49,16 @@ function countArity(value: string): number {
 
 export function parseToken(raw: string): TokenInfo {
   const token = raw.trim().replace(/^new\s+/u, "");
+  const macroMatch = /^([A-Za-z_$][\w$]*(?:(?:\.|::|#)[A-Za-z_$][\w$]*)*)!\s*(?:\((.*)\))?\s*$/su.exec(token);
+  if (macroMatch?.[1]) {
+    return { base: macroMatch[1], call: true, arity: countArity(macroMatch[2] ?? "") };
+  }
   const callMatch = /^([A-Za-z_$][\w$]*(?:(?:\.|::|#)[A-Za-z_$][\w$]*)*)\s*(?:<[^>]*>)?\s*\((.*)\)\s*$/su.exec(token);
   if (callMatch?.[1]) {
     return { base: callMatch[1], call: true, arity: countArity(callMatch[2] ?? "") };
   }
+  const generic = /^([A-Za-z_$][\w$]*(?:(?:\.|::|#)[A-Za-z_$][\w$]*)*)\s*<[^<>]*>$/su.exec(token);
+  if (generic?.[1]) return { base: generic[1], call: false, arity: 0 };
   return { base: token, call: token.includes("("), arity: 0 };
 }
 
@@ -243,6 +249,14 @@ export function scoreCandidates(
     if (anchor.hints?.includes("derive")) {
       candidate.score += 0.3;
       candidate.evidence.push("derive context");
+    }
+    if (anchor.token.trim().endsWith("!") || /!\s*\(/u.test(anchor.token)) {
+      candidate.score += 0.3;
+      candidate.evidence.push("macro invocation");
+    }
+    if (candidate.symbol.kind === "type" && /^[A-Z]/u.test(base)) {
+      candidate.score += 0.2;
+      candidate.evidence.push("type alias");
     }
     if (anchor.localDecls.includes(base)) {
       candidate.score -= 0.6;

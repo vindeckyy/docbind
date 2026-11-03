@@ -196,6 +196,7 @@ describe("Rust macro expansion", () => {
     const cross = extractRust(root, ["src/macros.rs", "src/cross.rs"]);
     const names = cross.symbols.map((symbol) => symbol.name);
     expect(names).toEqual(expect.arrayContaining(["cross_one", "cross_two"]));
+    expect(cross.symbols.find((symbol) => symbol.name === "cross")?.aliases).toContain("cross!");
     const nested = extractRust(root, ["src/nested.rs"]);
     expect(nested.symbols.map((symbol) => symbol.name)).toEqual(["a", "b", "c"]);
     const groups = extractRust(root, ["src/groups.rs"]);

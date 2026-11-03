@@ -292,7 +292,7 @@ class RustParser {
       }
       const kind = this.tokens[index]?.value;
       if (kind === "macro_rules") {
-        index = this.parseMacroDefinition(index, enabled, attrs.attributes);
+        index = this.parseMacroDefinition(index, namespace, enabled, attrs.attributes);
         continue;
       }
       const invocation = this.macroInvocationAt(index);
@@ -329,7 +329,12 @@ class RustParser {
     }
   }
 
-  private parseMacroDefinition(index: number, enabled: boolean, attributes: string[]): number {
+  private parseMacroDefinition(
+    index: number,
+    namespace: string,
+    enabled: boolean,
+    attributes: string[],
+  ): number {
     let cursor = index + 1;
     if (this.tokens[cursor]?.value === "!") cursor += 1;
     const name = this.tokens[cursor]?.value;
@@ -340,13 +345,34 @@ class RustParser {
       this.context.failures.count += 1;
       return this.tokens.length;
     }
-    if (enabled) {
+    const exportedMacro = attributes.some((attribute) => attribute.includes("macro_export"));
+    if (exportedMacro) {
       const rules = this.parseMacroRules(cursor + 1, close);
       this.macros.set(name, rules);
       this.crateMacros.set(name, rules);
-      if (attributes.some((attribute) => attribute.includes("macro_export"))) {
-        this.externalMacros.set(name, rules);
-      }
+      this.externalMacros.set(name, rules);
+      this.context.drafts.push({
+        name,
+        kind: "function",
+        shape: {
+          kind: "function",
+          async: false,
+          generator: false,
+          params: [],
+          visibility: "public",
+          flags: [],
+        },
+        start: this.tokens[index].start,
+        body: "",
+        namespace,
+        aliases: [`${name}!`],
+        enabled: true,
+        exported: true,
+      });
+    } else if (enabled) {
+      const rules = this.parseMacroRules(cursor + 1, close);
+      this.macros.set(name, rules);
+      this.crateMacros.set(name, rules);
     }
     return close + 1;
   }

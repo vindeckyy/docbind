@@ -1,3 +1,3 @@
 export const ENGINE_NAME = "docbind";
-export const ENGINE_VERSION = "0.1.13";
+export const ENGINE_VERSION = "0.1.14";
 export const ENGINE_URL = "https://github.com/vindeckyy/docbind";

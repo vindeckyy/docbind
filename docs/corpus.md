@@ -13,7 +13,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | Repository | Language | Docs | Anchors | Bound | Baseline findings | Mutations | Hits | Misses | Collateral |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
-| dtolnay/anyhow | Rust | 1 | 79 | 5 | 0 | 2 | 2 | 0 | 0 |
+| dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
 | spf13/viper | Go | 2 | 293 | 53 | 0 | 3 | 3 | 0 | 0 |
 | encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
@@ -30,6 +30,10 @@ The first run produced two false positives on unchanged code.
 2. httpx uses Python property getter and setter pairs with the same name. Both members entered the class shape. Fixed by collapsing accessors to one property member.
 
 The same run also found a missed mutation. Removing the typed declaration for `slugifyWithCounter` was treated as compatible because a value with no type is not a value that contradicts a type. The compatibility lattice now treats type erasure as breaking.
+
+## Crate macros and generic aliases
+
+anyhow exports `anyhow!`, `bail!`, and other macros through `#[macro_export]`. Exported macro definitions now become symbols with `name!` aliases. Generic type tokens are normalized before lookup, so `anyhow::Result<T>` and `Result<T, anyhow::Error>` resolve to the `Result` type alias. Macro invocations and bare type aliases also earn explicit evidence. anyhow bind count rose from 5 to 10 anchors, and mutation coverage grew from 2 to 3.
 
 ## Nested macro capture groups
 
@@ -62,7 +66,7 @@ Python fences then gained local type inference. Source return annotations feed a
 - `#[proc_macro_derive(Name)]` is recognized as a derive name. The macro body is not expanded.
 - `macro_rules!` covers `ident`, `vis`, `tt`, and `ty` fragments, literal matcher tokens, comma and semicolon repetition, `?`, nested repetition with independent capture groups, separate top-level repetition lists, cross-file `#[macro_export]` macros, and non-exported sibling-module macros. It does not expand general proc-macro output.
 - Non-exported macros are collected crate-wide per package. If two modules define the same macro name, the last definition wins.
-- anyhow binds five anchors after crate-name aliases were added. Most of its README still uses macros and types that do not expose a unique exported name.
+- anyhow binds ten anchors after crate macros and generic type aliases were added. Most of its README still uses standard-library types and prose that do not map to crate symbols.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
 - The corpus uses five external repositories and two local fixtures. It is evidence, not a benchmark.

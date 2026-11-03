@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.14] - 2026-11-03
+
+### Added
+
+- Exported Rust `macro_rules!` definitions are emitted as symbols with `name!` aliases.
+- Generic type tokens such as `anyhow::Result<T>` normalize to their base type for lookup.
+- Macro invocations and bare type aliases earn dedicated binding evidence.
+
+### Improved
+
+- anyhow corpus bind rate rose from 5 to 10 anchors. Mutation coverage rose from 2 to 3.
+- Corpus now detects 22 of 22 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Crate-wide macro collection is name-based. Same-name non-exported macros in different modules let the last definition win.
+- General proc-macro bodies remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.13] - 2026-11-03
 
 ### Added
@@ -250,3 +269,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.11]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.11
 [0.1.12]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.12
 [0.1.13]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.13
+[0.1.14]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.14

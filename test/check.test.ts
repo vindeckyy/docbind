@@ -482,6 +482,25 @@ describe("check pipeline", () => {
     expect(result.pending[0]?.symbol.name).toBe("Add");
   });
 
+  it("binds Rust macro invocations and generic type aliases", () => {
+    const root = tempProject({
+      "Cargo.toml": '[package]\nname = "anyhow"\n',
+      "src/lib.rs": [
+        "pub type Result<T> = core::result::Result<T, Error>;",
+        "pub struct Error;",
+        "#[macro_export]",
+        "macro_rules! anyhow { () => {} }",
+        "",
+      ].join("\n"),
+      "README.md": "Call `anyhow!(msg)` and return `anyhow::Result<T>`.\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toEqual(
+      expect.arrayContaining(["anyhow", "Result"]),
+    );
+  });
+
   it("accepts crate-qualified Rust paths without a move", () => {
     const root = tempProject({
       "Cargo.toml": '[package]\nname = "anyhow"\n',

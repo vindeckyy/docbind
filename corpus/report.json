@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T18:16:58.740Z",
+  "generatedAt": "2026-11-03T18:22:26.250Z",
   "report": [
     {
       "name": "slugify",
@@ -47,18 +47,29 @@
       "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
       "docs": 1,
       "anchors": 79,
-      "bound": 5,
-      "bindRate": 0.06329113924050633,
+      "bound": 10,
+      "bindRate": 0.12658227848101267,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
         {
-          "symbol": "Result",
+          "symbol": "anyhow",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Result",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 4,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -77,7 +88,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 2,
+      "hits": 3,
       "misses": 0,
       "collateral": 0
     },

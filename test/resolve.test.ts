@@ -66,6 +66,10 @@ describe("token parsing", () => {
     expect(parseToken("getUser<T>(id)")).toEqual({ base: "getUser", call: true, arity: 1 });
     expect(parseToken("new Client()")).toEqual({ base: "Client", call: true, arity: 0 });
     expect(parseToken("Client.request")).toEqual({ base: "Client.request", call: false, arity: 0 });
+    expect(parseToken("anyhow!")).toEqual({ base: "anyhow", call: true, arity: 0 });
+    expect(parseToken("bail!(error)")).toEqual({ base: "bail", call: true, arity: 1 });
+    expect(parseToken("anyhow::Result<T>")).toEqual({ base: "anyhow::Result", call: false, arity: 0 });
+    expect(parseToken("Result<T, E>")).toEqual({ base: "Result", call: false, arity: 0 });
     expect(parseToken("getUser(map<A, B>)")).toEqual({ base: "getUser", call: true, arity: 1 });
     expect(parseToken("plain")).toEqual({ base: "plain", call: false, arity: 0 });
   });
@@ -222,6 +226,18 @@ describe("indexing and scoring", () => {
     const result = scoreCandidates(anchor("users.getUser(id)"), index);
     expect(result.reason).toBe("bound");
     expect(result.binding?.evidence).toContain("qualified suffix");
+  });
+
+  it("binds macro invocations and bare type aliases", () => {
+    const index = buildIndex([
+      symbol("anyhow", { aliases: ["anyhow!"] }),
+      symbol("Result", { kind: "type", qualifiedName: "app.Result" }),
+    ]);
+    expect(scoreCandidates(anchor("anyhow!"), index).reason).toBe("bound");
+    expect(scoreCandidates(anchor("bail!(error)"), index).reason).toBe("unbound");
+    const alias = scoreCandidates(anchor("Result"), index);
+    expect(alias.reason).toBe("bound");
+    expect(alias.binding?.evidence).toContain("type alias");
   });
 
   it("binds namespace-qualified imports", () => {
