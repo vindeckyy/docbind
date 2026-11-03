@@ -13,6 +13,15 @@ const TS_LANGS = new Set(["ts", "typescript", "tsx", "js", "javascript", "jsx", 
 const PY_LANGS = new Set(["py", "python", "pycon"]);
 const RUST_LANGS = new Set(["rs", "rust"]);
 const GO_LANGS = new Set(["go", "golang"]);
+const PY_BUILTINS = new Set([
+  "abs", "all", "any", "bool", "bytes", "callable", "dict", "dir", "enumerate",
+  "eval", "filter", "float", "format", "frozenset", "getattr", "hasattr", "hash",
+  "help", "hex", "id", "input", "int", "isinstance", "issubclass", "iter", "len",
+  "list", "map", "max", "min", "next", "object", "oct", "open", "ord", "pow",
+  "print", "property", "range", "repr", "reversed", "round", "set", "setattr",
+  "slice", "sorted", "staticmethod", "str", "sum", "super", "tuple", "type",
+  "vars", "zip",
+]);
 const PY_KEYWORDS = new Set([
   "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del",
   "elif", "else", "except", "False", "finally", "for", "from", "global", "if", "import",
@@ -257,14 +266,29 @@ function tsFenceAnchors(node: Code, docPath: string, heading: string): FenceResu
 function inferPythonTypes(lines: string[], hints?: PythonTypeHints): Map<string, string> {
   const types = new Map<string, string>();
   if (!hints) return types;
+  const inferChain = (source: string): string | undefined => {
+    const chain = /^([A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*)+)$/u.exec(source);
+    if (!chain?.[1]) return undefined;
+    const parts = chain[1].replace(/\s*\.\s*/gu, ".").split(".");
+    const root = parts.shift() as string;
+    let type = types.get(root);
+    if (!type) return undefined;
+    for (const part of parts) {
+      const next = hints.fields.get(`${type}.${part}`);
+      if (!next) return undefined;
+      type = next;
+    }
+    return type;
+  };
   const inferCall = (source: string): string | undefined => {
     const expr = source.replace(/^\s*await\s+/u, "").trim();
     const call = /^([A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*)*)\s*\(/u.exec(expr);
-    if (!call?.[1]) return undefined;
+    if (!call?.[1]) return inferChain(expr);
     const parts = call[1].replace(/\s*\.\s*/gu, ".").split(".");
     const tail = parts[parts.length - 1];
     if (tail && hints.classes.has(tail)) return tail;
     const method = parts.pop() as string;
+    if (parts.length === 0) return hints.returns.get(method);
     const receiver = parts.join(".");
     const receiverType = types.get(receiver);
     return hints.returns.get(`${receiverType ?? receiver}.${method}`) ??
@@ -341,7 +365,16 @@ function pyFenceAnchors(
       const root = chain.split(".")[0] as string;
       const type = localTypes.get(root);
       if (!type) continue;
-      const token = `${type}.${chain.split(".").slice(1).join(".")}`;
+      const parts = chain.split(".");
+      let resolvedType = type;
+      let partIndex = 1;
+      while (partIndex < parts.length - 1) {
+        const fieldType = hints?.fields.get(`${resolvedType}.${parts[partIndex]}`);
+        if (!fieldType) break;
+        resolvedType = fieldType;
+        partIndex += 1;
+      }
+      const token = `${resolvedType}.${parts.slice(partIndex).join(".")}`;
       const column = (chainMatch.index as number) + 1;
       anchors.push(
         makeAnchor(
@@ -368,6 +401,7 @@ function pyFenceAnchors(
       if (
         token.length < 2 ||
         PY_KEYWORDS.has(root) ||
+        PY_BUILTINS.has(root) ||
         locals.has(root) ||
         seen.has(`${lineIndex}:${column}:${token}`)
       ) {

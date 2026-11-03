@@ -242,6 +242,59 @@ def class_members(node: ast.ClassDef) -> tuple[list[dict], list[dict]]:
                 }
             )
             children.append({"node": item, "name": item.target.id, "kind": "property", "shape": shape})
+    existing_children = {child["name"] for child in children}
+    for item in node.body:
+        if not isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        param_types: dict[str, str] = {}
+        arguments = [
+            *item.args.posonlyargs,
+            *item.args.args,
+            *item.args.kwonlyargs,
+        ]
+        for argument in arguments:
+            if argument.arg in ("self", "cls") or argument.annotation is None:
+                continue
+            param_types[argument.arg] = annotation(argument.annotation)
+        for statement in item.body:
+            targets: list[ast.AST] = []
+            declared = ""
+            value: ast.AST | None = None
+            if isinstance(statement, ast.Assign):
+                targets = list(statement.targets)
+                value = statement.value
+            elif isinstance(statement, ast.AnnAssign):
+                targets = [statement.target]
+                declared = annotation(statement.annotation)
+                value = statement.value
+            for target in targets:
+                if not isinstance(target, ast.Attribute):
+                    continue
+                if not isinstance(target.value, ast.Name) or target.value.id not in ("self", "cls"):
+                    continue
+                name = target.attr
+                if name.startswith("_") or name in existing_children:
+                    continue
+                type_shape = declared
+                if not type_shape and isinstance(value, ast.Name):
+                    type_shape = param_types.get(value.id, "")
+                shape = {
+                    "kind": "property",
+                    "typeShape": type_shape,
+                    "flags": ["readonly"] if declared else [],
+                    "visibility": "public",
+                }
+                members.append(
+                    {"name": name, "kind": "property", "optional": True, "shape": shape}
+                )
+                children.append({
+                    "node": value if value is not None else statement,
+                    "name": name,
+                    "kind": "property",
+                    "shape": shape,
+                })
+                existing_children.add(name)
+
     unique_members: dict[str, dict] = {}
     for member in members:
         previous = unique_members.get(member["name"])

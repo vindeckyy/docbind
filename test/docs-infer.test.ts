@@ -93,6 +93,125 @@ describe("Python type hints", () => {
     expect(hints.returns.get("Client.open")).toBeUndefined();
   });
 
+  it("maps class property types into field hints", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });
+    const property = symbol("request", {
+      id: "response.request",
+      kind: "property",
+      parentId: response.id,
+      qualifiedName: "httpx.Response.request",
+      aliases: ["Response.request", "httpx.Response.request"],
+      shape: { kind: "property", typeShape: "Request", visibility: "public", flags: [] },
+    });
+    const getResponse = symbol("get_response", {
+      id: "get_response",
+      qualifiedName: "httpx.get_response",
+      shape: { ...shape, returnType: "Response" },
+    });
+    const hints = buildPythonTypeHints([request, response, property, getResponse]);
+    expect(hints.fields.get("Response.request")).toBe("Request");
+    const result = fenceAnchors(
+      code("response = get_response()\nresponse.request.method\n"),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    expect(result.anchors.map((anchor) => anchor.token)).toContain("Request.method");
+  });
+
+  it("resolves attribute chains through assignments", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });
+    const property = symbol("request", {
+      id: "response.request",
+      kind: "property",
+      parentId: response.id,
+      qualifiedName: "httpx.Response.request",
+      aliases: ["Response.request"],
+      shape: { kind: "property", typeShape: "Request", visibility: "public", flags: [] },
+    });
+    const getResponse = symbol("get_response", {
+      id: "get_response",
+      qualifiedName: "httpx.get_response",
+      shape: { ...shape, returnType: "Response" },
+    });
+    const hints = buildPythonTypeHints([request, response, property, getResponse]);
+    const result = fenceAnchors(
+      code("response = get_response()\nreq = response.request\nreq.method\n"),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    const tokens = result.anchors.map((anchor) => anchor.token);
+    expect(tokens).toContain("Request.method");
+    expect(tokens).not.toContain("Request.request");
+  });
+
+  it("stops at unknown chain segments", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });
+    const property = symbol("request", {
+      id: "response.request",
+      kind: "property",
+      parentId: response.id,
+      qualifiedName: "httpx.Response.request",
+      aliases: ["Response.request"],
+      shape: { kind: "property", typeShape: "Request", visibility: "public", flags: [] },
+    });
+    const getResponse = symbol("get_response", {
+      id: "get_response",
+      qualifiedName: "httpx.get_response",
+      shape: { ...shape, returnType: "Response" },
+    });
+    const hints = buildPythonTypeHints([request, response, property, getResponse]);
+    const result = fenceAnchors(
+      code([
+        "response = get_response()",
+        "missing = unknown.value",
+        "unknown_field = response.unknown",
+        "response.headers.value",
+        "",
+      ].join("\n")),
+      "docs/api.md",
+      "API",
+      hints,
+    );
+    const tokens = result.anchors.map((anchor) => anchor.token);
+    expect(tokens).toContain("Response.headers.value");
+    expect(tokens).not.toContain("Request.headers.value");
+  });
+
+  it("drops conflicting property types and orphan properties", () => {
+    const request = symbol("Request", { id: "request", kind: "class", qualifiedName: "httpx.Request" });
+    const response = symbol("Response", { id: "response", kind: "class", qualifiedName: "httpx.Response" });
+    const client = symbol("Client", { id: "client", kind: "class", qualifiedName: "httpx.Client" });
+    const first = symbol("target", {
+      id: "response.target.1",
+      kind: "property",
+      parentId: response.id,
+      qualifiedName: "httpx.Response.target",
+      shape: { kind: "property", typeShape: "Request", visibility: "public", flags: [] },
+    });
+    const second = symbol("target", {
+      id: "response.target.2",
+      kind: "property",
+      parentId: response.id,
+      qualifiedName: "httpx.Response.target",
+      shape: { kind: "property", typeShape: "Client", visibility: "public", flags: [] },
+    });
+    const orphan = symbol("lost", {
+      id: "orphan",
+      kind: "property",
+      parentId: "missing",
+      qualifiedName: "httpx.lost",
+      shape: { kind: "property", typeShape: "Request", visibility: "public", flags: [] },
+    });
+    const hints = buildPythonTypeHints([request, response, client, first, second, orphan]);
+    expect(hints.fields.has("Response.target")).toBe(false);
+    expect(hints.fields.has("Response.lost")).toBe(false);
+  });
+
   it("drops conflicting return types and keeps real classes only", () => {
     const client = symbol("Client", { id: "client", kind: "class", qualifiedName: "httpx.Client" });
     const first = symbol("get", {

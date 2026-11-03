@@ -23,6 +23,8 @@ def _hidden():
 
 class Client:
     version: str = "1"
+    def __init__(self, method: str) -> None:
+        self.method = method
     def request(self, path: str, **kwargs) -> dict:
         return {}
     @property
@@ -56,6 +58,10 @@ describe("Python surface", () => {
     expect(active).toHaveLength(1);
     expect(active[0].kind).toBe("property");
     expect(result.symbols.find((symbol) => symbol.name === "Client")?.shape.members?.filter((member) => member.name === "active")).toHaveLength(1);
+    const method = result.symbols.find((symbol) => symbol.name === "method");
+    expect(method?.kind).toBe("property");
+    expect(method?.shape.typeShape).toBe("str");
+    expect(method?.aliases).toEqual(expect.arrayContaining(["Client.method", "pyapp.Client.method"]));
     expect(result.symbols.find((symbol) => symbol.name === "_hidden")).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "_private")).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "Client")?.aliases).toContain("pyapp.Client");

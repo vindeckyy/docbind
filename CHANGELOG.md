@@ -2,6 +2,31 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.40] - 2026-11-03
+
+### Added
+
+- Python fence inference resolves attribute chains through class property types, so `response.request.method` rewrites to `Request.method`.
+- Python instance attributes assigned in `__init__` are extracted as typed properties, such as `self.method = method`.
+- Bare function calls use return annotations, so `response = get_response()` types `response`.
+
+### Fixed
+
+- Instance-attribute property body hashes use the initializer value, so renames produce `L4-renamed` instead of `L1-broken`.
+- Python predeclared builtins such as `print` are filtered from fence anchors.
+
+### Improved
+
+- httpx corpus bind rate rose from 379 to 405 anchors with zero baseline findings.
+- New Python fixture binds 3 of 4 anchors and detects 2 of 2 mutations, including an attribute-chain rename.
+- Corpus now detects 61 of 61 seeded mutations with zero collateral findings.
+- Branch coverage rose from 95.06% to 95.08%.
+
+### Limits
+
+- Python inference remains assignment-local and does not type unannotated function parameters.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.39] - 2026-11-03
 
 ### Added
@@ -747,3 +772,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.37]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.37
 [0.1.38]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.38
 [0.1.39]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.39
+[0.1.40]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.40

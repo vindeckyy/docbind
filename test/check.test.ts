@@ -719,6 +719,50 @@ describe("check pipeline", () => {
     expect(result.pending.map((binding) => binding.symbol.name)).toContain("Get");
   });
 
+  it("binds Python attribute chains through class fields", () => {
+    const root = tempProject({
+      "pyproject.toml": '[project]\nname = "pyfields"\n',
+      "pyfields/__init__.py": "",
+      "pyfields/models.py": [
+        "class Request:",
+        "    def __init__(self, method: str) -> None:",
+        "        self.method = method",
+        "",
+        "class Response:",
+        "    @property",
+        "    def request(self) -> Request:",
+        "        return Request('GET')",
+        "",
+        "def get_response() -> Response:",
+        "    return Response()",
+        "",
+      ].join("\n"),
+      "docs/api.md": "```python\nresponse = get_response()\nresponse.request.method\n```\n",
+    });
+    const result = checkProject(root, config);
+    expect(result.findings).toEqual([]);
+    expect(result.pending.map((binding) => binding.symbol.name)).toContain("method");
+    lockNow(root);
+    writeFileSync(
+      join(root, "pyfields/models.py"),
+      [
+        "class Request:",
+        "    def __init__(self, method: str) -> None:",
+        "        self.verb = method",
+        "",
+        "class Response:",
+        "    @property",
+        "    def request(self) -> Request:",
+        "        return Request('GET')",
+        "",
+        "def get_response() -> Response:",
+        "    return Response()",
+        "",
+      ].join("\n"),
+    );
+    expect(checkProject(root, config).findings[0]?.rule).toBe("L4-renamed");
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

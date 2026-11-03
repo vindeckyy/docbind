@@ -1,6 +1,6 @@
 # Corpus results
 
-`corpus/repos.json` pins five open-source repositories at exact commits and five local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
+`corpus/repos.json` pins five open-source repositories at exact commits and six local fixtures. The harness downloads each tree, writes a temporary `docbind.json`, runs `lock`, then measures three things:
 
 - baseline findings on the unchanged tree
 - bind rate for the pinned docs
@@ -15,13 +15,14 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 0 | 2 | 2 | 0 | 0 |
 | dtolnay/anyhow | Rust | 1 | 79 | 10 | 0 | 3 | 3 | 0 | 0 |
 | spf13/viper | Go | 2 | 167 | 94 | 0 | 8 | 8 | 0 | 0 |
-| encode/httpx | Python | 23 | 2972 | 379 | 0 | 3 | 3 | 0 | 0 |
+| encode/httpx | Python | 23 | 2882 | 405 | 0 | 3 | 3 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 12 | 0 | 2 | 2 | 0 | 0 |
 | macro-fixture (local) | Rust | 1 | 11 | 11 | 0 | 9 | 9 | 0 | 0 |
 | proc-macro-fixture (local) | Rust | 1 | 3 | 3 | 0 | 1 | 1 | 0 | 0 |
 | go-package-fixture (local) | Go | 1 | 45 | 45 | 0 | 28 | 28 | 0 | 0 |
 | go-cycle-fixture (local) | Go | 1 | 2 | 2 | 0 | 2 | 2 | 0 | 0 |
 | thiserror-derived-fixture (local) | Rust | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 |
+| python-fields-fixture (local) | Python | 1 | 4 | 3 | 0 | 2 | 2 | 0 | 0 |
 
 Editing the first anchored doc line produced zero findings in all seven cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -33,6 +34,12 @@ The first run produced two false positives on unchanged code.
 2. httpx uses Python property getter and setter pairs with the same name. Both members entered the class shape. Fixed by collapsing accessors to one property member.
 
 The same run also found a missed mutation. Removing the typed declaration for `slugifyWithCounter` was treated as compatible because a value with no type is not a value that contradicts a type. The compatibility lattice now treats type erasure as breaking.
+
+## Python class attributes
+
+Python fences resolve attribute chains through source class fields. A property such as `Response.request -> Request` rewrites `response.request.method` to `Request.method`. Instance attributes assigned in `__init__`, such as `self.method = method`, are extracted as properties with their parameter type. Bare function calls now use their return annotations, so `response = get_response()` types `response` when `get_response() -> Response`.
+
+httpx rose from 379 to 405 bound anchors with zero baseline findings. Predeclared Python builtins are filtered from anchors, so httpx anchors fell from 2972 to 2882. The local Python fixture binds 3 of 4 anchors and detects 2 of 2 mutations, including an `L4-renamed` finding on the attribute chain.
 
 ## Go package selectors and constants
 
@@ -95,7 +102,7 @@ Python fences then gained local type inference. Source return annotations feed a
 - anyhow binds ten anchors after crate macros and generic type aliases were added. Most of its README still uses standard-library types and prose that do not map to crate symbols.
 - httpx inference is assignment-local and return-type based. It does not perform control-flow analysis, and unresolved instance variables still stay unbound.
 - Mutation recall only covers symbols that already bound. Bind rate is reported separately.
-- The corpus uses five external repositories and five local fixtures. It is evidence, not a benchmark.
+- The corpus uses five external repositories and six local fixtures. It is evidence, not a benchmark.
 
 Run the harness from the repository root:
 

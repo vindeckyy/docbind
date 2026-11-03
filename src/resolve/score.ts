@@ -260,6 +260,10 @@ export function scoreCandidates(
       candidate.score += 0.2;
       candidate.evidence.push("type alias");
     }
+    if (info.call && candidate.symbol.kind === "class" && base === candidate.symbol.name) {
+      candidate.score += 0.2;
+      candidate.evidence.push("constructor call");
+    }
     if (
       candidate.symbol.packageExport === true &&
       packageExport?.id === candidate.symbol.id &&

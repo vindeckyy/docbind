@@ -295,6 +295,13 @@ describe("indexing and scoring", () => {
     expect(scoreCandidates(anchor("x"), index).reason).toBe("unbound");
   });
 
+  it("boosts class constructors in fence tokens", () => {
+    const index = buildIndex([symbol("Client", { kind: "class", qualifiedName: "app.Client" })]);
+    const result = scoreCandidates(anchor("Client()"), index);
+    expect(result.reason).toBe("bound");
+    expect(result.binding?.evidence).toContain("constructor call");
+  });
+
   it("binds a unique top-level export over same-named methods", () => {
     const top = symbol("Unmarshal", { packageExport: true });
     const method = symbol("Unmarshal", {

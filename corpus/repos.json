@@ -191,5 +191,22 @@
       "rustdoc": true
     },
     "mutations": 1
+  },
+  {
+    "name": "python-fields-fixture",
+    "repo": "local/python-fields",
+    "commit": "fixture-v1",
+    "local": "corpus/fixtures/python-fields",
+    "docs": [
+      "docs/**/*.md"
+    ],
+    "exclude": [],
+    "languages": {
+      "typescript": false,
+      "python": true,
+      "rust": false,
+      "go": false
+    },
+    "mutations": 2
   }
 ]

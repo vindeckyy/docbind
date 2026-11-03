@@ -3,6 +3,7 @@ import type { Symbol } from "../types.js";
 export interface PythonTypeHints {
   classes: Set<string>;
   returns: Map<string, string>;
+  fields: Map<string, string>;
 }
 
 export interface GoTypeHints {
@@ -59,7 +60,25 @@ export function buildPythonTypeHints(symbols: Symbol[]): PythonTypeHints {
   for (const [key, values] of returns) {
     if (values.size === 1) resolved.set(key, [...values][0] as string);
   }
-  return { classes, returns: resolved };
+
+  const fieldTypes = new Map<string, Set<string>>();
+  const addField = (key: string, type: string): void => {
+    const found = fieldTypes.get(key) ?? new Set<string>();
+    found.add(type);
+    fieldTypes.set(key, found);
+  };
+  for (const symbol of symbols) {
+    if (symbol.kind !== "property" || !symbol.parentId) continue;
+    const parent = byId.get(symbol.parentId);
+    if (!parent) continue;
+    const type = returnTypeName(symbol.shape.typeShape);
+    if (type && classes.has(type)) addField(`${parent.name}.${symbol.name}`, type);
+  }
+  const fields = new Map<string, string>();
+  for (const [key, found] of fieldTypes) {
+    if (found.size === 1) fields.set(key, [...found][0] as string);
+  }
+  return { classes, returns: resolved, fields };
 }
 
 function goTypeName(raw: string): string | undefined {

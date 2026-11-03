@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T20:40:00.643Z",
+  "generatedAt": "2026-11-03T20:49:20.039Z",
   "report": [
     {
       "name": "slugify",
@@ -203,9 +203,9 @@
       "repo": "encode/httpx",
       "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
       "docs": 23,
-      "anchors": 2972,
-      "bound": 379,
-      "bindRate": 0.1275235531628533,
+      "anchors": 2882,
+      "bound": 405,
+      "bindRate": 0.14052741151977793,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -223,6 +223,18 @@
           "collateralRules": []
         },
         {
+          "symbol": "history",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 4,
+          "relatedRules": [
+            "L4-renamed",
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Client",
           "rule": "L1-broken",
           "hit": true,
@@ -230,17 +242,6 @@
           "relatedRules": [
             "L1-broken",
             "L2-moved"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "Auth",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L1-broken"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -832,6 +833,46 @@
         }
       ],
       "hits": 1,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "python-fields-fixture",
+      "repo": "local/python-fields",
+      "commit": "fixture-v1",
+      "docs": 1,
+      "anchors": 4,
+      "bound": 3,
+      "bindRate": 0.75,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "get_response",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "method",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
       "misses": 0,
       "collateral": 0
     }
