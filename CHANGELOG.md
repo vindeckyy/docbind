@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.11] - 2026-11-03
+
+### Added
+
+- Nested Rust `macro_rules!` repetition preserves independent capture trees, so each outer group keeps its own inner lists.
+- Separate top-level repetition lists in one matcher are bounded by the following literal.
+- Shorter module aliases such as `alpha.two` for generated nested-module functions.
+- Macro corpus fixture now covers grouped modules with different inner list lengths.
+
+### Improved
+
+- Macro fixture bind rate rose from 5 to 8 anchors. Seeded mutations rose from 3 to 5, all detected.
+- Corpus now detects 17 of 17 seeded mutations with zero collateral findings.
+
+### Limits
+
+- `?` repetition, non-exported cross-file macros, and general proc-macro bodies remain unsupported.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.10] - 2026-11-03
 
 ### Added
@@ -192,3 +211,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.8]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.8
 [0.1.9]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.9
 [0.1.10]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.10
+[0.1.11]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.11

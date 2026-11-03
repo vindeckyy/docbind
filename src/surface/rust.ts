@@ -45,9 +45,13 @@ interface MacroRule {
   body: Token[];
 }
 
+type MacroCapture =
+  | { kind: "tokens"; tokens: Token[] }
+  | { kind: "repeat"; items: MacroCapture[] };
+
 interface MacroMatch {
   single: Map<string, Token[]>;
-  repeated: Map<string, Token[][]>;
+  repeated: Map<string, MacroCapture>;
 }
 
 interface ParserContext {
@@ -406,9 +410,22 @@ class RustParser {
     return rules;
   }
 
+  private repetitionLimit(matcher: Token[], after: number, args: Token[], argIndex: number): number {
+    const stop = matcher[after + 1]?.value;
+    if (!stop || stop === "$" || ["*", "+", "?"].includes(stop)) return args.length;
+    let depth = 0;
+    for (let index = argIndex; index < args.length; index += 1) {
+      const value = args[index].value;
+      if (depth === 0 && value === stop) return index;
+      if (["(", "[", "{", "<"].includes(value)) depth += 1;
+      else if ([")", "]", "}", ">"].includes(value)) depth = Math.max(0, depth - 1);
+    }
+    return args.length;
+  }
+
   private matchMacroRule(matcher: Token[], args: Token[]): MacroMatch | undefined {
     const single = new Map<string, Token[]>();
-    const repeated = new Map<string, Token[][]>();
+    const repeated = new Map<string, MacroCapture>();
     let matcherIndex = 0;
     let argIndex = 0;
     while (matcherIndex < matcher.length) {
@@ -425,31 +442,30 @@ class RustParser {
         const operation = matcher[after]?.value;
         if (operation !== "*" && operation !== "+") return undefined;
         const inner = matcher.slice(matcherIndex + 2, close);
+        const limit = this.repetitionLimit(matcher, after, args, argIndex);
         const ranges = separator
-          ? splitTopLevel(args, argIndex, args.length, separator)
-          : args.slice(argIndex).map((_, offset) => [argIndex + offset, argIndex + offset + 1] as [number, number]);
+          ? splitTopLevel(args, argIndex, limit, separator)
+          : args.slice(argIndex, limit).map((_, offset) => [argIndex + offset, argIndex + offset + 1] as [number, number]);
         if (operation === "+" && ranges.length === 0) return undefined;
-        const collected = new Map<string, Token[][]>();
+        const collected = new Map<string, MacroCapture[]>();
         for (const [from, to] of ranges) {
           const child = this.matchMacroRule(inner, args.slice(from, to));
           if (!child) return undefined;
           for (const [name, values] of child.single) {
             const list = collected.get(name) ?? [];
-            list.push(values);
+            list.push({ kind: "tokens", tokens: values });
             collected.set(name, list);
           }
           for (const [name, values] of child.repeated) {
-            const list = repeated.get(name) ?? [];
-            list.push(...values);
-            repeated.set(name, list);
+            const list = collected.get(name) ?? [];
+            list.push(values);
+            collected.set(name, list);
           }
         }
-        for (const [name, values] of collected) {
-          const list = repeated.get(name) ?? [];
-          list.push(...values);
-          repeated.set(name, list);
+        for (const [name, items] of collected) {
+          repeated.set(name, { kind: "repeat", items });
         }
-        argIndex = args.length;
+        argIndex = limit;
         matcherIndex = after + 1;
         continue;
       }
@@ -504,14 +520,33 @@ class RustParser {
     return { single, repeated };
   }
 
+  private templateNames(tokens: Token[]): string[] {
+    const names = new Set<string>();
+    for (let index = 0; index < tokens.length; index += 1) {
+      if (tokens[index]?.value === "$" && tokens[index + 1]?.value !== "(") {
+        const name = tokens[index + 1]?.value;
+        if (name) names.add(name);
+      }
+    }
+    return [...names];
+  }
+
   private expandTemplate(
     tokens: Token[],
     match: MacroMatch,
-    overrides = new Map<string, Token[]>(),
+    overrides = new Map<string, MacroCapture>(),
     depth = 0,
   ): Token[] | undefined {
     /* v8 ignore next */
     if (depth > 8) return tokens;
+    const resolve = (name: string): MacroCapture | undefined => {
+      const override = overrides.get(name);
+      if (override) return override;
+      const repeated = match.repeated.get(name);
+      if (repeated) return repeated;
+      const single = match.single.get(name);
+      return single ? { kind: "tokens", tokens: single } : undefined;
+    };
     const result: Token[] = [];
     for (let index = 0; index < tokens.length; index += 1) {
       const token = tokens[index];
@@ -531,24 +566,27 @@ class RustParser {
         const operation = tokens[after]?.value;
         if (operation === "*" || operation === "+") {
           const inner = tokens.slice(index + 2, close);
-          const bound = [...match.repeated.keys()].filter((name) =>
-            inner.some((candidate, offset) => candidate.value === "$" && inner[offset + 1]?.value === name)
-          );
-          const names = bound.filter((name) => !overrides.has(name));
-          const overridden = bound.filter((name) => overrides.has(name));
-          if (names.length === 0 && overridden.length > 0) {
-            const expanded = this.expandTemplate(inner, match, overrides, depth + 1);
-            if (!expanded) return undefined;
-            result.push(...expanded);
+          const names = this.templateNames(inner);
+          const drivers = names
+            .map((name) => ({ name, capture: resolve(name) }))
+            .filter((entry): entry is { name: string; capture: { kind: "repeat"; items: MacroCapture[] } } =>
+              entry.capture?.kind === "repeat"
+            );
+          if (drivers.length === 0) {
+            if (names.some((name) => resolve(name)?.kind === "tokens")) {
+              const expanded = this.expandTemplate(inner, match, new Map(overrides), depth + 1);
+              if (!expanded) return undefined;
+              result.push(...expanded);
+            }
             index = after;
             continue;
           }
-          const count = names.length === 0
-            ? 0
-            : Math.max(...names.map((name) => match.repeated.get(name)?.length ?? 0));
+          const count = drivers[0].capture.items.length;
           for (let repetition = 0; repetition < count; repetition += 1) {
             const local = new Map(overrides);
-            for (const name of names) local.set(name, match.repeated.get(name)?.[repetition] ?? []);
+            for (const driver of drivers) {
+              local.set(driver.name, driver.capture.items[repetition] ?? { kind: "tokens", tokens: [] });
+            }
             const expanded = this.expandTemplate(inner, match, local, depth + 1);
             if (!expanded) return undefined;
             result.push(...expanded);
@@ -557,16 +595,16 @@ class RustParser {
           index = after;
           continue;
         }
-        if (operation === "?" ) return undefined;
+        if (operation === "?") return undefined;
       }
       if (token.value === "$" && tokens[index + 1]) {
-        const name = tokens[index + 1].value;
-        const values = overrides.get(name) ?? match.single.get(name);
-        if (values) {
-          result.push(...values);
+        const capture = resolve(tokens[index + 1].value);
+        if (capture?.kind === "tokens") {
+          result.push(...capture.tokens);
           index += 1;
           continue;
         }
+        if (capture?.kind === "repeat") return undefined;
       }
       result.push(token);
     }
@@ -1062,6 +1100,7 @@ function buildRustTopSymbols(context: ParserContext): Symbol[] {
       qualifiedName: qualified,
       aliases: [
         `${context.modulePath.replace(/\//gu, ".")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`,
+        ...(draft.namespace ? [`${draft.namespace.replace(/::/gu, ".")}${draft.name}`] : []),
         `${context.packageName.replace(/-/gu, "_")}.${draft.namespace.replace(/::/gu, ".")}${draft.name}`,
         `${context.packageName.replace(/-/gu, "_")}.${draft.name}`,
         ...draft.aliases,

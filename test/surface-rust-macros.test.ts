@@ -95,6 +95,31 @@ macro_rules! nested {
 }
 nested!(a, b; c);
 `,
+    "src/groups.rs": `
+macro_rules! grouped {
+    ($($group:ident { $($left:ident : $left_ty:ty),* } -> { $($right:ident : $right_ty:ty),* }),*) => {
+        $(
+            pub mod $group {
+                $( pub fn $left() -> $left_ty { loop {} } )*
+                $( pub fn $right() -> $right_ty { loop {} } )*
+            }
+        )*
+    };
+}
+grouped!(
+    g1 { a: u8, b: u16 } -> { x: u32 },
+    g2 { c: u64 } -> { y: u8, z: u16 }
+);
+`,
+    "src/independent.rs": `
+macro_rules! split_lists {
+    ($($left:ident),* ; $($right:ident),*) => {
+        $( pub fn $left() {} )*
+        $( pub fn $right() {} )*
+    };
+}
+split_lists!(l1, l2; r1);
+`,
     "src/macros.rs": `
 #[macro_export]
 macro_rules! cross {
@@ -151,6 +176,17 @@ describe("Rust macro expansion", () => {
     expect(names).toEqual(expect.arrayContaining(["cross_one", "cross_two"]));
     const nested = extractRust(root, ["src/nested.rs"]);
     expect(nested.symbols.map((symbol) => symbol.name)).toEqual(["a", "b", "c"]);
+    const groups = extractRust(root, ["src/groups.rs"]);
+    const groupNames = groups.symbols.map((symbol) => symbol.name);
+    expect(groupNames).toEqual(expect.arrayContaining(["g1", "g2", "a", "b", "x", "c", "y", "z"]));
+    expect(groupNames).toHaveLength(8);
+    expect(groups.symbols.find((symbol) => symbol.name === "a")?.qualifiedName).toContain("g1.a");
+    expect(groups.symbols.find((symbol) => symbol.name === "b")?.qualifiedName).toContain("g1.b");
+    expect(groups.symbols.find((symbol) => symbol.name === "c")?.qualifiedName).toContain("g2.c");
+    expect(groups.symbols.find((symbol) => symbol.name === "a")?.aliases).toContain("g1.a");
+    expect(groups.symbols.find((symbol) => symbol.name === "y")?.shape.returnType).toBe("u8");
+    const independent = extractRust(root, ["src/independent.rs"]);
+    expect(independent.symbols.map((symbol) => symbol.name)).toEqual(["l1", "l2", "r1"]);
   });
 
   it("survives malformed macro definitions", () => {
