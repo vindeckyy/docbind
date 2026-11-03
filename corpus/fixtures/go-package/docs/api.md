@@ -68,3 +68,12 @@ v.Qualified("key")
 v := viper.Default.(*Viper)
 v.Asserted("key")
 ```
+
+```go
+func useAnonymous() {
+    apply := func(v *Viper) {
+        v.Anonymous("key")
+    }
+    apply(New())
+}
+```

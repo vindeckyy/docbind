@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.36] - 2026-11-03
+
+### Added
+
+- Go fence inference handles anonymous function parameters such as `func(v *Viper) { v.Method() }`.
+- Local Go fixture covers an anonymous callback method with a distinct mutation.
+
+### Improved
+
+- Go fixture grew from 36 to 39 bound anchors and from 24 to 25 detected mutations.
+- Corpus now detects 56 of 56 seeded mutations with zero collateral findings.
+
+### Limits
+
+- Go fence inference does not type values supplied from outside the fence.
+- General proc-macro bodies and npm publication remain unresolved.
+
 ## [0.1.35] - 2026-11-03
 
 ### Added
@@ -671,3 +688,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.33]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.33
 [0.1.34]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.34
 [0.1.35]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.35
+[0.1.36]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.36

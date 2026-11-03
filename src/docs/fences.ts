@@ -421,7 +421,7 @@ function goFunctionReturns(value: string): Map<string, string> {
 
 function goFunctionParameters(value: string): Map<string, string> {
   const result = new Map<string, string>();
-  for (const match of value.matchAll(/\bfunc\s+(?:\([^)]*\)\s*)?[A-Za-z_]\w*\s*\(([\s\S]*?)\)/gu)) {
+  for (const match of value.matchAll(/\bfunc\s*(?:\([^)]*\)\s*)?(?:[A-Za-z_]\w*\s*)?\(([\s\S]*?)\)/gu)) {
     const parts: string[] = [];
     let depth = 0;
     let start = 0;

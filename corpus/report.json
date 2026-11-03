@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T20:14:22.228Z",
+  "generatedAt": "2026-11-03T20:18:34.229Z",
   "report": [
     {
       "name": "slugify",
@@ -441,8 +441,8 @@
       "repo": "local/go-package",
       "commit": "fixture-v1",
       "docs": 1,
-      "anchors": 36,
-      "bound": 36,
+      "anchors": 39,
+      "bound": 39,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -461,10 +461,32 @@
           "collateralRules": []
         },
         {
+          "symbol": "Anonymous",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "Helper",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "New",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 2,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -497,7 +519,7 @@
           "symbol": "Viper",
           "rule": "L1-broken",
           "hit": true,
-          "findings": 5,
+          "findings": 6,
           "relatedRules": [
             "L1-broken",
             "L4-renamed"
@@ -521,17 +543,6 @@
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "New",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 2,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -715,7 +726,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 24,
+      "hits": 25,
       "misses": 0,
       "collateral": 0
     },
