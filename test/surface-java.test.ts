@@ -326,6 +326,31 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "required")?.shape.defaultValue).toBeUndefined();
   });
 
+  it("extracts enum constants with aliases", () => {
+    const root = tempProject({
+      "src/Color.java": [
+        "package example;",
+        "",
+        "public enum Color {",
+        "    @Deprecated RED,",
+        "    GREEN(\"g\"),",
+        "    BLUE {",
+        "        public String label() { return \"b\"; }",
+        "    }",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    const result = extractJava(root, ["src/Color.java"]);
+    const color = result.symbols.find((symbol) => symbol.name === "Color");
+    expect(color?.kind).toBe("enum");
+    expect(color?.shape.enumMembers?.map((member) => member.name)).toEqual(["RED", "GREEN", "BLUE"]);
+    const red = result.symbols.find((symbol) => symbol.name === "RED");
+    expect(red?.kind).toBe("enumMember");
+    expect(red?.parentId).toBe(color?.id);
+    expect(red?.aliases).toEqual(expect.arrayContaining(["Color.RED", "Color#RED", "example.Color.RED"]));
+  });
+
   it("survives malformed files", () => {
     const root = tempProject({
       "src/Broken.java": "public class Broken { public void run( {",

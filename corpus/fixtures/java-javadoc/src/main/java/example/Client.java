@@ -83,3 +83,11 @@ public @interface Marker {
 
     String[] tags() default {"a", "b"};
 }
+
+/**
+ * Colors: {@link Color#RED} and {@link Color#GREEN}.
+ */
+public enum Color {
+    RED,
+    GREEN
+}

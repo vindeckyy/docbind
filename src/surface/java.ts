@@ -14,6 +14,7 @@ import type {
   AnnotationArgument,
   AnnotationShape,
   ContractFlag,
+  EnumMemberShape,
   ParamShape,
   Shape,
   Symbol,
@@ -21,7 +22,7 @@ import type {
 
 interface JavaDraft {
   name: string;
-  kind: "class" | "interface" | "method" | "property";
+  kind: "class" | "interface" | "enum" | "enumMember" | "method" | "property";
   shape: Shape;
   start: number;
   body: string;
@@ -360,13 +361,20 @@ class JavaParser {
       this.context.failures += 1;
       return tokens.length;
     }
-    const kind = keyword === "interface" ? "interface" : "class";
+    const kind = keyword === "enum" ? "enum" : keyword === "interface" ? "interface" : "class";
     const path = `${namespace}${nameToken.value}`;
     this.context.types.push({
       name: path,
       start: (tokens[index] as Token).start,
       end: (tokens[close] as Token).end,
     });
+    let memberStart = brace + 1;
+    let enumMembers: EnumMemberShape[] | undefined;
+    if (kind === "enum") {
+      const parsed = this.enumConstants(path, brace + 1, close);
+      enumMembers = parsed.members;
+      memberStart = parsed.end;
+    }
     this.context.drafts.push({
       name: nameToken.value,
       kind,
@@ -376,6 +384,7 @@ class JavaParser {
         members: [],
         flags: [...javaFlags(annotations), ...(annotationType ? ["annotation-type" as ContractFlag] : [])],
         visibility,
+        ...(enumMembers && enumMembers.length > 0 ? { enumMembers } : {}),
         ...(annotations.length > 0 ? { annotations: javaAnnotations(annotations) } : {}),
       },
       start: nameToken.start,
@@ -383,8 +392,63 @@ class JavaParser {
       path,
       ...(namespace ? { parentPath: namespace.slice(0, -1) } : {}),
     });
-    this.parseMembers(path, brace + 1, close, kind === "interface");
+    this.parseMembers(path, memberStart, close, kind === "interface");
     return close + 1;
+  }
+
+  private enumConstants(
+    typePath: string,
+    start: number,
+    end: number,
+  ): { members: EnumMemberShape[]; end: number } {
+    const tokens = this.context.lexed.tokens;
+    const members: EnumMemberShape[] = [];
+    let depth = 0;
+    let segmentStart = start;
+    let index = start;
+    const flush = (segmentEnd: number): void => {
+      let cursor = segmentStart;
+      while (cursor < segmentEnd) {
+        const value = (tokens[cursor] as Token).value;
+        if (value === "@") {
+          cursor += 2;
+          if ((tokens[cursor] as Token | undefined)?.value === "(") {
+            const close = findMatching(tokens, cursor, "(", ")");
+            cursor = close < 0 ? segmentEnd : close + 1;
+          }
+          continue;
+        }
+        if (/^[A-Za-z_]/u.test(value)) {
+          this.context.drafts.push({
+            name: value,
+            kind: "enumMember",
+            path: `${typePath}.${value}`,
+            parentPath: typePath,
+            start: (tokens[cursor] as Token).start,
+            body: "",
+            shape: { kind: "enumMember", flags: [] },
+          });
+          members.push({ name: value, value });
+          return;
+        }
+        cursor += 1;
+      }
+    };
+    while (index < end) {
+      const value = (tokens[index] as Token).value;
+      if (["(", "[", "{"].includes(value)) depth += 1;
+      else if ([")", "]", "}"].includes(value)) depth = Math.max(0, depth - 1);
+      else if (value === "," && depth === 0) {
+        flush(index);
+        segmentStart = index + 1;
+      } else if (value === ";" && depth === 0) {
+        flush(index);
+        return { members, end: index + 1 };
+      }
+      index += 1;
+    }
+    flush(end);
+    return { members, end };
   }
 
   private parseMembers(typePath: string, start: number, end: number, isInterface: boolean): void {
@@ -651,7 +715,9 @@ export function extractJava(root: string, files: string[]): ExtractResult {
     const moduleDotted = context.modulePath.replace(/\//gu, ".");
     const byPath = new Map(
       context.drafts
-        .filter((draft) => draft.kind === "class" || draft.kind === "interface")
+        .filter(
+          (draft) => draft.kind === "class" || draft.kind === "interface" || draft.kind === "enum",
+        )
         .map((draft) => [draft.path, draft]),
     );
     for (const draft of context.drafts) {
@@ -662,7 +728,7 @@ export function extractJava(root: string, files: string[]): ExtractResult {
       const qualified = `${context.packageName}.${moduleDotted}.${draft.path}`;
       const aliases = new Set<string>([draft.name, draft.path]);
       const segments = draft.path.split(".");
-      const hasHash = draft.kind === "method" || draft.kind === "property";
+      const hasHash = draft.kind === "method" || draft.kind === "property" || draft.kind === "enumMember";
       if (hasHash) aliases.add(draft.path.replace(/\.([^.]+)$/u, "#$1"));
       if (context.packageClause) {
         aliases.add(`${context.packageClause}.${draft.path}`);
