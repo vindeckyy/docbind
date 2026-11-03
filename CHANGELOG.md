@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.48] - 2026-11-03
+
+### Added
+
+- Javadoc relative links such as `{@link #get()}` resolve with the enclosing type as `Client#get()` instead of a bare method name.
+- Javadoc comments take the innermost enclosing type; class-level comments attach to the following type.
+- `java-javadoc-fixture` now has two classes with same-named methods; the enclosing-type link stays bound at 3 of 3 anchors and detects 2 of 2 mutations.
+
+### Limits
+
+- Javadoc links with parameter lists that contain spaces, such as `{@link #get(int, String)}`, are truncated at the first space.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.47] - 2026-11-03
 
 ### Added
@@ -896,3 +909,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.45]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.45
 [0.1.46]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.46
 [0.1.47]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.47
+[0.1.48]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.48

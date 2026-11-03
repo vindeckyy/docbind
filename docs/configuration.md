@@ -46,7 +46,7 @@ Set `"asciidoc": true` and include `.adoc` or `.asciidoc` paths in `docs`. Backt
 
 ## Javadoc
 
-Set `"javadoc": true` to extract public Java types and scan Javadoc comments. `{@link}`, `{@code}`, and backtick literals become anchors on the Java source file. Java discovery is enabled by the same flag. It is off by default because Java projects usually keep their docs in a generator.
+Set `"javadoc": true` to extract public Java types and scan Javadoc comments. `{@link}`, `{@code}`, and backtick literals become anchors on the Java source file. Relative links such as `{@link #get()}` qualify with the enclosing type. Java discovery is enabled by the same flag. It is off by default because Java projects usually keep their docs in a generator.
 
 ## Severity
 

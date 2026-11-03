@@ -34,6 +34,7 @@ describe("Java surface", () => {
     expect(get?.aliases).toEqual(expect.arrayContaining(["Client.get", "example.Client.get"]));
     expect(result.symbols.find((symbol) => symbol.name === "status")?.kind).toBe("property");
     expect(result.javadocs?.[0]?.text).toContain("Client#status");
+    expect(result.javadocs?.[0]?.owner).toBe("Client");
     expect(result.parseFailures).toBe(0);
   });
 

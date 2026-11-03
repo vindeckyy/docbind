@@ -208,7 +208,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
       : [];
   const javadocAnchors = config.javadoc
     ? (surface.javadocs ?? []).flatMap(
-        (entry) => parseJavadoc(entry.filePath, entry.text, entry.line).anchors,
+        (entry) => parseJavadoc(entry.filePath, entry.text, entry.line, entry.owner).anchors,
       )
     : [];
   const loadedLock = readLock(root);

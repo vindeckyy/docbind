@@ -406,7 +406,12 @@ function parseAdocDoc(
 const JAVADOC_LINK_RE = /\{@(?:link|linkplain)\s+([^\s}]+)[^}]*\}/gu;
 const JAVADOC_CODE_RE = /\{@code\s+([^}]+)\}/gu;
 
-export function parseJavadoc(docPath: string, text: string, startLine: number): DocParseResult {
+export function parseJavadoc(
+  docPath: string,
+  text: string,
+  startLine: number,
+  owner?: string,
+): DocParseResult {
   const lines = text.split(/\r?\n/u);
   const heading = lines.find((line) => line.trim().length > 0)?.trim() ?? "";
   const anchors: DocAnchor[] = [];
@@ -434,7 +439,8 @@ export function parseJavadoc(docPath: string, text: string, startLine: number): 
     for (const match of line.matchAll(JAVADOC_LINK_RE)) {
       const index = match.index as number;
       used.push([index, index + match[0].length]);
-      add(match[1] as string, lineIndex, index + 1, "explicitRef");
+      const link = (match[1] as string).trim();
+      add(owner && link.startsWith("#") ? `${owner}${link}` : link, lineIndex, index + 1, "explicitRef");
     }
     for (const match of line.matchAll(JAVADOC_CODE_RE)) {
       const index = match.index as number;

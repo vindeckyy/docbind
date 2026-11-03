@@ -2,6 +2,7 @@ export interface DocstringEntry {
   filePath: string;
   line: number;
   text: string;
+  owner?: string;
 }
 
 export interface ExtractResult {

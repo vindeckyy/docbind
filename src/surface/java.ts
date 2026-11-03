@@ -30,6 +30,7 @@ interface JavaContext {
   modulePath: string;
   packageClause: string;
   drafts: JavaDraft[];
+  types: Array<{ name: string; start: number; end: number }>;
   failures: number;
 }
 
@@ -168,6 +169,11 @@ class JavaParser {
       return tokens.length;
     }
     const kind = keyword === "interface" ? "interface" : "class";
+    this.context.types.push({
+      name: nameToken.value,
+      start: (tokens[index] as Token).start,
+      end: (tokens[close] as Token).end,
+    });
     this.context.drafts.push({
       name: nameToken.value,
       kind,
@@ -345,13 +351,25 @@ class JavaParser {
   }
 }
 
-function collectJavadocs(source: string): DocstringEntry[] {
+function collectJavadocs(
+  source: string,
+  types: Array<{ name: string; start: number; end: number }>,
+): DocstringEntry[] {
   const entries: DocstringEntry[] = [];
   for (const match of source.matchAll(/\/\*\*([\s\S]*?)\*\//gu)) {
     const text = match[1] as string;
+    const offset = match.index as number;
+    const containing = types
+      .filter((type) => offset >= type.start && offset < type.end)
+      .sort((left, right) => (left.end - left.start) - (right.end - right.start));
+    const owner = containing[0]?.name ??
+      types
+        .filter((type) => type.start > offset)
+        .sort((left, right) => left.start - right.start)[0]?.name;
     entries.push({
       filePath: "",
-      line: lineOf(source, match.index as number),
+      ...(owner ? { owner } : {}),
+      line: lineOf(source, offset),
       text: text
         .split(/\r?\n/u)
         .map((line) => line.replace(/^\s*\*\s?/u, ""))
@@ -387,6 +405,7 @@ export function extractJava(root: string, files: string[]): ExtractResult {
       modulePath: modulePathFor(packageInfo.root, join(root, rel)),
       packageClause: "",
       drafts: [],
+      types: [],
       failures: 0,
     };
     new JavaParser(context).parse();
@@ -436,7 +455,7 @@ export function extractJava(root: string, files: string[]): ExtractResult {
         filePath: context.filePath,
       });
     }
-    for (const entry of collectJavadocs(source)) {
+    for (const entry of collectJavadocs(source, context.types)) {
       javadocs.push({ ...entry, filePath: context.filePath });
     }
   }

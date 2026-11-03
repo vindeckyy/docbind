@@ -10,3 +10,12 @@ public class Client {
         return label;
     }
 }
+
+/**
+ * Other entry point: {@link #get}.
+ */
+public class Other {
+    public String get(int id, String label) {
+        return label;
+    }
+}
