@@ -374,6 +374,17 @@ describe("check pipeline", () => {
     expect(checkProject(tombstone, off).findings).toEqual([]);
   });
 
+  it("does not report JS and .d.ts shape disagreement", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/greet.js": "export function greet(name) { return name; }\n",
+      "src/greet.d.ts": "export function greet(name: string): string;\n",
+      "docs/api.md": "Call `greet(name)`.\n",
+    });
+    lockNow(root);
+    expect(checkProject(root, config).findings).toEqual([]);
+  });
+
   it("binds TypeScript namespace re-exports", () => {
     const root = tempProject({
       "package.json": JSON.stringify({ name: "app" }),

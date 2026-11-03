@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Pinned open-source corpus harness in `corpus/`. It measures baseline findings, bind rate, mutation recall, and collateral findings.
+- Corpus report and methodology page.
+
+### Fixed
+
+- Duplicate JS and `.d.ts` declarations no longer produce false L3 findings.
+- Python property getter and setter pairs no longer produce duplicate class members.
+- Removing a type annotation from a documented symbol is now a breaking change instead of a silent pass.
+
 ## [0.1.1] - 2026-11-03
 
 ### Added

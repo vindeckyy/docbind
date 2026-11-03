@@ -30,7 +30,10 @@ export function over(a: string): string;
 export function over(a: number, b: number): number;
 export function over(a: unknown, b?: unknown): unknown { return a; }
 `,
+    "src/dual.js": "export function greet(name) { return name; }",
+    "src/dual.d.ts": "export function greet(name: string): string;",
     "src/bad.ts": "export function broken(",
+
     "packages/app/package.json": JSON.stringify({ name: "nested" }),
     "packages/app/src/nested.ts": "export function nested(): void {}",
   });
@@ -75,6 +78,15 @@ describe("TypeScript surface", () => {
       expect.stringContaining("|1"),
       expect.stringContaining("|2"),
     ]);
+  });
+
+  it("deduplicates JS declarations against their .d.ts shape", () => {
+    const root = project();
+    const result = extractTypescript(root, ["src/dual.js", "src/dual.d.ts"]);
+    const greet = result.symbols.filter((symbol) => symbol.name === "greet");
+    expect(greet).toHaveLength(1);
+    expect(greet[0].filePath).toBe("src/dual.d.ts");
+    expect(greet[0].shape.params?.[0].type).toBe("string");
   });
 
   it("records parse failures and missing files", () => {

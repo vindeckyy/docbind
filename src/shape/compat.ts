@@ -13,7 +13,9 @@ function delta(): ShapeDelta {
 }
 
 function typeVerdict(oldType: string | undefined, newType: string | undefined): "same" | "additive" | "breaking" {
-  if (!oldType || !newType || oldType === newType) return "same";
+  if (oldType === newType) return "same";
+  if (!oldType) return newType ? "additive" : "same";
+  if (!newType) return "breaking";
   if (oldType === "any" || oldType === "unknown" || oldType === "object") return "same";
   if (newType === "any" || newType === "unknown") return "additive";
   const oldParts = splitTopLevelUnion(oldType);

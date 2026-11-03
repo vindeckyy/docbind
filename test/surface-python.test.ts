@@ -28,6 +28,9 @@ class Client:
     @property
     def active(self) -> bool:
         return True
+    @active.setter
+    def active(self, value: bool) -> None:
+        pass
     def _private(self):
         pass
 
@@ -49,7 +52,10 @@ describe("Python surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "get_user")?.shape.params?.map((param) => param.name)).toEqual([
       "id", "force",
     ]);
-    expect(result.symbols.find((symbol) => symbol.name === "active")?.kind).toBe("property");
+    const active = result.symbols.filter((symbol) => symbol.name === "active");
+    expect(active).toHaveLength(1);
+    expect(active[0].kind).toBe("property");
+    expect(result.symbols.find((symbol) => symbol.name === "Client")?.shape.members?.filter((member) => member.name === "active")).toHaveLength(1);
     expect(result.symbols.find((symbol) => symbol.name === "_hidden")).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "_private")).toBeUndefined();
     expect(result.parseFailures).toBeGreaterThan(0);

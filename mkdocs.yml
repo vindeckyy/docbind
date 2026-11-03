@@ -9,6 +9,7 @@ nav:
   - Usage: usage.md
   - Configuration: configuration.md
   - Architecture: architecture.md
+  - Corpus: corpus.md
   - Prior art: prior-art.md
 markdown_extensions:
   - tables

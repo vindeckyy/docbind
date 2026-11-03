@@ -188,6 +188,9 @@ describe("shape compatibility", () => {
       fn({ returnType: "A" }),
       fn({ returnType: "unknown" }),
     ).additive).toBe(true);
+    expect(compareShapeClaims(fn({ returnType: "A" }), fn()).breaking).toBe(true);
+    expect(compareShapeClaims(fn({ params: [param("x", { type: "A" })] }), fn({ params: [param("x", { type: "" })] })).breaking).toBe(true);
+    expect(compareShapeClaims(fn({ params: [param("x", { type: "" })] }), fn({ params: [param("x", { type: "A" })] })).additive).toBe(true);
     expect(compareShapeClaims(
       fn({ params: [param("x", { type: "any" })] }),
       fn({ params: [param("x", { type: "string" })] }),

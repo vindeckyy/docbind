@@ -1,0 +1,38 @@
+[
+  {
+    "name": "slugify",
+    "repo": "sindresorhus/slugify",
+    "commit": "6df9e8fb3397d1f55bd9aaf005ef67ccf0a7aaff",
+    "docs": ["readme.md"],
+    "exclude": ["node_modules/**", "test/**", "tests/**"],
+    "languages": { "typescript": true, "python": false, "rust": false, "go": false },
+    "mutations": 3
+  },
+  {
+    "name": "anyhow",
+    "repo": "dtolnay/anyhow",
+    "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
+    "docs": ["README.md"],
+    "exclude": ["target/**", "tests/**"],
+    "languages": { "typescript": false, "python": false, "rust": true, "go": false },
+    "mutations": 3
+  },
+  {
+    "name": "viper",
+    "repo": "spf13/viper",
+    "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
+    "docs": ["README.md", "TROUBLESHOOTING.md"],
+    "exclude": ["test/**", "tests/**"],
+    "languages": { "typescript": false, "python": false, "rust": false, "go": true },
+    "mutations": 3
+  },
+  {
+    "name": "httpx",
+    "repo": "encode/httpx",
+    "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+    "docs": ["README.md", "docs/**/*.md"],
+    "exclude": ["tests/**", "docs/changelog.md", "docs/code_of_conduct.md"],
+    "languages": { "typescript": false, "python": true, "rust": false, "go": false },
+    "mutations": 3
+  }
+]

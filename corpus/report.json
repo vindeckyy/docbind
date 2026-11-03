@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-11-03T16:39:32.786Z",
+  "report": [
+    {
+      "name": "slugify",
+      "repo": "sindresorhus/slugify",
+      "commit": "6df9e8fb3397d1f55bd9aaf005ef67ccf0a7aaff",
+      "docs": 1,
+      "anchors": 58,
+      "bound": 28,
+      "bindRate": 0.4827586206896552,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "mutations": [
+        {
+          "symbol": "slugify",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "slugifyWithCounter",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 2,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "anyhow",
+      "repo": "dtolnay/anyhow",
+      "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
+      "docs": 1,
+      "anchors": 90,
+      "bound": 0,
+      "bindRate": 0,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "mutations": [],
+      "hits": 0,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "viper",
+      "repo": "spf13/viper",
+      "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
+      "docs": 2,
+      "anchors": 382,
+      "bound": 0,
+      "bindRate": 0,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "mutations": [],
+      "hits": 0,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "httpx",
+      "repo": "encode/httpx",
+      "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "docs": 23,
+      "anchors": 2541,
+      "bound": 34,
+      "bindRate": 0.01338055883510429,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "mutations": [
+        {
+          "symbol": "NetRCAuth",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Client",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 12,
+          "relatedRules": [
+            "L1-broken",
+            "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "url",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L3-reshaped",
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 3,
+      "misses": 0,
+      "collateral": 0
+    }
+  ]
+}

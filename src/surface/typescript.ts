@@ -551,6 +551,18 @@ export function snippetSignature(code: string, filePath = "snippet.ts"): Signatu
   return undefined;
 }
 
+function declarationRichness(symbol: Symbol): number {
+  const shape = symbol.shape;
+  let score = symbol.filePath.endsWith(".d.ts") ? 100 : 0;
+  score += (shape.params ?? []).filter((param) => param.type.length > 0).length;
+  score += shape.returnType ? 1 : 0;
+  score += shape.typeParams ? 1 : 0;
+  score += shape.typeShape ? 1 : 0;
+  score += (shape.members ?? []).filter((member) => Boolean(member.shape.typeShape)).length;
+  score += (shape.enumMembers ?? []).length > 0 ? 1 : 0;
+  return score;
+}
+
 export function extractTypescript(root: string, files: string[]): ExtractResult {
   allSymbols.length = 0;
   const parsed = new Map<string, ParsedFile>();
@@ -625,14 +637,22 @@ export function extractTypescript(root: string, files: string[]): ExtractResult 
     membersByParent.set(symbol.parentId, list);
   }
 
-  const finalSymbols: Symbol[] = [];
+  const byId = new Map<string, Symbol>();
   for (const symbol of allSymbols) {
     const keep = symbol.parentId ? exportedIds.has(symbol.parentId) : exportedIds.has(symbol.id);
     if (!keep) continue;
     const extra = aliasesById.get(symbol.id);
     if (extra?.size) symbol.aliases = [...new Set([...symbol.aliases, ...extra])];
-    finalSymbols.push(symbol);
+    const existing = byId.get(symbol.id);
+    if (!existing) {
+      byId.set(symbol.id, symbol);
+      continue;
+    }
+    const preferred = declarationRichness(symbol) > declarationRichness(existing) ? symbol : existing;
+    const other = preferred === symbol ? existing : symbol;
+    preferred.aliases = [...new Set([...preferred.aliases, ...other.aliases])];
+    byId.set(symbol.id, preferred);
   }
 
-  return { symbols: finalSymbols, parseFailures, filesScanned: parsed.size };
+  return { symbols: [...byId.values()], parseFailures, filesScanned: parsed.size };
 }

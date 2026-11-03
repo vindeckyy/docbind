@@ -240,7 +240,17 @@ def class_members(node: ast.ClassDef) -> tuple[list[dict], list[dict]]:
                 }
             )
             children.append({"node": item, "name": item.target.id, "kind": "property", "shape": shape})
-    return members, children
+    unique_members: dict[str, dict] = {}
+    for member in members:
+        previous = unique_members.get(member["name"])
+        if previous is None or (member["kind"] == "property" and previous["kind"] != "property"):
+            unique_members[member["name"]] = member
+    unique_children: dict[str, dict] = {}
+    for child in children:
+        previous = unique_children.get(child["name"])
+        if previous is None or (child["kind"] == "property" and previous["kind"] != "property"):
+            unique_children[child["name"]] = child
+    return list(unique_members.values()), list(unique_children.values())
 
 
 def function_shape(node: ast.FunctionDef | ast.AsyncFunctionDef) -> tuple[str, dict]:

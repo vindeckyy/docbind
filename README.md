@@ -195,6 +195,17 @@ The repository also ships a composite action in [`action/action.yml`](action/act
 
 Thresholds and scoring weights are fixed in the engine. Per-repo tuning would make precision claims meaningless.
 
+## Corpus
+
+`corpus/repos.json` pins real repositories at exact commits. The harness measures baseline findings, bind rate, mutation recall, and collateral findings.
+
+```sh
+npm run corpus -- --only slugify
+npm run corpus -- --refresh
+```
+
+The latest snapshot is in [corpus/report.json](corpus/report.json). Four pinned repositories produce zero baseline findings and 5 of 5 mutation hits with no collateral findings. The corpus is not part of CI because it downloads external repositories.
+
 ## Development
 
 Requirements: Node 22.12 or newer, `python3` for the Python extractor, and MkDocs for the docs site.
@@ -223,13 +234,13 @@ Measured on the 0.1.1 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 229 passing |
-| Statements | 98.99% |
-| Branches | 95.09% |
-| Functions | 100% |
-| Lines | 99.67% |
+| Tests | 231 passing |
+| Statements | 98.97% |
+| Branches | 95.01% |
+| Functions | 99.7% |
+| Lines | 99.68% |
 | Changed-line coverage, feature diff | 99.88% |
-| Structure gate | 68 of 68 checks |
+| Structure gate | 73 of 73 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes.
