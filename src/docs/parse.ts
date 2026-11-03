@@ -304,6 +304,105 @@ function parseRstDoc(
   return { anchors: assignOccurrences(kept), parseFailures: 0 };
 }
 
+const ADOC_SOURCE_RE = /^\[source(?:,\s*([A-Za-z0-9_+#-]+))?\]\s*$/u;
+const ADOC_TOKEN_RE = /^[A-Za-z_$][\w$]*(?:(?:\.|::|#)[A-Za-z_$][\w$]*)*(?:\(\))?$/u;
+
+function parseAdocDoc(
+  docPath: string,
+  text: string,
+  pythonHints?: PythonTypeHints,
+  goHints?: GoTypeHints,
+): DocParseResult {
+  const lines = text.split(/\r?\n/u);
+  const anchors: DocAnchor[] = [];
+  const blockLines = new Set<number>();
+  let heading = "";
+  let index = 0;
+  while (index < lines.length) {
+    const line = lines[index] as string;
+    const headingMatch = /^=+\s+(.+)$/u.exec(line);
+    if (headingMatch?.[1]) {
+      heading = headingMatch[1].trim();
+      index += 1;
+      continue;
+    }
+    const source = ADOC_SOURCE_RE.exec(line);
+    if (!source) {
+      index += 1;
+      continue;
+    }
+    let cursor = index + 1;
+    while (cursor < lines.length && (lines[cursor] as string).trim().length === 0) cursor += 1;
+    const delimiter = (lines[cursor] as string | undefined)?.trim();
+    if (delimiter !== "----" && delimiter !== "....") {
+      index += 1;
+      continue;
+    }
+    let end = cursor + 1;
+    while (end < lines.length && (lines[end] as string).trim() !== delimiter) end += 1;
+    for (let lineIndex = index; lineIndex <= Math.min(end, lines.length - 1); lineIndex += 1) {
+      blockLines.add(lineIndex);
+    }
+    const value = lines.slice(cursor + 1, end).join("\n");
+    const lang = source[1] ?? "";
+    if (isSupportedFence(lang) && value.trim().length > 0) {
+      const node = {
+        type: "code",
+        lang,
+        value,
+        position: {
+          start: { line: cursor + 2, column: 1, offset: 0 },
+          end: { line: end + 1, column: 1, offset: 0 },
+        },
+      } as Code;
+      anchors.push(...fenceAnchors(node, docPath, heading, pythonHints, goHints).anchors);
+    }
+    index = end < lines.length ? end + 1 : end;
+  }
+
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    if (blockLines.has(lineIndex)) continue;
+    const line = lines[lineIndex] as string;
+    const inlineHeading = /^=+\s+(.+)$/u.exec(line);
+    if (inlineHeading?.[1]) {
+      heading = inlineHeading[1].trim();
+      continue;
+    }
+    const addInline = (token: string, column: number): void => {
+      const target = token.trim();
+      /* v8 ignore next */
+      if (target.length === 0) return;
+      anchors.push({
+        docPath,
+        line: lineIndex + 1,
+        column,
+        length: target.length,
+        token: target,
+        occurrence: 0,
+        surface: "inlineCode",
+        contextFp: contextFingerprint([heading, line], target),
+        importTable: {},
+        localDecls: [],
+        fragment: false,
+      });
+    };
+    for (const match of line.matchAll(SINGLE_LITERAL_RE)) {
+      addInline(match[1] as string, (match.index as number) + 2);
+    }
+    for (const match of line.matchAll(/\+([^+\n]+)\+/gu)) {
+      const token = (match[1] as string).trim();
+      if (!ADOC_TOKEN_RE.test(token)) continue;
+      addInline(token, (match.index as number) + 2);
+    }
+  }
+
+  const kept = anchors.filter((anchor) => {
+    const window = lines.slice(Math.max(0, anchor.line - 4), anchor.line + 3).join(" ");
+    return !hasNegativeCue(window);
+  });
+  return { anchors: assignOccurrences(kept), parseFailures: 0 };
+}
+
 const SINGLE_LITERAL_RE = /(?<!`)`(?!`)([^`\n]+)`(?!`)/gu;
 
 export function parseDocstring(
@@ -365,9 +464,14 @@ export function parseDoc(
   text: string,
   pythonHints?: PythonTypeHints,
   goHints?: GoTypeHints,
+  asciidoc = false,
 ): DocParseResult {
-  if (docPath.toLowerCase().endsWith(".rst")) {
+  const lower = docPath.toLowerCase();
+  if (lower.endsWith(".rst")) {
     return parseRstDoc(docPath, text, pythonHints, goHints);
+  }
+  if (lower.endsWith(".adoc") || lower.endsWith(".asciidoc")) {
+    return asciidoc ? parseAdocDoc(docPath, text, pythonHints, goHints) : { anchors: [], parseFailures: 0 };
   }
   let root: Root;
   try {
@@ -413,6 +517,7 @@ export function parseDocs(
   docs: string[],
   pythonHints?: PythonTypeHints,
   goHints?: GoTypeHints,
+  asciidoc = false,
 ): DocsParseResult {
   const anchors: DocAnchor[] = [];
   let parseFailures = 0;
@@ -426,7 +531,7 @@ export function parseDocs(
       continue;
     }
     docsScanned += 1;
-    const result = parseDoc(doc, text, pythonHints, goHints);
+    const result = parseDoc(doc, text, pythonHints, goHints, asciidoc);
     anchors.push(...result.anchors);
     parseFailures += result.parseFailures;
   }

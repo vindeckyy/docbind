@@ -24,6 +24,7 @@ export function explain(root: string, config: Config, target: ExplainTarget): st
     [doc],
     buildPythonTypeHints(surface.symbols),
     buildGoTypeHints(surface.symbols),
+    config.asciidoc,
   );
   const anchors = parsed.anchors.filter((anchor) =>
     anchor.line === target.line &&

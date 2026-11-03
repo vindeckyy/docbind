@@ -22,6 +22,7 @@ interface CorpusEntry {
   exclude: string[];
   languages: Config["languages"];
   docstrings?: boolean;
+  asciidoc?: boolean;
   mutations: number;
 }
 
@@ -90,6 +91,10 @@ async function materialize(entry: CorpusEntry): Promise<string> {
           exclude: entry.exclude,
           languages: entry.languages,
           ...(entry.docstrings ? { docstrings: true } : {}),
+    ...(entry.asciidoc ? { asciidoc: true } : {}),
+      ...(entry.asciidoc ? { asciidoc: true } : {}),
+        ...(entry.asciidoc ? { asciidoc: true } : {}),
+          ...(entry.asciidoc ? { asciidoc: true } : {}),
           ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
         }, null, 2)}\n`,
       );
@@ -109,6 +114,9 @@ async function materialize(entry: CorpusEntry): Promise<string> {
         exclude: entry.exclude,
         languages: entry.languages,
         ...(entry.docstrings ? { docstrings: true } : {}),
+    ...(entry.asciidoc ? { asciidoc: true } : {}),
+      ...(entry.asciidoc ? { asciidoc: true } : {}),
+        ...(entry.asciidoc ? { asciidoc: true } : {}),
         ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
       }, null, 2)}\n`,
     );
@@ -130,6 +138,8 @@ async function materialize(entry: CorpusEntry): Promise<string> {
       exclude: entry.exclude,
       languages: entry.languages,
       ...(entry.docstrings ? { docstrings: true } : {}),
+    ...(entry.asciidoc ? { asciidoc: true } : {}),
+      ...(entry.asciidoc ? { asciidoc: true } : {}),
       ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
     }, null, 2)}\n`,
   );
@@ -184,6 +194,7 @@ for (const entry of selected) {
     exclude: entry.exclude,
     languages: entry.languages,
     ...(entry.docstrings ? { docstrings: true } : {}),
+    ...(entry.asciidoc ? { asciidoc: true } : {}),
     ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();

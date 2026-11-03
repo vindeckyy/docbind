@@ -130,7 +130,7 @@ The full design is in [docs/architecture.md](docs/architecture.md).
 
 `docbind` checks symbol contracts, not prose claims. A doc sentence that names `getUser` binds the symbol. The tool verifies that the symbol still exists and that its parameters and return type still match. It does not check what the sentence says about them: a line claiming `getUser` returns `Email` passes while the signature returns `string`.
 
-Markdown and reStructuredText are the supported input formats. `docbind` reads inline code, headings, tables, fenced code, signature fences, and explicit references, plus RST literals, roles, and `code-block` directives. Python docstrings are opt-in with `"docstrings": true`. AsciiDoc and Javadoc are not read.
+Markdown and reStructuredText are the supported input formats. `docbind` reads inline code, headings, tables, fenced code, signature fences, and explicit references, plus RST literals, roles, and `code-block` directives. Python docstrings and AsciiDoc are opt-in with `"docstrings": true` and `"asciidoc": true`. Javadoc is not read.
 
 It does not execute anything. Examples are parsed, never run. Example-output drift, such as a printed value that no longer matches the code, is invisible.
 
@@ -202,7 +202,8 @@ The repository also ships a composite action in [`action/action.yml`](action/act
   },
   "maxFindings": 200,
   "minConfidence": 0.6,
-  "docstrings": false
+  "docstrings": false,
+  "asciidoc": false
 }
 ```
 
@@ -217,7 +218,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and eight local fixtures produce zero baseline findings, zero doc-edit findings, and 69 of 69 seeded mutation hits with no collateral findings. Bind rates are published per case in [docs/corpus.md](docs/corpus.md).
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and nine local fixtures produce zero baseline findings, zero doc-edit findings, and 72 of 72 seeded mutation hits with no collateral findings. Bind rates are published per case in [docs/corpus.md](docs/corpus.md).
 
 Local fixtures run in CI with `npm run corpus:fixtures`, which fails on baseline findings, doc-edit noise, missed mutations, or collateral findings. External repositories stay manual because they need network access.
 
@@ -245,16 +246,16 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.45 tree:
+Measured on the 0.1.46 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 334 passing |
-| Statements | 98.62% |
-| Branches | 95.07% |
-| Functions | 99.56% |
-| Lines | 99.35% |
-| Changed-line coverage, feature diff | 99.35% |
+| Tests | 338 passing |
+| Statements | 98.55% |
+| Branches | 95.01% |
+| Functions | 99.57% |
+| Lines | 99.31% |
+| Changed-line coverage, feature diff | 99.31% |
 | Structure gate | 81 of 81 checks |
 | Docs build | `mkdocs build --strict` passes |
 

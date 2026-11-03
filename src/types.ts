@@ -223,6 +223,7 @@ export interface Config {
   maxFindings: number;
   minConfidence: number;
   docstrings: boolean;
+  asciidoc: boolean;
 }
 
 export const RULES: Rule[] = [

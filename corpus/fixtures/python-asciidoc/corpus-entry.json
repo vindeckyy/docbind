@@ -1,0 +1,11 @@
+{
+  "name": "python-asciidoc-fixture",
+  "repo": "local/python-asciidoc",
+  "commit": "fixture-v1",
+  "local": "corpus/fixtures/python-asciidoc",
+  "docs": ["docs/**/*.adoc"],
+  "exclude": [],
+  "languages": { "typescript": false, "python": true, "rust": false, "go": false },
+  "asciidoc": true,
+  "mutations": 3
+}

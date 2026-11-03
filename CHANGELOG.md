@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.46] - 2026-11-03
+
+### Added
+
+- Opt-in AsciiDoc scanning via `"asciidoc": true` and `.adoc` / `.asciidoc` doc globs.
+- Backtick and `+monospace+` literals plus `[source,<lang>]` blocks with `----` or `....` delimiters.
+- Local `python-asciidoc-fixture`: 5 of 5 anchors bound, 3 of 3 mutations detected.
+
+### Limits
+
+- AsciiDoc is off by default because single backticks and plus signs are common in prose.
+- Javadoc is still unread.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.45] - 2026-11-03
 
 ### Added
@@ -866,3 +880,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.43]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.43
 [0.1.44]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.44
 [0.1.45]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.45
+[0.1.46]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.46

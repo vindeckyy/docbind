@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T21:32:54.017Z",
+  "generatedAt": "2026-11-03T21:37:39.933Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -657,6 +657,60 @@
         }
       ],
       "hits": 2,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "python-asciidoc-fixture",
+      "repo": "local/python-asciidoc",
+      "commit": "fixture-v1",
+      "nameOnlyFalsePositives": 0,
+      "docs": 1,
+      "anchors": 5,
+      "bound": 5,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "status_code",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Client",
+          "rule": "L2-moved",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L2-moved",
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "get",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 3,
+          "relatedRules": [
+            "L1-broken",
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 3,
       "misses": 0,
       "collateral": 0
     }

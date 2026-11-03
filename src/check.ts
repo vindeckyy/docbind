@@ -199,7 +199,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
   const surface = extractSurface(root, codeFiles, config);
   const pythonHints = buildPythonTypeHints(surface.symbols);
   const goHints = buildGoTypeHints(surface.symbols);
-  const parsedDocs = parseDocs(root, docs, pythonHints, goHints);
+  const parsedDocs = parseDocs(root, docs, pythonHints, goHints, config.asciidoc);
   const docstringAnchors =
     config.docstrings && config.languages.python
       ? (surface.docstrings ?? []).flatMap(

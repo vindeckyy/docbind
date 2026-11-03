@@ -22,7 +22,8 @@
   },
   "maxFindings": 200,
   "minConfidence": 0.6,
-  "docstrings": false
+  "docstrings": false,
+  "asciidoc": false
 }
 ```
 
@@ -37,6 +38,10 @@ TypeScript, Python, and Rust are on by default. Go is off. The rustdoc JSON extr
 ## Docstrings
 
 Set `"docstrings": true` to scan Python module, class, and function docstrings. Backticked symbols and Sphinx roles become anchors on the source file. It is off by default because docstrings mix prose with code tokens more loosely than dedicated docs.
+
+## AsciiDoc
+
+Set `"asciidoc": true` and include `.adoc` or `.asciidoc` paths in `docs`. Backtick and `+monospace+` literals become anchors, and `[source,<lang>]` blocks with `----` or `....` delimiters are parsed as fences. It is off by default because single backticks and plus signs are common in prose.
 
 ## Severity
 

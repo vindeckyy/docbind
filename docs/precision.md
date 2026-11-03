@@ -33,21 +33,21 @@ A binding also fails when the best score is within `0.05` of the second candidat
 
 ## Threshold sweep
 
-`npm run thresholds` replays the six non-rustdoc local fixtures at each floor. Each floor locks its own symbols, so the mutation set changes with the floor. Recall is measured against the targets that floor actually locked. Baseline findings on the unchanged tree are false positives by definition.
+`npm run thresholds` replays the seven non-rustdoc local fixtures at each floor. Each floor locks its own symbols, so the mutation set changes with the floor. Recall is measured against the targets that floor actually locked. Baseline findings on the unchanged tree are false positives by definition.
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.30 | 73 | 74 | 98.6% | 0 | 49/49 | 0 |
-| 0.40 | 73 | 74 | 98.6% | 0 | 49/49 | 0 |
-| 0.50 | 73 | 74 | 98.6% | 0 | 49/49 | 0 |
-| 0.55 | 73 | 74 | 98.6% | 0 | 49/49 | 0 |
-| **0.60** | **73** | **74** | **98.6%** | **0** | **49/49** | **0** |
-| 0.65 | 72 | 74 | 97.3% | 0 | 48/48 | 0 |
-| 0.70 | 72 | 74 | 97.3% | 0 | 48/48 | 0 |
-| 0.75 | 72 | 74 | 97.3% | 0 | 48/48 | 0 |
-| 0.80 | 66 | 74 | 89.2% | 0 | 42/42 | 0 |
-| 0.85 | 64 | 74 | 86.5% | 0 | 42/42 | 0 |
-| 0.90 | 64 | 74 | 86.5% | 0 | 42/42 | 0 |
+| 0.30 | 78 | 79 | 98.7% | 0 | 52/52 | 0 |
+| 0.40 | 78 | 79 | 98.7% | 0 | 52/52 | 0 |
+| 0.50 | 78 | 79 | 98.7% | 0 | 52/52 | 0 |
+| 0.55 | 78 | 79 | 98.7% | 0 | 52/52 | 0 |
+| **0.60** | **78** | **79** | **98.7%** | **0** | **52/52** | **0** |
+| 0.65 | 76 | 79 | 96.2% | 0 | 50/50 | 0 |
+| 0.70 | 76 | 79 | 96.2% | 0 | 50/50 | 0 |
+| 0.75 | 76 | 79 | 96.2% | 0 | 50/50 | 0 |
+| 0.80 | 70 | 79 | 88.6% | 0 | 44/44 | 0 |
+| 0.85 | 68 | 79 | 86.1% | 0 | 44/44 | 0 |
+| 0.90 | 68 | 79 | 86.1% | 0 | 44/44 | 0 |
 
 Recall is 100% at every local floor. The floors separate on coverage: 0.65 drops one bound anchor and its mutation target; 0.80 drops seven.
 
@@ -57,12 +57,12 @@ The same sweep over all twelve corpus cases gives a sharper coverage edge. Floor
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.40 | 812 | 3362 | 24.2% | 0 | 69/69 | 0 |
-| 0.50 | 812 | 3362 | 24.2% | 0 | 69/69 | 0 |
-| 0.55 | 796 | 3362 | 23.7% | 0 | 69/69 | 0 |
-| **0.60** | **795** | **3362** | **23.6%** | **0** | **69/69** | 0 |
-| 0.70 | 637 | 3362 | 18.9% | 0 | 68/68 | 0 |
-| 0.80 | 596 | 3362 | 17.7% | 0 | 61/61 | 0 |
+| 0.40 | 817 | 3367 | 24.3% | 0 | 72/72 | 0 |
+| 0.50 | 817 | 3367 | 24.3% | 0 | 72/72 | 0 |
+| 0.55 | 801 | 3367 | 23.8% | 0 | 72/72 | 0 |
+| **0.60** | **800** | **3367** | **23.8%** | 0 | **72/72** | 0 |
+| 0.70 | 641 | 3367 | 19.0% | 0 | 70/70 | 0 |
+| 0.80 | 600 | 3367 | 17.8% | 0 | 63/63 | 0 |
 
 The default stays at 0.60. Lowering to 0.50 would add 17 anchors, but each is a bare name with no import, qualification, signature, or API-doc context. The precision model treats name-only matches in prose as noise, and the test suite pins that rule. The 17 extra anchors are not evidence that the floor should move; they are the class of binding the floor exists to reject.
 
@@ -74,6 +74,6 @@ Raw rows are in `corpus/precision.json` for the local sweep and `corpus/precisio
 
 ## Caveats
 
-- The local sweep covers 74 anchors across six fixtures. The full sweep covers all 3360 anchors but only five floors.
+- The local sweep covers 79 anchors across seven fixtures. The full sweep covers all 3360 anchors but only five floors.
 - Recall here means detecting a seeded rename of a symbol that floor locked. It says nothing about symbols the floor did not bind.
 - The full sweep samples five floors. A finer scan between 0.50 and 0.70 could locate a tighter edge.
