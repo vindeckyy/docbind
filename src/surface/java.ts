@@ -221,9 +221,18 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
       index += match[0].length;
       continue;
     }
-    if ("+-*/()".includes(char)) {
+    if ("+-*/()&|^".includes(char)) {
       tokens.push({ type: "op", value: char });
       index += 1;
+      continue;
+    }
+    if (char === "<" || char === ">") {
+      let end = index;
+      while (source[end] === char) end += 1;
+      const operator = source.slice(index, end);
+      if (operator !== "<<" && operator !== ">>" && operator !== ">>>") return undefined;
+      tokens.push({ type: "op", value: operator });
+      index = end;
       continue;
     }
     return undefined;
@@ -280,7 +289,7 @@ function evaluateExpression(
         return { value: integral ? Math.trunc(operand.value) : operand.value, integral };
       }
       position += 1;
-      const value = parseAdd();
+      const value = parseOr();
       if (value === undefined || tokens[position]?.value !== ")") return undefined;
       position += 1;
       return value;
@@ -338,7 +347,58 @@ function evaluateExpression(
     return left;
   };
 
-  const result = parseAdd();
+  const parseShift = (): EvaluatedConstant | undefined => {
+    let left = parseAdd();
+    while (left !== undefined && tokens[position]?.type === "op") {
+      const operator = tokens[position]?.value as string;
+      if (operator !== "<<" && operator !== ">>" && operator !== ">>>") break;
+      position += 1;
+      const right = parseAdd();
+      if (
+        typeof left.value !== "number" ||
+        typeof right?.value !== "number" ||
+        !left.integral ||
+        !right.integral
+      ) {
+        return undefined;
+      }
+      const value =
+        operator === "<<" ? left.value << right.value : operator === ">>" ? left.value >> right.value : left.value >>> right.value;
+      left = { value, integral: true };
+    }
+    return left;
+  };
+
+  const parseBitwise = (
+    next: () => EvaluatedConstant | undefined,
+    operators: string[],
+  ): EvaluatedConstant | undefined => {
+    let left = next();
+    while (left !== undefined && tokens[position]?.type === "op") {
+      const operator = tokens[position]?.value as string;
+      if (!operators.includes(operator)) break;
+      position += 1;
+      const right = next();
+      if (
+        typeof left.value !== "number" ||
+        typeof right?.value !== "number" ||
+        !left.integral ||
+        !right.integral
+      ) {
+        return undefined;
+      }
+      const value =
+        operator === "&" ? left.value & right.value : operator === "^" ? left.value ^ right.value : left.value | right.value;
+      left = { value, integral: true };
+    }
+    return left;
+  };
+
+  const parseAnd = (): EvaluatedConstant | undefined => parseBitwise(parseShift, ["&"]);
+  const parseXor = (): EvaluatedConstant | undefined => parseBitwise(parseAnd, ["^"]);
+  const parseOr = (): EvaluatedConstant | undefined => parseBitwise(parseXor, ["|"]);
+
+  const result = parseOr();
   if (result === undefined || position !== tokens.length) return undefined;
   return result;
 }

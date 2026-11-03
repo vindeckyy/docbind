@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.79] - 2026-11-03
+
+### Added
+
+- Java default expressions evaluate integral bitwise `&`, `|`, `^`, `<<`, `>>`, and `>>>`.
+- Shift and bitwise precedence follows Java: shifts bind tighter than `&`, then `^`, then `|`.
+- Bitwise operators require integral operands; float or string operands leave the default unevaluated.
+- Corpus adds `Marker.flags()` with default `6 & 3`; editing `3` to `1` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 104 to 105; `java-javadoc-fixture` runs 33 mutations with 28 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.74%; line coverage to 99.25%.
+
+### Limits
+
+- Bitwise operations use 32-bit int semantics; `long` values beyond that range can differ.
+- Function calls and reference casts stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.78] - 2026-11-03
 
 ### Added
@@ -1432,3 +1452,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.76]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.76
 [0.1.77]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.77
 [0.1.78]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.78
+[0.1.79]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.79

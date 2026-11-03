@@ -75,7 +75,7 @@ class Internal {
  * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, {@link Marker#tags()},
  * {@link Marker#fromConstant()}, {@link Marker#fromShared()}, {@link Marker#arithmetic()},
  * {@link Marker#intDiv()}, {@link Marker#halfConstant()}, {@link Marker#widened()},
- * and {@link Marker#castDiv()}.
+ * {@link Marker#castDiv()}, and {@link Marker#flags()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -99,6 +99,8 @@ public @interface Marker {
     double widened() default Constants.WIDENED;
 
     double castDiv() default (double) 7 / 2;
+
+    int flags() default 6 & 3;
 }
 
 class Constants {

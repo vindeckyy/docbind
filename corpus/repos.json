@@ -349,6 +349,14 @@
         "to": 4,
         "symbol": "castDiv",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "flags",
+        "from": 3,
+        "to": 1,
+        "symbol": "flags",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

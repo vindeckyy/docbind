@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T23:53:41.401Z",
+  "generatedAt": "2026-11-03T23:57:32.427Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,8 +720,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 27,
-      "bound": 27,
+      "anchors": 28,
+      "bound": 28,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -729,12 +729,34 @@
       "docEditRules": [],
       "mutations": [
         {
+          "symbol": "flags",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "get",
           "rule": "L2-moved",
           "hit": true,
           "findings": 1,
           "relatedRules": [
             "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "castDiv",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -872,17 +894,6 @@
           "collateralRules": []
         },
         {
-          "symbol": "castDiv",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
           "symbol": "flag",
           "rule": "L4-renamed",
           "hit": true,
@@ -928,17 +939,6 @@
         },
         {
           "symbol": "RED",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "value",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -1053,6 +1053,19 @@
           "collateralRules": []
         },
         {
+          "symbol": "flags",
+          "kind": "default",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "fromConstant",
           "kind": "constant",
           "expectedRule": "L3-reshaped",
@@ -1105,7 +1118,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 32,
+      "hits": 33,
       "misses": 0,
       "collateral": 0
     }

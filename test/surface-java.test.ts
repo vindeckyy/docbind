@@ -394,6 +394,17 @@ describe("Java surface", () => {
         "    int castGroup() default (int) (7.0 / 2.0);",
         "    double castIntDiv() default (double) (7 / 2);",
         "    int castBad() default (int) \"x\";",
+        "    int bitsAnd() default 6 & 3;",
+        "    int bitsOr() default 4 | 1;",
+        "    int bitsXor() default 6 ^ 3;",
+        "    int shiftLeft() default 1 << 3;",
+        "    int shiftRight() default -8 >> 2;",
+        "    int shiftUnsigned() default -1 >>> 28;",
+        "    int bitPrec() default 1 + 2 << 3;",
+        "    int bitFloat() default 1.0 & 1;",
+        "    int shiftFloat() default 1 << 1.0;",
+        "    int bitString() default \"a\" & 1;",
+        "    int comparison() default 1 < 2;",
         "    double wdiv() default 7 / 2;",
         "    double floatDiv() default Constants.FLOAT_DIV;",
         "    long longHalfConstant() default Constants.LONG_HALF;",
@@ -469,6 +480,16 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "castGroup")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "castIntDiv")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "castBad")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "bitsAnd")?.shape.evaluatedDefault).toBe(2);
+    expect(result.symbols.find((symbol) => symbol.name === "bitsOr")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "bitsXor")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "shiftLeft")?.shape.evaluatedDefault).toBe(8);
+    expect(result.symbols.find((symbol) => symbol.name === "shiftRight")?.shape.evaluatedDefault).toBe(-2);
+    expect(result.symbols.find((symbol) => symbol.name === "shiftUnsigned")?.shape.evaluatedDefault).toBe(15);
+    expect(result.symbols.find((symbol) => symbol.name === "bitPrec")?.shape.evaluatedDefault).toBe(24);
+    for (const name of ["bitFloat", "shiftFloat", "bitString", "comparison"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     expect(result.symbols.find((symbol) => symbol.name === "longHalfConstant")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "negHalfConstant")?.shape.evaluatedDefault).toBe(-3);
     expect(result.symbols.find((symbol) => symbol.name === "on")?.shape.evaluatedDefault).toBe(true);
