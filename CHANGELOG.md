@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.86] - 2026-11-03
+
+### Added
+
+- Java default expressions parse `char` literal tokens, including escapes and `\uXXXX`.
+- `(char) 65` evaluates to `"A"`; `(Character) 'x'` evaluates to `"x"`.
+- String literals support `.length()` and `.isEmpty()`.
+- Unknown string methods and chained unsupported calls stay unevaluated.
+- Corpus adds `Marker.textLength()` with default `"docbind".length()`; editing the literal to `"docbin"` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 111 to 112; `java-javadoc-fixture` runs 40 mutations with 35 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.98%; line coverage to 99.25%.
+
+### Limits
+
+- Only `length()` and `isEmpty()` are supported on string literals.
+- User methods and constructors stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.85] - 2026-11-03
 
 ### Added
@@ -1588,3 +1609,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.83]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.83
 [0.1.84]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.84
 [0.1.85]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.85
+[0.1.86]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.86

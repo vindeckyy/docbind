@@ -397,6 +397,14 @@
         "to": "no",
         "symbol": "refText",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "textLength",
+        "from": "docbind",
+        "to": "docbin",
+        "symbol": "textLength",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

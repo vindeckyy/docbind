@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T00:26:10.496Z",
+  "generatedAt": "2026-11-04T00:30:21.761Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,8 +720,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 34,
-      "bound": 34,
+      "anchors": 35,
+      "bound": 35,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -729,7 +729,7 @@
       "docEditRules": [],
       "mutations": [
         {
-          "symbol": "boxed",
+          "symbol": "textLength",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -796,17 +796,6 @@
         },
         {
           "symbol": "count",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "refText",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -944,6 +933,17 @@
           "findings": 1,
           "relatedRules": [
             "L2-moved"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "fromConstant",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -1131,6 +1131,19 @@
           "collateralRules": []
         },
         {
+          "symbol": "textLength",
+          "kind": "default",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "fromConstant",
           "kind": "constant",
           "expectedRule": "L3-reshaped",
@@ -1196,7 +1209,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 39,
+      "hits": 40,
       "misses": 0,
       "collateral": 0
     }

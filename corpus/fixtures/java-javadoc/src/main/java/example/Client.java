@@ -77,7 +77,7 @@ class Internal {
  * {@link Marker#intDiv()}, {@link Marker#halfConstant()}, {@link Marker#widened()},
  * {@link Marker#castDiv()}, {@link Marker#flags()}, {@link Marker#wide()},
  * {@link Marker#maxDefault()}, {@link Marker#rounded()}, {@link Marker#root()},
- * {@link Marker#boxed()}, and {@link Marker#refText()}.
+ * {@link Marker#boxed()}, {@link Marker#refText()}, and {@link Marker#textLength()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -115,6 +115,8 @@ public @interface Marker {
     int boxed() default Constants.BOXED;
 
     String refText() default (String) "ok";
+
+    int textLength() default "docbind".length();
 }
 
 class Constants {

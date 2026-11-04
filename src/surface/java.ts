@@ -204,8 +204,36 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
       index = end;
       continue;
     }
-    if (/[0-9.]/u.test(char)) {
+    if (char === "'") {
+      let end = index + 1;
+      while (end < source.length) {
+        if (source[end] === "\\") {
+          end += 2;
+          continue;
+        }
+        if (source[end] === "'") {
+          end += 1;
+          break;
+        }
+        end += 1;
+      }
+      /* v8 ignore next */
+      if (source[end - 1] !== "'") return undefined;
+      const raw = source.slice(index + 1, end - 1);
+      const value = raw
+        .replace(/\\u([0-9a-fA-F]{4})/gu, (_match, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)))
+        .replace(/\\n/gu, "\n")
+        .replace(/\\t/gu, "\t")
+        .replace(/\\r/gu, "\r")
+        .replace(/\\'/gu, "'")
+        .replace(/\\\\/gu, "\\");
+      tokens.push({ type: "string", value });
+      index = end;
+      continue;
+    }
+    if (/[0-9]/u.test(char) || (char === "." && /[0-9]/u.test(source[index + 1] ?? ""))) {
       const match = /^(?:0[xX][0-9a-fA-F]+|\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?[fFdDlL]?/u.exec(source.slice(index));
+      /* v8 ignore next */
       if (!match) return undefined;
       const text = match[0];
       const numeric = Number(text.replace(/[fFdDlL]$/u, ""));
@@ -222,7 +250,7 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
       index += match[0].length;
       continue;
     }
-    if ("+-*/()&|^,".includes(char)) {
+    if ("+-*/()&|^,.".includes(char)) {
       tokens.push({ type: "op", value: char });
       index += 1;
       continue;
@@ -247,7 +275,7 @@ interface EvaluatedConstant {
   width?: "int" | "long";
 }
 
-const CAST_TYPES = new Set(["int", "long", "short", "byte", "double", "float"]);
+const CAST_TYPES = new Set(["int", "long", "short", "byte", "char", "double", "float"]);
 
 const REFERENCE_CAST_TYPES = new Set([
   "String",
@@ -261,6 +289,7 @@ const REFERENCE_CAST_TYPES = new Set([
   "Double",
   "Float",
   "Boolean",
+  "Character",
 ]);
 
 function isIntegralLiteral(text: string): boolean {
@@ -383,6 +412,23 @@ function evaluateExpression(
     }
     if (token.type === "string") {
       position += 1;
+      if (
+        tokens[position]?.value === "." &&
+        tokens[position + 1]?.type === "ident" &&
+        tokens[position + 2]?.value === "(" &&
+        tokens[position + 3]?.value === ")"
+      ) {
+        const method = tokens[position + 1]?.value;
+        if (method === "length") {
+          position += 4;
+          return { value: token.value.length, integral: true, width: "int" };
+        }
+        if (method === "isEmpty") {
+          position += 4;
+          return { value: token.value.length === 0, integral: false };
+        }
+        return undefined;
+      }
       return { value: token.value, integral: false };
     }
     if (token.type === "ident") {
@@ -422,6 +468,11 @@ function evaluateExpression(
         if (type.value === "Boolean") {
           return typeof operand.value === "boolean" ? { value: operand.value, integral: false } : undefined;
         }
+        if (type.value === "Character") {
+          return typeof operand.value === "string" && operand.value.length === 1
+            ? { value: operand.value, integral: false }
+            : undefined;
+        }
         if (type.value === "Integer" || type.value === "Short" || type.value === "Byte") {
           return typeof operand.value === "number"
             ? { value: operand.value, integral: true, width: "int" }
@@ -442,6 +493,18 @@ function evaluateExpression(
         position += 3;
         const operand = parsePrimary();
         if (operand === undefined) return undefined;
+        if (type.value === "char") {
+          const code = operand.integral
+            ? toBigInt(operand.value)
+            : typeof operand.value === "number"
+              ? BigInt(Math.trunc(operand.value))
+              : undefined;
+          if (code === undefined) return undefined;
+          return {
+            value: String.fromCharCode(Number(BigInt.asUintN(16, code))),
+            integral: false,
+          };
+        }
         const integral = type.value !== "double" && type.value !== "float";
         if (!integral) {
           if (typeof operand.value !== "number") return undefined;

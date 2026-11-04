@@ -455,6 +455,17 @@ describe("Java surface", () => {
         "    Long refLongBad() default (Long) \"x\";",
         "    Double refDoubleBad() default (Double) \"x\";",
         "    double mathPowExpLong() default Math.pow(1, 1L << 62);",
+        "    int strLen() default \"hello\".length();",
+        "    boolean strEmpty() default \"\".isEmpty();",
+        "    boolean strNotEmpty() default \"x\".isEmpty();",
+        "    char charCast() default (char) 65;",
+        "    char charFloat() default (char) 66.9;",
+        "    Character charBox() default (Character) 'x';",
+        "    Character escapedChar() default (Character) '\\n';",
+        "    int charBad() default (Character) \"xy\";",
+        "    int charCastBad() default (char) \"x\";",
+        "    int strUnknown() default \"x\".hashCode();",
+        "    int strChain() default \"x\".trim().length();",
         "    double mathSqrtLong() default Math.sqrt(1L << 62);",
         "    double mathPowLong() default Math.pow(1L << 62, 1);",
         "    int bitsAnd() default 6 & 3;",
@@ -596,6 +607,16 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "refDouble")?.shape.evaluatedDefault).toBe(5);
     expect(result.symbols.find((symbol) => symbol.name === "refFloat")?.shape.evaluatedDefault).toBe(5);
     expect(result.symbols.find((symbol) => symbol.name === "mathPowExpLong")?.shape.evaluatedDefault).toBe(1);
+    expect(result.symbols.find((symbol) => symbol.name === "strLen")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "strEmpty")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "strNotEmpty")?.shape.evaluatedDefault).toBe(false);
+    expect(result.symbols.find((symbol) => symbol.name === "charCast")?.shape.evaluatedDefault).toBe("A");
+    expect(result.symbols.find((symbol) => symbol.name === "charFloat")?.shape.evaluatedDefault).toBe("B");
+    expect(result.symbols.find((symbol) => symbol.name === "charBox")?.shape.evaluatedDefault).toBe("x");
+    expect(result.symbols.find((symbol) => symbol.name === "escapedChar")?.shape.evaluatedDefault).toBe("\n");
+    for (const name of ["charBad", "charCastBad", "strUnknown", "strChain"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of [
       "refBad",
       "refNumberBad",
