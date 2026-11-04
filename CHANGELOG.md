@@ -2,6 +2,29 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.84] - 2026-11-03
+
+### Added
+
+- Boxed numeric types `Integer`, `Long`, `Short`, and `Byte` count as integral for constant initialisers.
+- Constant values carry int or long width from boxed declarations, so unboxed arithmetic and defaults stay integral.
+- Corpus adds `Constants.BOXED` declared `Integer` and initialised with `7 / 2`; editing `2` to `4` must produce `L3-reshaped` on `Marker#boxed`.
+
+### Fixed
+
+- A field initialiser containing `<<` was parsed as a generic depth increase, so the field was skipped. Left shifts no longer change generic nesting depth.
+
+### Changed
+
+- Corpus mutations: 109 to 110; `java-javadoc-fixture` runs 38 mutations with 33 anchors, all hitting with zero collateral.
+- Branch coverage stays at 95.88%; line coverage at 99.26%.
+
+### Limits
+
+- Reference casts, user methods, and constructors stay unevaluated.
+- Float and double arithmetic remains JavaScript number arithmetic.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.83] - 2026-11-03
 
 ### Added
@@ -1543,3 +1566,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.81]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.81
 [0.1.82]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.82
 [0.1.83]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.83
+[0.1.84]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.84

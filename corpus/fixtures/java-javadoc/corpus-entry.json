@@ -159,6 +159,14 @@
       "to": 4,
       "symbol": "widened",
       "expectedRule": "L3-reshaped"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "field": "BOXED",
+      "from": 2,
+      "to": 4,
+      "symbol": "boxed",
+      "expectedRule": "L3-reshaped"
     }
   ]
 }

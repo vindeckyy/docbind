@@ -386,6 +386,9 @@ describe("Java surface", () => {
         "    String unqualified() default NAME;",
         "    int computed() default Constants.COMPUTED;",
         "    int limit() default Constants.LIMIT;",
+        "    int boxed() default Constants.BOXED;",
+        "    long boxedLong() default Constants.BOXED_LONG;",
+        "    int boxedMath() default Constants.BOXED + 1;",
         "    int halfConstant() default Constants.HALF;",
         "    double widened() default Constants.WIDENED;",
         "    double castDiv() default (double) 7 / 2;",
@@ -473,6 +476,8 @@ describe("Java surface", () => {
         "    static final boolean ON = true;",
         "    static final int UNINITIALIZED;",
         "    static final int COMPUTED = 1 + 2;",
+        "    static final Integer BOXED = 7 / 2;",
+        "    static final Long BOXED_LONG = 1L << 40;",
         "    static final int HALF = 7 / 2;",
         "    static final long LONG_HALF = 7 / 2;",
         "    static final int NEG_HALF = -7 / 2;",
@@ -523,6 +528,9 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "unqualified")?.shape.evaluatedDefault).toBe("named");
     expect(result.symbols.find((symbol) => symbol.name === "computed")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "limit")?.shape.evaluatedDefault).toBe(7);
+    expect(result.symbols.find((symbol) => symbol.name === "boxed")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "boxedLong")?.shape.evaluatedDefault).toBe(1099511627776);
+    expect(result.symbols.find((symbol) => symbol.name === "boxedMath")?.shape.evaluatedDefault).toBe(4);
     expect(result.symbols.find((symbol) => symbol.name === "halfConstant")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "widened")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "wdiv")?.shape.evaluatedDefault).toBe(3);

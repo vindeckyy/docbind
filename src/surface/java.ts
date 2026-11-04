@@ -254,11 +254,12 @@ function isIntegralLiteral(text: string): boolean {
 }
 
 function isIntegralType(type: string | undefined): boolean {
-  return Boolean(type && /^(?:int|long|short|byte)$/u.test(type.trim()));
+  return Boolean(type && /^(?:int|long|short|byte|Integer|Long|Short|Byte)$/u.test(type.trim()));
 }
 
 function integralWidth(type: string): "int" | "long" {
-  return type.trim() === "long" ? "long" : "int";
+  const name = type.trim();
+  return name === "long" || name === "Long" ? "long" : "int";
 }
 
 function literalWidth(text: string): "int" | "long" {
@@ -1024,6 +1025,10 @@ class JavaParser {
       let paren = -1;
       while (scan < end) {
         const value = (tokens[scan] as Token).value;
+        if (value === "<" && (tokens[scan + 1] as Token | undefined)?.value === "<") {
+          scan += 2;
+          continue;
+        }
         if (["<", "[", "{"].includes(value)) depth += 1;
         else if ([">", "]"].includes(value)) depth = Math.max(0, depth - 1);
         else if (value === ";" && depth === 0) {
