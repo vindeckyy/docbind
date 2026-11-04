@@ -887,6 +887,28 @@ describe("check pipeline", () => {
     expect(checkProject(root, disabled).pending).toEqual([]);
   });
 
+  it("checks inline contracts without a lock", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": userCode(),
+      "docs/api.md": "placeholder\n",
+    });
+    const noLock = parseConfig({ lock: false });
+    const surface = extractSurface(root, discoverCode(root, noLock), noLock);
+    const hash = surface.symbols.find((symbol) => symbol.name === "getUser")?.shapeHash;
+    writeFileSync(
+      join(root, "docs/api.md"),
+      `<!-- docbind: symbol=src/users.ts#getUser contract=${hash} -->\n\nCall the method.\n`,
+    );
+    expect(checkProject(root, noLock).findings).toEqual([]);
+    writeFileSync(
+      join(root, "src/users.ts"),
+      "export interface User { id: string }\nexport function getUser(id: number): User { return { id: String(id) }; }\n",
+    );
+    const changed = checkProject(root, noLock);
+    expect(changed.findings.some((finding) => finding.rule === "L3-reshaped" && finding.severity === "error")).toBe(true);
+  });
+
   it("downgrades inferred findings when explicit annotations exist", () => {
     const root = tempProject({
       "package.json": JSON.stringify({ name: "app" }),

@@ -153,6 +153,7 @@ export interface DocAnchor {
   fragment: boolean;
   signatureShape?: Shape;
   explicitSymbol?: string;
+  explicitContract?: string;
 }
 
 export interface LockEntry {
@@ -271,6 +272,7 @@ export interface Config {
   asciidoc: boolean;
   javadoc: boolean;
   javaDefaults: boolean;
+  lock: boolean;
 }
 
 export const RULES: Rule[] = [

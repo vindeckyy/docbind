@@ -29,7 +29,13 @@ Explicit binding:
 
 The path is project-relative. The part after `#` may be a bare name or a qualified member. Explicit bindings skip confidence scoring; if the symbol is missing or the name is ambiguous within that file, the check fails.
 
-`docbind adopt` proposes explicit annotations for inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent.
+`docbind adopt` proposes explicit annotations for inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent. `--contract` includes the current shape hash for lock-free checks.
+
+`docbind check --no-lock` reads inline `contract=` assertions and ignores `docbind.lock.json`. The annotation must include the contract for reshape detection:
+
+```html
+<!-- docbind: symbol=src/users.ts#getUser contract=3edc239f12f5a59e -->
+```
 
 `docbind check --mode=strict` fails when unbound tokens fall on changed lines. `--mode=gate` is the default and keeps abstentions as notes.
 

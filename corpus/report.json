@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T13:15:51.672Z",
+  "generatedAt": "2026-11-04T13:19:20.699Z",
   "report": [
     {
       "name": "slugify",
@@ -1658,6 +1658,37 @@
         }
       ],
       "hits": 46,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "java-nolock-fixture",
+      "repo": "local/java-nolock",
+      "commit": "fixture-v1",
+      "nameOnlyFalsePositives": 0,
+      "docs": 1,
+      "anchors": 2,
+      "bound": 2,
+      "unbound": 0,
+      "bindRate": 1,
+      "baselineFindings": 0,
+      "baselineRules": [],
+      "docEditFindings": 0,
+      "docEditRules": [],
+      "mutations": [
+        {
+          "symbol": "getUser",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        }
+      ],
+      "hits": 1,
       "misses": 0,
       "collateral": 0
     }

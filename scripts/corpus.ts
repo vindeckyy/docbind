@@ -27,6 +27,7 @@ interface CorpusEntry {
   asciidoc?: boolean;
   javadoc?: boolean;
   javaDefaults?: boolean;
+  lock?: boolean;
   mutations: number;
   valueMutations?: Array<{
     file: string;
@@ -137,6 +138,7 @@ function writeCorpusConfig(target: string, entry: CorpusEntry): void {
       ...(entry.asciidoc ? { asciidoc: true } : {}),
       ...(entry.javadoc ? { javadoc: true } : {}),
       ...(entry.javaDefaults ? { javaDefaults: true } : {}),
+      ...(entry.lock === false ? { lock: false } : {}),
       ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
     }, null, 2)}\n`,
   );
@@ -404,6 +406,7 @@ for (const entry of selected) {
     ...(entry.asciidoc ? { asciidoc: true } : {}),
     ...(entry.javadoc ? { javadoc: true } : {}),
     ...(entry.javaDefaults ? { javaDefaults: true } : {}),
+    ...(entry.lock === false ? { lock: false } : {}),
     ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();

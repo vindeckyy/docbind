@@ -119,6 +119,20 @@ function signatureFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Fi
   );
 }
 
+function inlineContractFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
+  if (!anchor.explicitContract || anchor.explicitContract === symbol.shapeHash) return undefined;
+  return makeFinding(
+    {
+      rule: "L3-reshaped",
+      anchor,
+      symbol,
+      message: `${anchor.token} inline contract changed`,
+      suggestion: `old: ${anchor.explicitContract}\nnew: ${symbol.shapeHash}`,
+    },
+    config,
+  );
+}
+
 function deprecatedFinding(entry: LockEntry, anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
   if (!symbol.contractFlags.includes("deprecated")) return undefined;
   const oldShape = parseShapeText(entry.shape);
@@ -212,7 +226,11 @@ export function checkProject(root: string, config: Config, options: CheckProject
       )
     : [];
   const loadedLock = readLock(root);
-  const lock = options.ignoreBaseline ? { ...loadedLock, anchors: [] } : loadedLock;
+  const lock = config.lock === false
+    ? { ...loadedLock, anchors: [], tombstones: [] }
+    : options.ignoreBaseline
+      ? { ...loadedLock, anchors: [] }
+      : loadedLock;
   const index = buildIndex(surface.symbols);
   const anchors = [...parsedDocs.anchors, ...docstringAnchors, ...javadocAnchors];
   const byKey = new Map(anchors.map((anchor) => [anchorKey(anchor), anchor]));
@@ -309,6 +327,8 @@ export function checkProject(root: string, config: Config, options: CheckProject
         threshold: config.minConfidence,
       });
       if (resolved.binding) {
+        const contract = inlineContractFinding(anchor, resolved.binding.symbol, config);
+        if (contract) findings.push(contract);
         pending.push(resolved.binding);
         referenced.add(resolved.binding.symbol.id);
       } else {
@@ -374,6 +394,8 @@ export function checkProject(root: string, config: Config, options: CheckProject
       unbound.push({ anchor, reason: resolved.reason });
       continue;
     }
+    const contract = inlineContractFinding(anchor, resolved.binding.symbol, config);
+    if (contract) findings.push(contract);
     if (anchor.surface === "signatureFence") {
       const signature = signatureFinding(anchor, resolved.binding.symbol, config);
       if (signature) {

@@ -1,0 +1,12 @@
+{
+  "name": "java-nolock-fixture",
+  "repo": "local/java-nolock",
+  "commit": "fixture-v1",
+  "local": "corpus/fixtures/java-nolock",
+  "docs": ["docs/**/*.md"],
+  "exclude": [],
+  "languages": { "typescript": false, "python": false, "rust": false, "go": false },
+  "javadoc": true,
+  "lock": false,
+  "mutations": 1
+}

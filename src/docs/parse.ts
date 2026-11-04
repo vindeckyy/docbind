@@ -62,6 +62,7 @@ function walk(
     const value = (node as { value: string }).value;
     const match = /docbind:\s*symbol=([^\s>]+)/u.exec(value);
     if (match?.[1]) {
+      const contract = /contract=([0-9a-f]+)/u.exec(value)?.[1];
       const raw = match[1];
       const hash = raw.lastIndexOf("#");
       const token = (hash >= 0 ? raw.slice(hash + 1) : raw).trim();
@@ -80,6 +81,7 @@ function walk(
           localDecls: [],
           fragment: false,
           explicitSymbol: raw,
+          ...(contract ? { explicitContract: contract } : {}),
         });
       }
     }

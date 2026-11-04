@@ -12,7 +12,7 @@ export interface Adoption {
   annotation: string;
 }
 
-export function suggestAnnotations(root: string, config: Config): Adoption[] {
+export function suggestAnnotations(root: string, config: Config, includeContract = false): Adoption[] {
   const result = checkProject(root, config);
   const explicit = new Set(
     result.pending
@@ -24,7 +24,8 @@ export function suggestAnnotations(root: string, config: Config): Adoption[] {
   for (const binding of result.pending) {
     const anchor = binding.anchor;
     if (anchor.explicitSymbol) continue;
-    const annotation = `<!-- docbind: symbol=${binding.symbol.filePath}#${binding.symbol.name} -->`;
+    const contract = includeContract ? ` contract=${binding.symbol.shapeHash}` : "";
+    const annotation = `<!-- docbind: symbol=${binding.symbol.filePath}#${binding.symbol.name}${contract} -->`;
     if (explicit.has(`${anchor.docPath}\u0000${binding.symbol.filePath}#${binding.symbol.name}`)) continue;
     const key = `${anchor.docPath}\u0000${anchor.line}\u0000${annotation}`;
     if (seen.has(key)) continue;

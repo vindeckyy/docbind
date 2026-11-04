@@ -27,8 +27,9 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/python-asciidoc (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/java-javadoc (local) | Java | 1 | 42 | 42 | 0 | 100.0% | 0 | 46 | 46 | 0 | 0 |
+| local/java-nolock (local) | Java | 1 | 2 | 2 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
 
-Overall: 842 of 3409 anchors bound, or 24.7%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
+Overall: 844 of 3411 anchors bound, or 24.7%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -112,6 +113,10 @@ The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`,
 The first httpx run bound 34 of 2541 anchors. Class-qualified calls such as `Response.json()` were vetoed as file paths, and package-qualified names such as `httpx.Client` had no aliases. Exempting class-qualified calls from the path veto and adding package and class aliases raised httpx to 65 bound anchors.
 
 Python fences then gained local type inference. Source return annotations feed a type map, so `response = client.get(...)` resolves through `Client.get -> Response` and `response.json()` becomes `Response.json`. Annotations, `with ... as` blocks, REPL prompts, and `pycon` fences are handled. Dotted chains stay whole instead of splitting into unrelated identifiers. This raised httpx to 379 bound anchors on 2972 anchors with zero baseline findings.
+
+## No-lock mode
+
+`java-nolock-fixture` uses a Markdown annotation with an inline contract hash and `"lock": false`. It binds 2 of 2 anchors and detects the one mutation without reading lock assertions. The lock is still generated for mutation selection, but `check` ignores it in this mode.
 
 ## How the corpus was selected
 

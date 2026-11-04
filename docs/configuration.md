@@ -25,7 +25,8 @@
   "docstrings": false,
   "asciidoc": false,
   "javadoc": false,
-  "javaDefaults": false
+  "javaDefaults": false,
+  "lock": true
 }
 ```
 

@@ -26,11 +26,11 @@ const HELP = `docbind ${ENGINE_VERSION}
 
 Usage:
   docbind init
-  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--changed-only] [--base <rev>]
+  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--no-lock] [--changed-only] [--base <rev>]
   docbind lock [--check] [--refresh]
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
-  docbind adopt [--write] [--json]
+  docbind adopt [--write] [--json] [--contract]
   docbind audit [--unbound] [--json]
   docbind stats
 
@@ -101,6 +101,8 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         write: { type: "boolean" },
         unbound: { type: "boolean" },
         mode: { type: "string" },
+        "no-lock": { type: "boolean" },
+        contract: { type: "boolean" },
       },
     });
   } catch (error) {
@@ -145,6 +147,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     }
 
     const config = loadConfig(io.cwd);
+    if (option("no-lock")) config.lock = false;
 
     if (command === "check") {
       const result = checkProject(io.cwd, config);
@@ -244,7 +247,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     }
 
     if (command === "adopt") {
-      const suggestions = suggestAnnotations(io.cwd, config);
+      const suggestions = suggestAnnotations(io.cwd, config, option("contract"));
       if (option("json")) {
         io.stdout(JSON.stringify(suggestions, null, 2));
         if (option("write")) {

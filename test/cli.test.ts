@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.1.98");
+    expect((await cli(["--version"], root)).stdout).toBe("0.1.99");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -147,6 +147,14 @@ describe("CLI check", () => {
     expect((await cli(["adopt", "--json", "--write"], root)).code).toBe(0);
     const second = await cli(["adopt", "--json"], root);
     expect(JSON.parse(second.stdout)).toEqual([]);
+  });
+
+  it("adopts inline contracts for no-lock checks", async () => {
+    const root = project("Call `getUser(id)` in prose.\n");
+    expect((await cli(["adopt", "--write", "--contract"], root)).code).toBe(0);
+    const doc = readFileSync(join(root, "docs/api.md"), "utf8");
+    expect(doc).toMatch(/contract=[0-9a-f]{12}/u);
+    expect((await cli(["check", "--no-lock"], root)).code).toBe(0);
   });
 
   it("fails strict mode on changed abstentions", async () => {

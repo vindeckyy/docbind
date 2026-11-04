@@ -33,6 +33,12 @@ describe("explicit annotations", () => {
     expect(anchors[0]?.explicitSymbol).toBe("src/users.ts#getUser");
   });
 
+  it("parses inline contracts", () => {
+    const anchors = parseDoc("docs/api.md", "<!-- docbind: symbol=src/users.ts#getUser contract=abc123 -->\n").anchors;
+    expect(anchors[0]?.explicitSymbol).toBe("src/users.ts#getUser");
+    expect(anchors[0]?.explicitContract).toBe("abc123");
+  });
+
   it("handles hashless and empty symbols", () => {
     const anchors = parseDoc("docs/api.md", "<!-- docbind: symbol=getUser -->\n<!-- docbind: symbol=# -->\n").anchors;
     expect(anchors).toHaveLength(1);

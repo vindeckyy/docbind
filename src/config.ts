@@ -40,6 +40,7 @@ export const DEFAULT_CONFIG: Config = {
   asciidoc: false,
   javadoc: false,
   javaDefaults: false,
+  lock: true,
 };
 
 const severitySchema = z.enum(["error", "warning", "note", "off"]);
@@ -75,6 +76,7 @@ const rawConfigSchema = z
     asciidoc: z.boolean().optional(),
     javadoc: z.boolean().optional(),
     javaDefaults: z.boolean().optional(),
+    lock: z.boolean().optional(),
   })
   .strict();
 
@@ -100,6 +102,7 @@ export function parseConfig(input: unknown): Config {
     asciidoc: raw.asciidoc ?? DEFAULT_CONFIG.asciidoc,
     javadoc: raw.javadoc ?? DEFAULT_CONFIG.javadoc,
     javaDefaults: raw.javaDefaults ?? DEFAULT_CONFIG.javaDefaults,
+    lock: raw.lock ?? DEFAULT_CONFIG.lock,
   };
 }
 

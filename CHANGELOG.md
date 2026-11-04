@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.99] - 2026-11-04
+
+### Added
+
+- Inline contract assertions: `<!-- docbind: symbol=path#Name contract=<shapeHash> -->`.
+- `docbind check --no-lock` (or `"lock": false`) ignores the lock and fails when an inline hash no longer matches.
+- `docbind adopt --contract` writes annotations with the current contract hash.
+- New `java-nolock-fixture`: 2/2 anchors, 1/1 mutation, no lock assertions.
+
+### Changed
+
+- Corpus: 16 cases, 844/3411 anchors bound, 2567 unbound, 119/119 mutations.
+- Local sweep: 122/123 bound; full corpus: 861 bound at 0.40–0.50, 844 at 0.60.
+
+### Limits
+
+- No-lock mode still writes a lock during corpus mutation selection; production `check --no-lock` does not read it.
+- Inline contracts are fixed hashes; they must be regenerated when a contract intentionally changes.
+- npm publication, SCIP, binaries, and independent evaluation remain open.
+
 ## [0.1.98] - 2026-11-04
 
 ### Added
@@ -1833,3 +1853,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.96]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.96
 [0.1.97]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.97
 [0.1.98]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.98
+[0.1.99]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.99
