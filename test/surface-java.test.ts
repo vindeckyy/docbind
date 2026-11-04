@@ -500,6 +500,19 @@ describe("Java surface", () => {
         "    String charOob() default \"x\".charAt(5);",
         "    String charBad() default \"x\".charAt(\"a\");",
         "    String upperArgs() default \"x\".toUpperCase(1);",
+        "    boolean has() default \"hello\".contains(\"ell\");",
+        "    boolean hasNo() default \"hello\".contains(\"z\");",
+        "    int last() default \"abab\".lastIndexOf(\"ab\");",
+        "    String cat() default \"a\".concat(\"b\");",
+        "    boolean eq() default \"x\".equals(\"x\");",
+        "    boolean eqNo() default \"x\".equals(\"y\");",
+        "    boolean constHas() default Constants.NAME.contains(\"nam\");",
+        "    boolean hasBad() default \"x\".contains(1);",
+        "    String catBad() default \"x\".concat();",
+        "    boolean eqBad() default \"x\".equals(\"x\", \"y\");",
+        "    int lastBad() default \"x\".lastIndexOf(1);",
+        "    String concatBad() default \"x\".concat(1);",
+        "    boolean equalsBad() default \"x\".equals(1);",
         "    String subFloat() default \"hello\".substring(1.5);",
         "    String subEmptyArg() default \"hello\".substring(1, );",
         "    String subNoComma() default \"hello\".substring(1 2);",
@@ -670,6 +683,16 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "lower")?.shape.evaluatedDefault).toBe("abc");
     expect(result.symbols.find((symbol) => symbol.name === "firstChar")?.shape.evaluatedDefault).toBe("e");
     expect(result.symbols.find((symbol) => symbol.name === "firstConstChar")?.shape.evaluatedDefault).toBe("n");
+    expect(result.symbols.find((symbol) => symbol.name === "has")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "hasNo")?.shape.evaluatedDefault).toBe(false);
+    expect(result.symbols.find((symbol) => symbol.name === "last")?.shape.evaluatedDefault).toBe(2);
+    expect(result.symbols.find((symbol) => symbol.name === "cat")?.shape.evaluatedDefault).toBe("ab");
+    expect(result.symbols.find((symbol) => symbol.name === "eq")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "eqNo")?.shape.evaluatedDefault).toBe(false);
+    expect(result.symbols.find((symbol) => symbol.name === "constHas")?.shape.evaluatedDefault).toBe(true);
+    for (const name of ["hasBad", "catBad", "eqBad", "lastBad", "concatBad", "equalsBad"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of ["charOob", "charBad", "upperArgs"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }

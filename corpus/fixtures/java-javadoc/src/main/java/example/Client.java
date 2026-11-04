@@ -79,7 +79,7 @@ class Internal {
  * {@link Marker#maxDefault()}, {@link Marker#rounded()}, {@link Marker#root()},
  * {@link Marker#boxed()}, {@link Marker#refText()}, {@link Marker#textLength()},
  * {@link Marker#prefix()}, {@link Marker#sharedPrefix()}, {@link Marker#at()},
- * and {@link Marker#shout()}.
+ * {@link Marker#shout()}, and {@link Marker#hasDoc()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -127,6 +127,8 @@ public @interface Marker {
     int at() default "docbind".indexOf("bind");
 
     String shout() default "doc".toUpperCase();
+
+    boolean hasDoc() default "docbind".contains("bin");
 }
 
 class Constants {

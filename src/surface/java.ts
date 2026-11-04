@@ -416,6 +416,26 @@ function applyStringMethod(
     if (argument.value < 0 || argument.value >= text.length) return undefined;
     return { value: text.charAt(argument.value), integral: false };
   }
+  if (name === "contains" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return { value: text.includes(argument.value), integral: false };
+  }
+  if (name === "lastIndexOf" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return { value: text.lastIndexOf(argument.value), integral: true, width: "int" };
+  }
+  if (name === "concat" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return { value: `${text}${argument.value}`, integral: false };
+  }
+  if (name === "equals" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return { value: text === argument.value, integral: false };
+  }
   if (name === "indexOf" && args.length === 1) {
     const argument = args[0] as EvaluatedConstant;
     if (typeof argument.value !== "string") return undefined;

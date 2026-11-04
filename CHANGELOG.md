@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.91] - 2026-11-03
+
+### Added
+
+- String literals and constants support `.contains(text)`, `.lastIndexOf(text)`, `.concat(text)`, and `.equals(text)`.
+- `contains` and `equals` return booleans; `lastIndexOf` returns an integral index or `-1`; `concat` returns a string.
+- Wrong arity or non-string arguments stay unevaluated.
+- Corpus adds `Marker.hasDoc()` with default `"docbind".contains("bin")`; editing `bin` to `zzz` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 116 to 117; `java-javadoc-fixture` runs 45 mutations with 40 anchors, all hitting with zero collateral.
+- Branch coverage rose to 96.08%; line coverage stays at 99.26%.
+
+### Limits
+
+- Fifteen String methods evaluate; other APIs stay unresolved.
+- Case conversion uses JavaScript Unicode mapping, not a specific Java locale.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.90] - 2026-11-03
 
 ### Added
@@ -1693,3 +1713,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.88]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.88
 [0.1.89]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.89
 [0.1.90]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.90
+[0.1.91]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.91
