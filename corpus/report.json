@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T00:08:31.361Z",
+  "generatedAt": "2026-11-04T00:12:42.549Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,14 +720,25 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 30,
-      "bound": 30,
+      "anchors": 31,
+      "bound": 31,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
+        {
+          "symbol": "maxDefault",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
         {
           "symbol": "get",
           "rule": "L2-moved",
@@ -873,17 +884,6 @@
         },
         {
           "symbol": "command",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "maxDefault",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -1092,6 +1092,19 @@
           "collateralRules": []
         },
         {
+          "symbol": "rounded",
+          "kind": "default",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "fromConstant",
           "kind": "constant",
           "expectedRule": "L3-reshaped",
@@ -1144,7 +1157,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 35,
+      "hits": 36,
       "misses": 0,
       "collateral": 0
     }

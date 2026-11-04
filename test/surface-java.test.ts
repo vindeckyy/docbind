@@ -417,6 +417,14 @@ describe("Java surface", () => {
         "    int mathAbsBad() default Math.abs(\"x\");",
         "    int mathString() default Math.max(\"a\", 1);",
         "    int mathNoComma() default Math.max(1 2);",
+        "    long mathRound() default Math.round(3.6);",
+        "    int mathRoundNeg() default (int) Math.round(-2.5);",
+        "    double mathFloor() default Math.floor(3.9);",
+        "    double mathCeil() default Math.ceil(3.1);",
+        "    double mathFloorInt() default Math.floor(5);",
+        "    int mathRoundBad() default Math.round();",
+        "    long mathRoundLong() default Math.round(1L << 40);",
+        "    int mathRoundString() default Math.round(\"x\");",
         "    int bitsAnd() default 6 & 3;",
         "    int bitsOr() default 4 | 1;",
         "    int bitsXor() default 6 ^ 3;",
@@ -527,7 +535,13 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "mathAbsDouble")?.shape.evaluatedDefault).toBe(2.5);
     expect(result.symbols.find((symbol) => symbol.name === "mathAbsPos")?.shape.evaluatedDefault).toBe(4);
     expect(result.symbols.find((symbol) => symbol.name === "mathMinDouble")?.shape.evaluatedDefault).toBe(1.5);
-    for (const name of ["mathBad", "mathUnknown", "mathOpen", "mathEmpty", "mathAbsBad", "mathString", "mathNoComma"]) {
+    expect(result.symbols.find((symbol) => symbol.name === "mathRound")?.shape.evaluatedDefault).toBe(4);
+    expect(result.symbols.find((symbol) => symbol.name === "mathRoundNeg")?.shape.evaluatedDefault).toBe(-2);
+    expect(result.symbols.find((symbol) => symbol.name === "mathFloor")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "mathCeil")?.shape.evaluatedDefault).toBe(4);
+    expect(result.symbols.find((symbol) => symbol.name === "mathFloorInt")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "mathRoundLong")?.shape.evaluatedDefault).toBe(1099511627776);
+    for (const name of ["mathBad", "mathUnknown", "mathOpen", "mathEmpty", "mathAbsBad", "mathString", "mathNoComma", "mathRoundBad", "mathRoundString"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
     for (const name of ["castString", "mulMissing", "floatDivZero", "castEmpty"]) {

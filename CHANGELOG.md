@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.82] - 2026-11-03
+
+### Added
+
+- Java default expressions evaluate `Math.round`, `Math.floor`, and `Math.ceil`.
+- `Math.round` returns an integral long for floating arguments and preserves integral arguments.
+- `Math.floor` and `Math.ceil` return floating values, including for integral arguments.
+- Corpus adds `Marker.rounded()` with default `(int) Math.round(3.6)`; editing `3.6` to `3.4` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 107 to 108; `java-javadoc-fixture` runs 36 mutations with 31 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.88%; line coverage to 99.26%.
+
+### Limits
+
+- Other `Math` methods, user methods, and constructors stay unevaluated.
+- Float and double arithmetic remains JavaScript number arithmetic.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.81] - 2026-11-03
 
 ### Added
@@ -1500,3 +1520,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.79]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.79
 [0.1.80]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.80
 [0.1.81]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.81
+[0.1.82]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.82

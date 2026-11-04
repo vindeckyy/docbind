@@ -293,6 +293,21 @@ function applyMath(name: string, args: EvaluatedConstant[]): EvaluatedConstant |
       ...(argument.width ? { width: argument.width } : {}),
     };
   }
+  if ((name === "Math.round" || name === "Math.floor" || name === "Math.ceil") && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (argument.integral) {
+      if (name === "Math.round") return argument;
+      return { value: argument.value, integral: false };
+    }
+    if (typeof argument.value !== "number") return undefined;
+    if (name === "Math.round") {
+      return { value: Math.round(argument.value), integral: true, width: "long" };
+    }
+    return {
+      value: name === "Math.floor" ? Math.floor(argument.value) : Math.ceil(argument.value),
+      integral: false,
+    };
+  }
   if ((name === "Math.max" || name === "Math.min") && args.length >= 2) {
     if (args.every((argument) => argument.integral)) {
       const width = args.some((argument) => argument.width === "long") ? "long" : "int";
