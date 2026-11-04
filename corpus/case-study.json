@@ -1,0 +1,367 @@
+{
+  "generated": "2026-11-04",
+  "results": [
+    {
+      "name": "click",
+      "url": "https://github.com/pallets/click.git",
+      "intervals": [
+        {
+          "from": "fed9049f7a07550d560a91b30c5b0b3e17d54981",
+          "to": "cd9bdd96a9dcc8e4ecabd45b5c244dbc70034484",
+          "docsChanged": 12,
+          "findings": 79,
+          "byRule": {
+            "L3-reshaped": 71,
+            "L1-broken": 8
+          },
+          "sample": [
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Context contract changed: return type changed from cabc.Iterator[Context] to cabc.Generator[Context]; flag added: readonly; member parent is now required; flag added: readonly; member command is now required; flag added: readonly; member info_name is now required; member params is now required; member args is now required; member obj is now required; member default_map is now required; member invoked_subcommand is now required; member terminal_width is now required; member max_content_width is now required; flag added: readonly; value type changed; member allow_extra_args is now required; member allow_interspersed_args is now required; member ignore_unknown_options is now required; member help_option_names is now required; member token_normalize_func is now required; member resilient_parsing is now required; member auto_envvar_prefix is now required; member color is now required; member show_default is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Parameter contract changed: member name is now required; member opts is now required; member secondary_opts is now required; flag added: readonly; member required is now required; flag added: readonly; member callback is now required; flag added: readonly; value type changed; member nargs is now required; flag added: readonly; member multiple is now required; flag added: readonly; member expose_value is now required; member default is now required; flag added: readonly; member is_eager is now required; flag added: readonly; member metavar is now required; flag added: readonly; member envvar is now required; flag added: readonly; member deprecated is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 80,
+              "severity": "note",
+              "message": "UsageError contract changed: flag added: readonly; member ctx is now required; value type changed; member cmd is now required; added optional member exit_code"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 81,
+              "severity": "note",
+              "message": "BadParameter contract changed: flag added: readonly; member param is now required; flag added: readonly; member param_hint is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 265,
+              "severity": "note",
+              "message": "Command contract changed: flag added: readonly; member name is now required; member context_settings is now required; flag added: readonly; member callback is now required; member params is now required; flag added: readonly; member help is now required; flag added: readonly; member epilog is now required; flag added: readonly; member options_metavar is now required; flag added: readonly; member short_help is now required; flag added: readonly; member add_help_option is now required; flag added: readonly; member no_args_is_help is now required; flag added: readonly; member hidden is now required; flag added: readonly; member deprecated is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 282,
+              "severity": "note",
+              "message": "nargs contract changed: flag added: readonly; value type changed"
+            }
+          ]
+        },
+        {
+          "from": "cd9bdd96a9dcc8e4ecabd45b5c244dbc70034484",
+          "to": "6ec99f89261b32f8a50848786eca055e1967659f",
+          "docsChanged": 5,
+          "findings": 76,
+          "byRule": {
+            "L3-reshaped": 73,
+            "L1-broken": 3
+          },
+          "sample": [
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Context contract changed: return type changed from cabc.Iterator[Context] to cabc.Generator[Context]; flag added: readonly; member parent is now required; flag added: readonly; member command is now required; flag added: readonly; member info_name is now required; member params is now required; member args is now required; member obj is now required; member default_map is now required; member invoked_subcommand is now required; member terminal_width is now required; member max_content_width is now required; flag added: readonly; value type changed; member allow_extra_args is now required; member allow_interspersed_args is now required; member ignore_unknown_options is now required; member help_option_names is now required; member token_normalize_func is now required; member resilient_parsing is now required; member auto_envvar_prefix is now required; member color is now required; member show_default is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Parameter contract changed: member name is now required; member opts is now required; member secondary_opts is now required; flag added: readonly; member required is now required; flag added: readonly; member callback is now required; flag added: readonly; value type changed; member nargs is now required; flag added: readonly; member multiple is now required; flag added: readonly; member expose_value is now required; member default is now required; flag added: readonly; member is_eager is now required; flag added: readonly; member metavar is now required; flag added: readonly; member envvar is now required; flag added: readonly; member deprecated is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 80,
+              "severity": "note",
+              "message": "UsageError contract changed: flag added: readonly; member ctx is now required; value type changed; member cmd is now required; added optional member exit_code"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 81,
+              "severity": "note",
+              "message": "BadParameter contract changed: flag added: readonly; member param is now required; flag added: readonly; member param_hint is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 265,
+              "severity": "note",
+              "message": "Command contract changed: flag added: readonly; member name is now required; member context_settings is now required; flag added: readonly; member callback is now required; member params is now required; flag added: readonly; member help is now required; flag added: readonly; member epilog is now required; flag added: readonly; member options_metavar is now required; flag added: readonly; member short_help is now required; flag added: readonly; member add_help_option is now required; flag added: readonly; member no_args_is_help is now required; flag added: readonly; member hidden is now required; flag added: readonly; member deprecated is now required; added optional member format_arguments"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 282,
+              "severity": "note",
+              "message": "nargs contract changed: flag added: readonly; value type changed"
+            }
+          ]
+        },
+        {
+          "from": "6ec99f89261b32f8a50848786eca055e1967659f",
+          "to": "047adef258fc25566163ffc3efd14effc0ef7352",
+          "docsChanged": 9,
+          "findings": 79,
+          "byRule": {
+            "L3-reshaped": 74,
+            "L1-broken": 5
+          },
+          "sample": [
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Context contract changed: return type changed from cabc.Iterator[Context] to cabc.Generator[Context]; flag added: readonly; member parent is now required; flag added: readonly; member command is now required; flag added: readonly; member info_name is now required; member params is now required; member args is now required; member obj is now required; member default_map is now required; member invoked_subcommand is now required; member terminal_width is now required; member max_content_width is now required; flag added: readonly; value type changed; member allow_extra_args is now required; member allow_interspersed_args is now required; member ignore_unknown_options is now required; member help_option_names is now required; member token_normalize_func is now required; member resilient_parsing is now required; member auto_envvar_prefix is now required; member color is now required; member show_default is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Parameter contract changed: member name is now required; member opts is now required; member secondary_opts is now required; flag added: readonly; member required is now required; flag added: readonly; member callback is now required; flag added: readonly; value type changed; member nargs is now required; flag added: readonly; member multiple is now required; flag added: readonly; member expose_value is now required; member default is now required; flag added: readonly; member is_eager is now required; flag added: readonly; member metavar is now required; flag added: readonly; member envvar is now required; flag added: readonly; member deprecated is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 80,
+              "severity": "note",
+              "message": "UsageError contract changed: flag added: readonly; member ctx is now required; value type changed; member cmd is now required; added optional member exit_code"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 81,
+              "severity": "note",
+              "message": "BadParameter contract changed: flag added: readonly; member param is now required; flag added: readonly; member param_hint is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 265,
+              "severity": "note",
+              "message": "Command contract changed: flag added: readonly; member name is now required; member context_settings is now required; flag added: readonly; member callback is now required; member params is now required; flag added: readonly; member help is now required; flag added: readonly; member epilog is now required; flag added: readonly; member options_metavar is now required; flag added: readonly; member short_help is now required; flag added: readonly; member add_help_option is now required; flag added: readonly; member no_args_is_help is now required; flag added: readonly; member hidden is now required; flag added: readonly; member deprecated is now required; added optional member format_arguments"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 282,
+              "severity": "note",
+              "message": "nargs contract changed: flag added: readonly; value type changed"
+            }
+          ]
+        },
+        {
+          "from": "047adef258fc25566163ffc3efd14effc0ef7352",
+          "to": "cb43e055741b2416bf3ec46b5f84b140cca23e18",
+          "docsChanged": 5,
+          "findings": 78,
+          "byRule": {
+            "L3-reshaped": 74,
+            "L1-broken": 4
+          },
+          "sample": [
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Context contract changed: return type changed from cabc.Iterator[Context] to cabc.Generator[Context]; flag added: readonly; member parent is now required; flag added: readonly; member command is now required; flag added: readonly; member info_name is now required; member params is now required; member args is now required; member obj is now required; member default_map is now required; member invoked_subcommand is now required; member terminal_width is now required; member max_content_width is now required; flag added: readonly; value type changed; member allow_extra_args is now required; member allow_interspersed_args is now required; member ignore_unknown_options is now required; member help_option_names is now required; member token_normalize_func is now required; member resilient_parsing is now required; member auto_envvar_prefix is now required; member color is now required; member show_default is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Parameter contract changed: member name is now required; member opts is now required; member secondary_opts is now required; flag added: readonly; member required is now required; flag added: readonly; member callback is now required; flag added: readonly; value type changed; member nargs is now required; flag added: readonly; member multiple is now required; flag added: readonly; member expose_value is now required; member default is now required; flag added: readonly; member is_eager is now required; flag added: readonly; member metavar is now required; flag added: readonly; member envvar is now required; flag added: readonly; member deprecated is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 80,
+              "severity": "note",
+              "message": "UsageError contract changed: flag added: readonly; member ctx is now required; value type changed; member cmd is now required; added optional member exit_code"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 81,
+              "severity": "note",
+              "message": "BadParameter contract changed: flag added: readonly; member param is now required; flag added: readonly; member param_hint is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 265,
+              "severity": "note",
+              "message": "Command contract changed: flag added: readonly; member name is now required; member context_settings is now required; flag added: readonly; member callback is now required; member params is now required; flag added: readonly; member help is now required; flag added: readonly; member epilog is now required; flag added: readonly; member options_metavar is now required; flag added: readonly; member short_help is now required; flag added: readonly; member add_help_option is now required; flag added: readonly; member no_args_is_help is now required; flag added: readonly; member hidden is now required; flag added: readonly; member deprecated is now required; added optional member format_arguments"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 282,
+              "severity": "note",
+              "message": "nargs contract changed: flag added: readonly; value type changed"
+            }
+          ]
+        },
+        {
+          "from": "cb43e055741b2416bf3ec46b5f84b140cca23e18",
+          "to": "9f0bcdf0d868edfc71435cd0aac2dcc08cf94828",
+          "docsChanged": 9,
+          "findings": 79,
+          "byRule": {
+            "L3-reshaped": 77,
+            "L1-broken": 2
+          },
+          "sample": [
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Context contract changed: return type changed from cabc.Iterator[Context] to cabc.Generator[Context]; flag added: readonly; member parent is now required; flag added: readonly; member command is now required; flag added: readonly; member info_name is now required; member params is now required; member args is now required; member obj is now required; member default_map is now required; member invoked_subcommand is now required; member terminal_width is now required; member max_content_width is now required; flag added: readonly; value type changed; member allow_extra_args is now required; member allow_interspersed_args is now required; member ignore_unknown_options is now required; member help_option_names is now required; member token_normalize_func is now required; member resilient_parsing is now required; member auto_envvar_prefix is now required; member color is now required; member show_default is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Parameter contract changed: member name is now required; member opts is now required; member secondary_opts is now required; flag added: readonly; member required is now required; flag added: readonly; member callback is now required; flag added: readonly; value type changed; member nargs is now required; flag added: readonly; member multiple is now required; flag added: readonly; member expose_value is now required; member default is now required; flag added: readonly; member is_eager is now required; flag added: readonly; member metavar is now required; flag added: readonly; member envvar is now required; flag added: readonly; member deprecated is now required; added required member help; added required member spec; added optional member get_help_spec"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 80,
+              "severity": "note",
+              "message": "UsageError contract changed: flag added: readonly; member ctx is now required; value type changed; member cmd is now required; added optional member exit_code"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 81,
+              "severity": "note",
+              "message": "BadParameter contract changed: flag added: readonly; member param is now required; flag added: readonly; member param_hint is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 265,
+              "severity": "note",
+              "message": "Command contract changed: flag added: readonly; member name is now required; member context_settings is now required; flag added: readonly; member callback is now required; member params is now required; flag added: readonly; member help is now required; flag added: readonly; member epilog is now required; flag added: readonly; member options_metavar is now required; flag added: readonly; member short_help is now required; flag added: readonly; member add_help_option is now required; flag added: readonly; member no_args_is_help is now required; flag added: readonly; member hidden is now required; flag added: readonly; member deprecated is now required; added optional member format_arguments"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 282,
+              "severity": "note",
+              "message": "nargs contract changed: flag added: readonly; value type changed"
+            }
+          ]
+        },
+        {
+          "from": "9f0bcdf0d868edfc71435cd0aac2dcc08cf94828",
+          "to": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+          "docsChanged": 0,
+          "findings": 78,
+          "byRule": {
+            "L3-reshaped": 77,
+            "L1-broken": 1
+          },
+          "sample": [
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Context contract changed: return type changed from cabc.Iterator[Context] to cabc.Generator[Context]; flag added: readonly; member parent is now required; flag added: readonly; member command is now required; flag added: readonly; member info_name is now required; member params is now required; member args is now required; member obj is now required; member default_map is now required; member invoked_subcommand is now required; member terminal_width is now required; member max_content_width is now required; flag added: readonly; value type changed; member allow_extra_args is now required; member allow_interspersed_args is now required; member ignore_unknown_options is now required; member help_option_names is now required; member token_normalize_func is now required; member resilient_parsing is now required; member auto_envvar_prefix is now required; member color is now required; member show_default is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 33,
+              "severity": "note",
+              "message": "Parameter contract changed: member name is now required; member opts is now required; member secondary_opts is now required; flag added: readonly; member required is now required; flag added: readonly; member callback is now required; flag added: readonly; value type changed; member nargs is now required; flag added: readonly; member multiple is now required; flag added: readonly; member expose_value is now required; member default is now required; flag added: readonly; member is_eager is now required; flag added: readonly; member metavar is now required; flag added: readonly; member envvar is now required; flag added: readonly; member deprecated is now required; added required member help; added required member spec; added optional member get_help_spec"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 80,
+              "severity": "note",
+              "message": "UsageError contract changed: flag added: readonly; member ctx is now required; value type changed; member cmd is now required; added optional member exit_code"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 81,
+              "severity": "note",
+              "message": "BadParameter contract changed: flag added: readonly; member param is now required; flag added: readonly; member param_hint is now required"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 265,
+              "severity": "note",
+              "message": "Command contract changed: flag added: readonly; member name is now required; member context_settings is now required; flag added: readonly; member callback is now required; member params is now required; flag added: readonly; member help is now required; flag added: readonly; member epilog is now required; flag added: readonly; member options_metavar is now required; flag added: readonly; member short_help is now required; flag added: readonly; member add_help_option is now required; flag added: readonly; member no_args_is_help is now required; flag added: readonly; member hidden is now required; flag added: readonly; member deprecated is now required; added optional member format_arguments"
+            },
+            {
+              "rule": "L3-reshaped",
+              "docPath": "docs/advanced.md",
+              "line": 282,
+              "severity": "note",
+              "message": "nargs contract changed: flag added: readonly; value type changed"
+            }
+          ]
+        }
+      ],
+      "total": 469
+    },
+    {
+      "name": "chalk",
+      "url": "https://github.com/chalk/chalk.git",
+      "intervals": [
+        {
+          "from": "aa06bb5ac3f14df9fda8cfb54274dfc165ddfdef",
+          "to": "661317e6f91fe7c90306c2c48ea9354562ee9146",
+          "docsChanged": 1,
+          "findings": 0,
+          "byRule": {},
+          "sample": []
+        },
+        {
+          "from": "661317e6f91fe7c90306c2c48ea9354562ee9146",
+          "to": "47fc05abd46171b235e24174cd2dba83d25bf037",
+          "docsChanged": 0,
+          "findings": 0,
+          "byRule": {},
+          "sample": []
+        },
+        {
+          "from": "47fc05abd46171b235e24174cd2dba83d25bf037",
+          "to": "72110019e147683f60e13fa0ff5c14a0c27cd9fe",
+          "docsChanged": 0,
+          "findings": 0,
+          "byRule": {},
+          "sample": []
+        }
+      ],
+      "total": 0
+    }
+  ]
+}

@@ -436,10 +436,8 @@ export function checkProject(root: string, config: Config, options: CheckProject
   };
 
   const finalized = dedupeFindings(findings);
-  if (anchors.some((anchor) => anchor.explicitSymbol)) {
-    for (const finding of finalized) {
-      if (finding.inferred) finding.severity = "note";
-    }
+  for (const finding of finalized) {
+    if (finding.inferred) finding.severity = "note";
   }
   return {
     findings: finalized.sort((left, right) => {

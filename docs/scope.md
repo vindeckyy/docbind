@@ -18,7 +18,7 @@ Inline annotations make binding exact:
 
 The resolver matches the project-relative file and name directly. Confidence scores, veto rules, ambiguity checks, and prose context do not apply. If the symbol is missing or duplicated in that file, the check fails instead of guessing.
 
-Once a repository contains at least one explicit annotation, findings from inferred anchors are downgraded to notes and do not fail the build. Explicit findings keep their configured severity. Repositories with no annotations keep the previous severity behavior.
+Findings from inferred anchors are always downgraded to notes and do not fail the build. Explicit findings keep their configured severity. `docbind check --strict` makes advisory notes fatal for teams that accept the false-positive risk.
 
 Unannotated references still use heuristic binding. That path is useful for adoption, but it is not the sound mode. `docbind adopt` proposes annotations for existing inferred bindings, and `docbind audit --unbound` lists every token that stayed silent.
 

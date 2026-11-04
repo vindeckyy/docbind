@@ -11,3 +11,7 @@ PLAN.md
 corpus/precision-[0-9]*.json
 
 .docbind-cache/
+
+.eval/
+
+.eval/

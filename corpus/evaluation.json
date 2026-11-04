@@ -1,0 +1,50 @@
+{
+  "generated": "2026-11-04",
+  "results": [
+    {
+      "name": "chalk",
+      "repo": "chalk/chalk",
+      "commit": "72110019e147683f60e13fa0ff5c14a0c27cd9fe",
+      "docs": 3,
+      "docLines": 411,
+      "anchors": 152,
+      "bound": 24,
+      "unbound": 128,
+      "baselineFindings": 0,
+      "sampled": 6,
+      "hits": 6,
+      "misses": 0,
+      "collateral": 0
+    },
+    {
+      "name": "click",
+      "repo": "pallets/click",
+      "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+      "docs": 38,
+      "docLines": 8610,
+      "anchors": 3021,
+      "bound": 671,
+      "unbound": 2350,
+      "baselineFindings": 0,
+      "sampled": 6,
+      "hits": 6,
+      "misses": 0,
+      "collateral": 5
+    },
+    {
+      "name": "chi",
+      "repo": "go-chi/chi",
+      "commit": "9f8adb1aabaa8a91180a821111d3f8e668d1c0bf",
+      "docs": 5,
+      "docLines": 828,
+      "anchors": 172,
+      "bound": 62,
+      "unbound": 110,
+      "baselineFindings": 0,
+      "sampled": 6,
+      "hits": 6,
+      "misses": 0,
+      "collateral": 12
+    }
+  ]
+}

@@ -16,6 +16,8 @@ nav:
   - Corpus: corpus.md
   - Recall: recall.md
   - Leaderboard: leaderboard.md
+  - Held-out evaluation: evaluation.md
+  - Case study: case-study.md
   - Conformance: conformance.md
   - Precision: precision.md
   - Performance: performance.md

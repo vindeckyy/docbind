@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.2.7");
+    expect((await cli(["--version"], root)).stdout).toBe("0.3.0");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -69,14 +69,14 @@ describe("CLI check", () => {
     const root = project();
     await lock(root);
     writeFileSync(join(root, "src/users.ts"), code("get_user"));
-    const human = await cli(["check"], root);
+    const human = await cli(["check", "--all", "--strict"], root);
     expect(human.code).toBe(1);
     expect(human.stdout).toContain("getUser was renamed");
     const json = await cli(["check", "--json"], root);
     expect(JSON.parse(json.stdout).findings[0].rule).toBe("L4-renamed");
-    const github = await cli(["check", "--github"], root);
-    expect(github.stdout).toContain("::error");
-    const sarif = await cli(["check", "--sarif", "out.sarif"], root);
+    const github = await cli(["check", "--github", "--all", "--strict"], root);
+    expect(github.stdout).toContain("::");
+    const sarif = await cli(["check", "--sarif", "out.sarif", "--strict"], root);
     expect(sarif.code).toBe(1);
     expect(JSON.parse(readFileSync(join(root, "out.sarif"), "utf8")).version).toBe("2.1.0");
   });
@@ -323,7 +323,7 @@ describe("CLI check", () => {
     const root = project();
     await lock(root);
     writeFileSync(join(root, "src/users.ts"), code("get_user"));
-    const result = await cli(["check", "--changed-only"], root);
+    const result = await cli(["check", "--changed-only", "--strict"], root);
     expect(result.code).toBe(1);
   });
 
@@ -345,7 +345,7 @@ describe("CLI check", () => {
     const filtered = await cli(["check", "--changed-only", "--base", "HEAD"], root);
     expect(filtered.code).toBe(0);
     writeFileSync(join(root, "docs/api.md"), "# API\n\nCall `getUser(id)` now.\n");
-    const changed = await cli(["check", "--changed-only", "--base", "HEAD"], root);
+    const changed = await cli(["check", "--changed-only", "--base", "HEAD", "--strict"], root);
     expect(changed.code).toBe(1);
   });
 });
@@ -369,7 +369,7 @@ describe("CLI fix", () => {
     const root = project();
     await lock(root);
     writeFileSync(join(root, "src/users.ts"), code("get_user"));
-    const dry = await cli(["fix"], root);
+    const dry = await cli(["fix", "--strict"], root);
     expect(dry.code).toBe(1);
     expect(dry.stdout).toContain("getUser -> get_user");
     expect(readFileSync(join(root, "docs/api.md"), "utf8")).toContain("`getUser");

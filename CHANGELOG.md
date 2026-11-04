@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.3.0] - 2026-11-04
+
+### Changed
+
+- **Breaking default:** findings from inferred anchors are always notes and do not fail the build. `--strict` makes any reported finding fatal. Explicit annotations and inline contracts remain the sound gate.
+- Added held-out evaluation on chalk, click, and chi: 18/18 mutation hits, 0 baseline findings across 9,849 doc lines.
+- Added six-month retrospective case study on click and chalk, including a sampled audit where 6 of 6 click notes were not actionable.
+- 44 checklist subtasks are closed; 3 remain blocked on npm credentials, a second maintainer, and an external evaluator.
+
+### Limits
+
+- The held-out evaluation is internal. The case study found advisory contract findings noisy on class-heavy Python prose.
+- External reproduction, npm publication, and a second maintainer are still open.
+
 ## [0.2.7] - 2026-11-04
 
 ### Fixed
@@ -2010,3 +2024,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.5
 [0.2.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.6
 [0.2.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.7
+[0.3.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.3.0

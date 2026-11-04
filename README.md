@@ -26,7 +26,7 @@ Brand new docs can bind exactly with an inline annotation:
 <!-- docbind: symbol=src/users.ts#getUser -->
 ```
 
-Explicit annotations skip confidence scoring and ambiguity. When the symbol disappears or moves, the check fails. Once a repository has any explicit annotation, inferred findings are downgraded to notes and do not fail the build; explicit findings stay fatal. Unannotated repositories keep the previous behavior.
+Explicit annotations skip confidence scoring and ambiguity. When the symbol disappears or moves, the check fails. Inferred findings are always notes and do not fail the build unless `--strict` is passed; explicit findings stay fatal. That makes the annotated surface the sound gate and keeps heuristic output advisory.
 
 This is static analysis. It does not run project code, build the project, or generate docs.
 
@@ -196,6 +196,8 @@ docbind probe [--json]
 docbind stats
 ```
 
+`--strict` makes any reported finding fatal, including advisory inferred notes. This is the opt-in posture for teams that want heuristic coverage to gate a diff.
+
 | Exit code | Meaning |
 |---|---|
 | 0 | clean |
@@ -315,17 +317,17 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.2.7 tree:
+Measured on the 0.3.0 tree:
 
 | Gate | Result |
 |---|---|
 | Tests | 414 passing |
 | Statements | 98.02% |
-| Branches | 95.04% |
-| Functions | 97.91% |
+| Branches | 95.02% |
+| Functions | 97.9% |
 | Lines | 98.83% |
 | Changed-line coverage, feature diff | 98.84% |
-| Structure gate | 90 of 90 checks |
+| Structure gate | 92 of 92 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes. Runtime measurements are in [docs/performance.md](docs/performance.md).

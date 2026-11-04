@@ -62,6 +62,8 @@ export const REQUIRED_FILES = [
   "docs/installation.md",
   "docs/integrations.md",
   "docs/leaderboard.md",
+  "docs/evaluation.md",
+  "docs/case-study.md",
   "docs/threat-model.md",
   "docs/rfc.md",
   "docs/conformance.md",
