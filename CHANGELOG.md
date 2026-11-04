@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.97] - 2026-11-04
+
+### Added
+
+- `docbind adopt [--write] [--json]` proposes explicit annotations for inferred bindings and inserts them idempotently.
+- `docbind check --mode=strict` fails on unbound tokens in changed lines; `--mode=gate` keeps them as notes.
+- `changedLines` reads git diff hunk ranges and falls back to changed files.
+
+### Changed
+
+- 369 tests, 98.52% statements, 95.74% branches, 99.14% lines.
+
+### Limits
+
+- Inferred findings still use the configured severity; an advisory-by-default mode is not implemented.
+- Annotation proposals are Markdown-only.
+- npm publication, SCIP ingestion, binaries, and independent evaluation remain open.
+
 ## [0.1.96] - 2026-11-04
 
 ### Fixed
@@ -1795,3 +1813,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.94]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.94
 [0.1.95]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.95
 [0.1.96]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.96
+[0.1.97]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.97

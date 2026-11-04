@@ -8,6 +8,7 @@ docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed
 docbind lock [--check] [--refresh]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
+docbind adopt [--write] [--json]
 docbind audit [--unbound] [--json]
 docbind stats
 ```
@@ -27,6 +28,10 @@ Explicit binding:
 ```
 
 The path is project-relative. The part after `#` may be a bare name or a qualified member. Explicit bindings skip confidence scoring; if the symbol is missing or the name is ambiguous within that file, the check fails.
+
+`docbind adopt` proposes explicit annotations for inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent.
+
+`docbind check --mode=strict` fails when unbound tokens fall on changed lines. `--mode=gate` is the default and keeps abstentions as notes.
 
 `init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only. `lock --check` verifies that the committed lock is current without writing it; use it in CI to catch stale locks.
 

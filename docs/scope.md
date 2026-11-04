@@ -18,7 +18,9 @@ Inline annotations make binding exact:
 
 The resolver matches the project-relative file and name directly. Confidence scores, veto rules, ambiguity checks, and prose context do not apply. If the symbol is missing or duplicated in that file, the check fails instead of guessing.
 
-Unannotated references still use heuristic binding. That path is useful for adoption, but it is not the sound mode. `docbind audit --unbound` lists every token that stayed silent.
+Unannotated references still use heuristic binding. That path is useful for adoption, but it is not the sound mode. `docbind adopt` proposes annotations for existing inferred bindings, and `docbind audit --unbound` lists every token that stayed silent.
+
+`docbind check --mode=strict` fails when abstentions fall on changed lines; `--mode=gate` keeps them as notes. Strict mode is the risk posture for teams that want abstentions to block a diff.
 
 ## Silence is deliberate, and it has a cost
 

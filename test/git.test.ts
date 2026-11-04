@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { changedFiles } from "../src/git.js";
+import { changedFiles, changedLines } from "../src/git.js";
 import { tempProject } from "./helpers.js";
 
 function git(root: string, args: string[]): void {
@@ -16,6 +16,17 @@ describe("git changes", () => {
   it("returns an empty set outside a repository", () => {
     const root = tempProject({ "a.md": "x" });
     expect(changedFiles(root, "HEAD~1").size).toBe(0);
+  });
+
+  it("tracks changed line numbers", () => {
+    const root = tempProject({ "a.md": "a", "b.md": "b" });
+    git(root, ["init"]);
+    git(root, ["add", "."]);
+    git(root, ["commit", "-m", "one"]);
+    writeFileSync(join(root, "a.md"), "changed");
+    const lines = changedLines(root, "HEAD~1");
+    expect(lines.get("a.md")?.has(1)).toBe(true);
+    expect(lines.get("b.md")).toBeUndefined();
   });
 
   it("lists committed and working-tree changes", () => {

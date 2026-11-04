@@ -174,10 +174,11 @@ A scoped npm package is reserved as `@vindeckyy/docbind` but is not published ye
 
 ```text
 docbind init
-docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed-only] [--base <rev>]
+docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--changed-only] [--base <rev>]
 docbind lock [--check] [--refresh]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
+docbind adopt [--write] [--json]
 docbind audit [--unbound] [--json]
 docbind stats
 ```
@@ -200,6 +201,10 @@ docbind audit --json --unbound
 ```
 
 Coverage is `bound / anchors`. It is not a claim that bound sentences are correct.
+
+`docbind adopt` proposes explicit annotations for inferred bindings. `--write` inserts the comments above the anchored lines. Re-running it is idempotent.
+
+`docbind check --mode=strict` fails when abstentions fall on changed lines. `--mode=gate` keeps abstentions as notes. Without git history, strict treats all abstentions as changed.
 
 ## CI
 
@@ -276,16 +281,16 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.96 tree:
+Measured on the 0.1.97 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 362 passing |
-| Statements | 98.67% |
-| Branches | 96.01% |
-| Functions | 99.08% |
-| Lines | 99.27% |
-| Changed-line coverage, feature diff | 99.27% |
+| Tests | 369 passing |
+| Statements | 98.52% |
+| Branches | 95.74% |
+| Functions | 98.92% |
+| Lines | 99.14% |
+| Changed-line coverage, feature diff | 99.14% |
 | Structure gate | 83 of 83 checks |
 | Docs build | `mkdocs build --strict` passes |
 

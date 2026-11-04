@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.1.96");
+    expect((await cli(["--version"], root)).stdout).toBe("0.1.97");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -132,6 +132,28 @@ describe("CLI check", () => {
     expect(text.code).toBe(0);
     expect(text.stdout).toContain("binding coverage: 1/2");
     expect(text.stdout).toContain("ghost()");
+  });
+
+  it("proposes and writes explicit annotations", async () => {
+    const root = project("Call `getUser(id)` in prose.\n");
+    const proposed = await cli(["adopt", "--json"], root);
+    expect(proposed.code).toBe(0);
+    const suggestions = JSON.parse(proposed.stdout) as Array<{ annotation: string; token: string }>;
+    expect(suggestions[0]?.token).toBe("getUser(id)");
+    expect(suggestions[0]?.annotation).toContain("src/users.ts#getUser");
+    expect((await cli(["adopt", "--write"], root)).code).toBe(0);
+    const doc = readFileSync(join(root, "docs/api.md"), "utf8");
+    expect(doc).toContain("<!-- docbind: symbol=src/users.ts#getUser -->");
+    expect((await cli(["adopt", "--json", "--write"], root)).code).toBe(0);
+    const second = await cli(["adopt", "--json"], root);
+    expect(JSON.parse(second.stdout)).toEqual([]);
+  });
+
+  it("fails strict mode on changed abstentions", async () => {
+    const root = project("Call `getUser(id)` and `ghost()` in prose.\n");
+    expect((await cli(["check"], root)).code).toBe(0);
+    expect((await cli(["check", "--mode", "strict"], root)).code).toBe(1);
+    expect((await cli(["check", "--mode", "gate"], root)).code).toBe(0);
   });
 
   it("reports invalid config", async () => {

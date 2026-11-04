@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadConfig, writeDefaultConfig } from "./config.js";
@@ -6,8 +6,9 @@ import { checkProject, markLockAdvanced } from "./check.js";
 import { emptyLock, lockContentEqual, lockPath, readLock } from "./lock/schema.js";
 import { writeLock } from "./lock/write.js";
 import { applyFixes } from "./fix.js";
-import { changedFiles } from "./git.js";
+import { changedFiles, changedLines } from "./git.js";
 import { explain } from "./explain.js";
+import { applyAnnotations, suggestAnnotations } from "./adopt.js";
 import { formatHuman } from "./report/human.js";
 import { formatJson } from "./report/json.js";
 import { formatSarif } from "./report/sarif.js";
@@ -25,10 +26,11 @@ const HELP = `docbind ${ENGINE_VERSION}
 
 Usage:
   docbind init
-  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed-only] [--base <rev>]
+  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--changed-only] [--base <rev>]
   docbind lock [--check] [--refresh]
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
+  docbind adopt [--write] [--json]
   docbind audit [--unbound] [--json]
   docbind stats
 
@@ -38,6 +40,7 @@ Commands:
   lock      Rebuild docbind.lock.json
   fix       Rewrite safe renames and moved paths
   explain   Show why a token did or did not bind
+  adopt     Propose explicit annotations for inferred bindings
   audit     Report binding coverage and unbound tokens
   stats     Print scan statistics`;
 
@@ -97,6 +100,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         refresh: { type: "boolean" },
         write: { type: "boolean" },
         unbound: { type: "boolean" },
+        mode: { type: "string" },
       },
     });
   } catch (error) {
@@ -162,6 +166,21 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         sarif: stringOption("sarif"),
         cwd: io.cwd,
       });
+      if (stringOption("mode") === "strict") {
+        const base = stringOption("base") ?? "origin/HEAD";
+        const lines = changedLines(io.cwd, base);
+        const files = changedFiles(io.cwd, base);
+        const strictUnbound = result.unbound.filter((entry) => {
+          if (lines.size === 0 && files.size === 0) return true;
+          const changed = lines.get(entry.anchor.docPath);
+          if (changed) return changed.has(entry.anchor.line);
+          return files.has(entry.anchor.docPath);
+        });
+        if (strictUnbound.length > 0) {
+          io.stderr(`strict: ${strictUnbound.length} unbound token${strictUnbound.length === 1 ? "" : "s"} on changed lines`);
+          return 1;
+        }
+      }
       return findingsExit(findings, option("strict"));
     }
 
@@ -221,6 +240,29 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
           ...(match[3] ? { column: Number(match[3]) } : {}),
         }),
       );
+      return 0;
+    }
+
+    if (command === "adopt") {
+      const suggestions = suggestAnnotations(io.cwd, config);
+      if (option("json")) {
+        io.stdout(JSON.stringify(suggestions, null, 2));
+        if (option("write")) {
+          const applied = applyAnnotations(io.cwd, suggestions);
+          io.stderr(`inserted ${applied.inserted} annotations in ${applied.changedFiles.length} files`);
+        }
+        return 0;
+      }
+      for (const suggestion of suggestions) {
+        io.stdout(`${suggestion.docPath}:${suggestion.line} ${suggestion.token} -> ${suggestion.annotation}`);
+      }
+      if (!option("write")) {
+        io.stdout(`${suggestions.length} annotations proposed; pass --write to insert`);
+        return 0;
+      }
+      const applied = applyAnnotations(io.cwd, suggestions);
+      for (const file of applied.changedFiles) io.stdout(`updated ${file}`);
+      io.stdout(`inserted ${applied.inserted} annotations`);
       return 0;
     }
 
