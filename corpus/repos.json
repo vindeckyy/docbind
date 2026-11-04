@@ -405,6 +405,14 @@
         "to": "docbin",
         "symbol": "textLength",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "prefix",
+        "from": "doc",
+        "to": "bin",
+        "symbol": "prefix",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.87] - 2026-11-03
+
+### Added
+
+- String literals support `.startsWith(text)`, `.endsWith(text)`, `.substring(start)`, and `.substring(start, end)`.
+- Substring indices must be integral and in range; reversed or out-of-range indices stay unevaluated.
+- Corpus adds `Marker.prefix()` with default `"docbind".startsWith("doc")`; editing `"doc"` to `"bin"` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 112 to 113; `java-javadoc-fixture` runs 41 mutations with 36 anchors, all hitting with zero collateral.
+- Branch coverage rose to 96.02%; line coverage to 99.25%.
+
+### Limits
+
+- Only `length`, `isEmpty`, `startsWith`, `endsWith`, and `substring` are supported on string literals.
+- User methods and constructors stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.86] - 2026-11-03
 
 ### Added
@@ -1610,3 +1629,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.84]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.84
 [0.1.85]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.85
 [0.1.86]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.86
+[0.1.87]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.87

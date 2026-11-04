@@ -390,6 +390,38 @@ function applyMath(name: string, args: EvaluatedConstant[]): EvaluatedConstant |
   return undefined;
 }
 
+function applyStringMethod(
+  name: string,
+  text: string,
+  args: EvaluatedConstant[],
+): EvaluatedConstant | undefined {
+  if (name === "length" && args.length === 0) {
+    return { value: text.length, integral: true, width: "int" };
+  }
+  if (name === "isEmpty" && args.length === 0) {
+    return { value: text.length === 0, integral: false };
+  }
+  if ((name === "startsWith" || name === "endsWith") && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return {
+      value: name === "startsWith" ? text.startsWith(argument.value) : text.endsWith(argument.value),
+      integral: false,
+    };
+  }
+  if (name === "substring" && (args.length === 1 || args.length === 2)) {
+    const indices = args.map((argument) =>
+      typeof argument.value === "number" && Number.isInteger(argument.value) ? argument.value : undefined,
+    );
+    if (indices.some((index) => index === undefined || index < 0 || index > text.length)) return undefined;
+    const [start, end] = indices as [number, number | undefined];
+    const stop = end ?? text.length;
+    if (start > stop) return undefined;
+    return { value: text.slice(start, stop), integral: false };
+  }
+  return undefined;
+}
+
 function evaluateExpression(
   source: string,
   constants?: Map<string, EvaluatedConstant>,
@@ -415,19 +447,23 @@ function evaluateExpression(
       if (
         tokens[position]?.value === "." &&
         tokens[position + 1]?.type === "ident" &&
-        tokens[position + 2]?.value === "(" &&
-        tokens[position + 3]?.value === ")"
+        tokens[position + 2]?.value === "("
       ) {
-        const method = tokens[position + 1]?.value;
-        if (method === "length") {
-          position += 4;
-          return { value: token.value.length, integral: true, width: "int" };
+        const method = tokens[position + 1]?.value as string;
+        position += 3;
+        const args: EvaluatedConstant[] = [];
+        if (tokens[position]?.value !== ")") {
+          while (true) {
+            const argument = parseOr();
+            if (argument === undefined) return undefined;
+            args.push(argument);
+            if (tokens[position]?.value !== ",") break;
+            position += 1;
+          }
         }
-        if (method === "isEmpty") {
-          position += 4;
-          return { value: token.value.length === 0, integral: false };
-        }
-        return undefined;
+        if (tokens[position]?.value !== ")") return undefined;
+        position += 1;
+        return applyStringMethod(method, token.value, args);
       }
       return { value: token.value, integral: false };
     }

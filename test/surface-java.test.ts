@@ -466,6 +466,19 @@ describe("Java surface", () => {
         "    int charCastBad() default (char) \"x\";",
         "    int strUnknown() default \"x\".hashCode();",
         "    int strChain() default \"x\".trim().length();",
+        "    boolean startsYes() default \"hello\".startsWith(\"he\");",
+        "    boolean startsNo() default \"hello\".startsWith(\"lo\");",
+        "    boolean endsYes() default \"hello\".endsWith(\"lo\");",
+        "    String subOne() default \"hello\".substring(1);",
+        "    String subTwo() default \"hello\".substring(1, 3);",
+        "    String subBadOrder() default \"hello\".substring(4, 2);",
+        "    String subBadRange() default \"hello\".substring(0, 99);",
+        "    boolean startsBad() default \"hello\".startsWith(1);",
+        "    int subNoArgs() default \"hello\".substring();",
+        "    boolean startsArity() default \"hello\".startsWith(\"a\", \"b\");",
+        "    String subFloat() default \"hello\".substring(1.5);",
+        "    String subEmptyArg() default \"hello\".substring(1, );",
+        "    String subNoComma() default \"hello\".substring(1 2);",
         "    double mathSqrtLong() default Math.sqrt(1L << 62);",
         "    double mathPowLong() default Math.pow(1L << 62, 1);",
         "    int bitsAnd() default 6 & 3;",
@@ -614,6 +627,23 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "charFloat")?.shape.evaluatedDefault).toBe("B");
     expect(result.symbols.find((symbol) => symbol.name === "charBox")?.shape.evaluatedDefault).toBe("x");
     expect(result.symbols.find((symbol) => symbol.name === "escapedChar")?.shape.evaluatedDefault).toBe("\n");
+    expect(result.symbols.find((symbol) => symbol.name === "startsYes")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "startsNo")?.shape.evaluatedDefault).toBe(false);
+    expect(result.symbols.find((symbol) => symbol.name === "endsYes")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "subOne")?.shape.evaluatedDefault).toBe("ello");
+    expect(result.symbols.find((symbol) => symbol.name === "subTwo")?.shape.evaluatedDefault).toBe("el");
+    for (const name of [
+      "subBadOrder",
+      "subBadRange",
+      "startsBad",
+      "subNoArgs",
+      "startsArity",
+      "subFloat",
+      "subEmptyArg",
+      "subNoComma",
+    ]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of ["charBad", "charCastBad", "strUnknown", "strChain"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
