@@ -17,11 +17,11 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | spf13/viper | Go | 2 | 167 | 94 | 73 | 56.3% | 0 | 8 | 8 | 0 | 0 |
 | encode/httpx | Python | 23 | 2818 | 559 | 2259 | 19.8% | 0 | 3 | 3 | 0 | 0 |
 | local/macro-crate (local) | Rust | 1 | 11 | 11 | 0 | 100.0% | 0 | 9 | 9 | 0 | 0 |
-| dtolnay/thiserror | Rust | 1 | 162 | 23 | 139 | 14.2% | 0 | 2 | 2 | 0 | 0 |
-| local/proc-macro-crate (local) | Rust | 1 | 3 | 3 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
+| dtolnay/thiserror | Rust | 1 | 162 | 32 | 130 | 19.8% | 0 | 2 | 2 | 0 | 0 |
+| local/proc-macro-crate (local) | Rust | 1 | 3 | 0 | 3 | 0.0% | 0 | 0 | 0 | 0 | 0 |
 | local/go-package (local) | Go | 1 | 45 | 45 | 0 | 100.0% | 0 | 32 | 32 | 0 | 0 |
 | local/go-cycle (local) | Go | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
-| local/thiserror-derived (local) | Rust | 1 | 1 | 1 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
+| local/thiserror-derived (local) | Rust | 1 | 1 | 0 | 1 | 0.0% | 0 | 0 | 0 | 0 | 0 |
 | local/python-fields (local) | Python | 1 | 10 | 9 | 1 | 90.0% | 0 | 10 | 10 | 0 | 0 |
 | local/rst-fixture (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
@@ -29,7 +29,7 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/java-javadoc (local) | Java | 1 | 43 | 43 | 0 | 100.0% | 0 | 51 | 51 | 0 | 0 |
 | local/java-nolock (local) | Java | 1 | 2 | 2 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
 
-Overall: 846 of 3413 anchors bound, or 24.8%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
+Overall: 851 of 3413 anchors bound, or 24.9%; 2562 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 

@@ -53,16 +53,16 @@ Recall is 100% at every local floor. The floors separate on coverage: 0.65 drops
 
 ## Full-corpus sweep
 
-The same sweep over all twelve corpus cases gives a sharper coverage edge. Floors of 0.40 and 0.50 bind 17 more anchors than 0.60 with zero baseline findings. Those 17 have exactly one form of evidence: a unique exported name, score `0.35 + 0.15 = 0.50`. At 0.70 the bound count drops by 158 anchors. Recall stays 100% at every floor because the harness mutates only symbols that floor locked.
+The same sweep over all sixteen corpus cases gives a sharper coverage edge. Floors of 0.40 and 0.50 bind 17 more anchors than 0.60 with zero baseline findings. Those 17 have exactly one form of evidence: a unique exported name, score `0.35 + 0.15 = 0.50`. At 0.70 the bound count drops by 159 anchors. Recall stays 100% at every floor because the harness mutates only symbols that floor locked.
 
 | Floor | Bound | Anchors | Bind rate | Baseline findings | Mutation recall | Collateral |
 |---:|---:|---:|---:|---:|---:|---:|
-| 0.40 | 863 | 3413 | 25.3% | 0 | 133/133 | 0 |
-| 0.50 | 863 | 3413 | 25.3% | 0 | 133/133 | 0 |
-| 0.55 | 847 | 3413 | 24.8% | 0 | 133/133 | 0 |
-| **0.60** | **846** | **3413** | **24.8%** | 0 | **133/133** | 0 |
-| 0.70 | 687 | 3413 | 20.1% | 0 | 131/131 | 0 |
-| 0.80 | 646 | 3413 | 18.9% | 0 | 124/124 | 0 |
+| 0.40 | 868 | 3413 | 25.4% | 0 | 131/131 | 0 |
+| 0.50 | 868 | 3413 | 25.4% | 0 | 131/131 | 0 |
+| 0.55 | 852 | 3413 | 25.0% | 0 | 131/131 | 0 |
+| **0.60** | **851** | **3413** | **24.9%** | 0 | **131/131** | 0 |
+| 0.70 | 692 | 3413 | 20.3% | 0 | 129/129 | 0 |
+| 0.80 | 649 | 3413 | 19.0% | 0 | 123/123 | 0 |
 
 The default stays at 0.60. Lowering to 0.50 would add 17 anchors, but each is a bare name with no import, qualification, signature, or API-doc context. The precision model treats name-only matches in prose as noise, and the test suite pins that rule. The 17 extra anchors are not evidence that the floor should move; they are the class of binding the floor exists to reject.
 

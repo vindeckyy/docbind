@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.3] - 2026-11-04
+
+### Fixed
+
+- Corpus runs disable the surface cache, so mutation results and the committed `corpus/report.json` stay deterministic.
+- Published corpus numbers now match the snapshot: 16 cases, 851/3413 anchors bound, 2562 unbound, 131/131 mutations.
+- Precision tables refreshed from the same snapshot; README and changelog no longer cite the older 133-mutation figure.
+
 ## [0.2.2] - 2026-11-04
 
 ### Added
@@ -40,8 +48,8 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 
 ### Changed
 
-- Corpus: 16 cases, 846/3413 anchors bound, 2567 unbound, 133/133 mutations, 0 baseline.
-- Local sweep: 124/125 bound; full corpus: 863 at 0.40–0.50, 846 at 0.60.
+- Corpus: 16 cases, 851/3413 anchors bound, 2562 unbound, 131/131 mutations, 0 baseline.
+- Local sweep: 124/125 bound; full corpus: 868 at 0.40–0.50, 851 at 0.60.
 
 ### Limits
 
@@ -1922,3 +1930,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.0
 [0.2.1]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.1
 [0.2.2]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.2
+[0.2.3]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.3

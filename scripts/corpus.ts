@@ -418,6 +418,7 @@ for (const entry of selected) {
     ...(entry.javadoc ? { javadoc: true } : {}),
     ...(entry.javaDefaults ? { javaDefaults: true } : {}),
     ...(entry.lock === false ? { lock: false } : {}),
+    cache: false,
     ...(thresholdArg !== undefined ? { minConfidence: thresholdArg } : {}),
   });
   const lockRun = capture();
