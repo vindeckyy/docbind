@@ -2,6 +2,12 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.94] - 2026-11-04
+
+### Fixed
+
+- README gate table now names the 0.1.94 tree and reports 98.66% statements, matching the measured gate output.
+
 ## [0.1.93] - 2026-11-04
 
 ### Changed
@@ -1753,3 +1759,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.91]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.91
 [0.1.92]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.92
 [0.1.93]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.93
+[0.1.94]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.94
