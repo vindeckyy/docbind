@@ -2,6 +2,18 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.7] - 2026-11-04
+
+### Fixed
+
+- Docker build stage runs `npm ci --ignore-scripts` before copying source, so the `prepare` lifecycle hook does not run without `src/`.
+- Runtime stage also skips lifecycle scripts because dev dependencies are omitted.
+
+### Changed
+
+- CI builds the Docker image, runs `docbind --version` inside it, and smoke-tests a real `alpine:3.20` probe with no network and a read-only root.
+- 43 subtasks are closed; 4 remain open, all blocked on credentials or people.
+
 ## [0.2.6] - 2026-11-04
 
 ### Added
@@ -1997,3 +2009,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.4]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.4
 [0.2.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.5
 [0.2.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.6
+[0.2.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.7

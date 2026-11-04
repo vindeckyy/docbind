@@ -4,6 +4,7 @@ The leaderboard records published recall and false-positive evidence for docbind
 
 | Tool | Version | Corpus cases | Class mutations | Baseline findings | FP per 1k doc lines | Date |
 |---|---|---:|---:|---:|---:|---|
+| docbind | 0.2.7 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
 | docbind | 0.2.6 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
 | docbind | 0.2.5 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
 | docbind | 0.2.4 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
