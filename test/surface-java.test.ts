@@ -492,6 +492,14 @@ describe("Java surface", () => {
         "    int idxBad() default \"x\".indexOf(1);",
         "    String replBad() default \"x\".replace(\"x\");",
         "    String replBadType() default \"x\".replace(\"x\", 1);",
+        "    String trimmed() default \"  x  \".trim();",
+        "    String upper() default \"abc\".toUpperCase();",
+        "    String lower() default \"ABC\".toLowerCase();",
+        "    String firstChar() default \"hello\".charAt(1);",
+        "    String firstConstChar() default Constants.NAME.charAt(0);",
+        "    String charOob() default \"x\".charAt(5);",
+        "    String charBad() default \"x\".charAt(\"a\");",
+        "    String upperArgs() default \"x\".toUpperCase(1);",
         "    String subFloat() default \"hello\".substring(1.5);",
         "    String subEmptyArg() default \"hello\".substring(1, );",
         "    String subNoComma() default \"hello\".substring(1 2);",
@@ -657,6 +665,14 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "repl")?.shape.evaluatedDefault).toBe("a+b+c");
     expect(result.symbols.find((symbol) => symbol.name === "idxConst")?.shape.evaluatedDefault).toBe(1);
     expect(result.symbols.find((symbol) => symbol.name === "replConst")?.shape.evaluatedDefault).toBe("Named");
+    expect(result.symbols.find((symbol) => symbol.name === "trimmed")?.shape.evaluatedDefault).toBe("x");
+    expect(result.symbols.find((symbol) => symbol.name === "upper")?.shape.evaluatedDefault).toBe("ABC");
+    expect(result.symbols.find((symbol) => symbol.name === "lower")?.shape.evaluatedDefault).toBe("abc");
+    expect(result.symbols.find((symbol) => symbol.name === "firstChar")?.shape.evaluatedDefault).toBe("e");
+    expect(result.symbols.find((symbol) => symbol.name === "firstConstChar")?.shape.evaluatedDefault).toBe("n");
+    for (const name of ["charOob", "charBad", "upperArgs"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of ["idxBad", "replBad", "replBadType"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
@@ -675,7 +691,8 @@ describe("Java surface", () => {
     ]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
-    for (const name of ["charBad", "charCastBad", "strUnknown", "strChain"]) {
+    expect(result.symbols.find((symbol) => symbol.name === "strChain")?.shape.evaluatedDefault).toBe(1);
+    for (const name of ["charBad", "charCastBad", "strUnknown"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
     for (const name of [

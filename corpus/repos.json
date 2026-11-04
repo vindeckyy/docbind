@@ -421,6 +421,14 @@
         "to": "doc",
         "symbol": "at",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "shout",
+        "from": "doc",
+        "to": "bin",
+        "symbol": "shout",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

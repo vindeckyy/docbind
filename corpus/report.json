@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T00:41:43.122Z",
+  "generatedAt": "2026-11-04T00:45:26.993Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,8 +720,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 38,
-      "bound": 38,
+      "anchors": 39,
+      "bound": 39,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
@@ -730,6 +730,17 @@
       "mutations": [
         {
           "symbol": "refText",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "prefix",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -796,17 +807,6 @@
         },
         {
           "symbol": "count",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "prefix",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -905,6 +905,17 @@
           "collateralRules": []
         },
         {
+          "symbol": "shout",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "flag",
           "rule": "L4-renamed",
           "hit": true,
@@ -933,17 +944,6 @@
           "findings": 1,
           "relatedRules": [
             "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "get",
-          "rule": "L2-moved",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L2-moved"
           ],
           "collateral": 0,
           "collateralRules": []
@@ -1170,6 +1170,19 @@
           "collateralRules": []
         },
         {
+          "symbol": "shout",
+          "kind": "default",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "fromConstant",
           "kind": "constant",
           "expectedRule": "L3-reshaped",
@@ -1248,7 +1261,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 43,
+      "hits": 44,
       "misses": 0,
       "collateral": 0
     }

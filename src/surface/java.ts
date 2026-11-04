@@ -401,6 +401,21 @@ function applyStringMethod(
   if (name === "isEmpty" && args.length === 0) {
     return { value: text.length === 0, integral: false };
   }
+  if ((name === "trim" || name === "toUpperCase" || name === "toLowerCase") && args.length === 0) {
+    if (name === "trim") {
+      return { value: text.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/gu, ""), integral: false };
+    }
+    return {
+      value: name === "toUpperCase" ? text.toUpperCase() : text.toLowerCase(),
+      integral: false,
+    };
+  }
+  if (name === "charAt" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "number" || !Number.isInteger(argument.value)) return undefined;
+    if (argument.value < 0 || argument.value >= text.length) return undefined;
+    return { value: text.charAt(argument.value), integral: false };
+  }
   if (name === "indexOf" && args.length === 1) {
     const argument = args[0] as EvaluatedConstant;
     if (typeof argument.value !== "string") return undefined;

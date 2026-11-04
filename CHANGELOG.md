@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.90] - 2026-11-03
+
+### Added
+
+- String literals and constants support `.trim()`, `.toUpperCase()`, `.toLowerCase()`, and `.charAt(index)`.
+- `trim` follows Java's rule of stripping characters up to U+0020 at both ends.
+- `charAt` requires an integral index inside the string; out-of-range or non-integral indices stay unevaluated.
+- Corpus adds `Marker.shout()` with default `"doc".toUpperCase()`; editing `doc` to `bin` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 115 to 116; `java-javadoc-fixture` runs 44 mutations with 39 anchors, all hitting with zero collateral.
+- Branch coverage rose to 96.06%; line coverage to 99.26%.
+
+### Limits
+
+- Eleven String methods evaluate; other APIs stay unresolved.
+- Case conversion uses JavaScript Unicode mapping, not a specific Java locale.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.89] - 2026-11-03
 
 ### Added
@@ -1672,3 +1692,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.87]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.87
 [0.1.88]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.88
 [0.1.89]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.89
+[0.1.90]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.90
