@@ -402,6 +402,21 @@ describe("Java surface", () => {
         "    double mulMissing() default 1.0 *;",
         "    double floatDivZero() default 1.0 / 0.0;",
         "    double floatSub() default 3.0 - 1.0;",
+        "    int mathMax() default Math.max(3, 7);",
+        "    int mathMin() default Math.min(3, 7);",
+        "    int mathAbs() default Math.abs(-9);",
+        "    long mathLong() default Math.max(3L, 1L << 40);",
+        "    double mathDouble() default Math.max(1.5, 2);",
+        "    int mathBad() default Math.max(1);",
+        "    int mathUnknown() default Math.pow(2, 3);",
+        "    double mathAbsDouble() default Math.abs(-2.5);",
+        "    int mathAbsPos() default Math.abs(4);",
+        "    double mathMinDouble() default Math.min(1.5, 3);",
+        "    int mathOpen() default Math.max(1;",
+        "    int mathEmpty() default Math.max(1, );",
+        "    int mathAbsBad() default Math.abs(\"x\");",
+        "    int mathString() default Math.max(\"a\", 1);",
+        "    int mathNoComma() default Math.max(1 2);",
         "    int bitsAnd() default 6 & 3;",
         "    int bitsOr() default 4 | 1;",
         "    int bitsXor() default 6 ^ 3;",
@@ -504,6 +519,17 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "castFloat")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "floatMul")?.shape.evaluatedDefault).toBe(2);
     expect(result.symbols.find((symbol) => symbol.name === "floatSub")?.shape.evaluatedDefault).toBe(2);
+    expect(result.symbols.find((symbol) => symbol.name === "mathMax")?.shape.evaluatedDefault).toBe(7);
+    expect(result.symbols.find((symbol) => symbol.name === "mathMin")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "mathAbs")?.shape.evaluatedDefault).toBe(9);
+    expect(result.symbols.find((symbol) => symbol.name === "mathLong")?.shape.evaluatedDefault).toBe(1099511627776);
+    expect(result.symbols.find((symbol) => symbol.name === "mathDouble")?.shape.evaluatedDefault).toBe(2);
+    expect(result.symbols.find((symbol) => symbol.name === "mathAbsDouble")?.shape.evaluatedDefault).toBe(2.5);
+    expect(result.symbols.find((symbol) => symbol.name === "mathAbsPos")?.shape.evaluatedDefault).toBe(4);
+    expect(result.symbols.find((symbol) => symbol.name === "mathMinDouble")?.shape.evaluatedDefault).toBe(1.5);
+    for (const name of ["mathBad", "mathUnknown", "mathOpen", "mathEmpty", "mathAbsBad", "mathString", "mathNoComma"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of ["castString", "mulMissing", "floatDivZero", "castEmpty"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }

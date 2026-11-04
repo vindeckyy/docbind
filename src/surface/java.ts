@@ -222,7 +222,7 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
       index += match[0].length;
       continue;
     }
-    if ("+-*/()&|^".includes(char)) {
+    if ("+-*/()&|^,".includes(char)) {
       tokens.push({ type: "op", value: char });
       index += 1;
       continue;
@@ -277,6 +277,43 @@ function fromBigInt(value: bigint): number | string {
   return Number.isSafeInteger(numeric) ? numeric : value.toString();
 }
 
+function applyMath(name: string, args: EvaluatedConstant[]): EvaluatedConstant | undefined {
+  if (name === "Math.abs" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (!argument.integral) {
+      return typeof argument.value === "number"
+        ? { value: Math.abs(argument.value), integral: false }
+        : undefined;
+    }
+    const big = toBigInt(argument.value) as bigint;
+    return {
+      value: fromBigInt(big < 0n ? -big : big),
+      integral: true,
+      /* v8 ignore next */
+      ...(argument.width ? { width: argument.width } : {}),
+    };
+  }
+  if ((name === "Math.max" || name === "Math.min") && args.length >= 2) {
+    if (args.every((argument) => argument.integral)) {
+      const width = args.some((argument) => argument.width === "long") ? "long" : "int";
+      let chosen = args[0] as EvaluatedConstant;
+      for (const argument of args.slice(1)) {
+        const left = toBigInt(chosen.value) as bigint;
+        const right = toBigInt(argument.value) as bigint;
+        if (name === "Math.max" ? right > left : right < left) chosen = argument;
+      }
+      return { value: chosen.value, integral: true, width };
+    }
+    if (args.every((argument) => typeof argument.value === "number")) {
+      return {
+        value: name === "Math.max" ? Math.max(...(args.map((argument) => argument.value) as number[])) : Math.min(...(args.map((argument) => argument.value) as number[])),
+        integral: false,
+      };
+    }
+  }
+  return undefined;
+}
+
 function evaluateExpression(
   source: string,
   constants?: Map<string, EvaluatedConstant>,
@@ -302,8 +339,25 @@ function evaluateExpression(
       return { value: token.value, integral: false };
     }
     if (token.type === "ident") {
+      const name = token.value;
       position += 1;
-      return constants?.get(token.value);
+      if (tokens[position]?.value === "(") {
+        position += 1;
+        const args: EvaluatedConstant[] = [];
+        if (tokens[position]?.value !== ")") {
+          while (true) {
+            const value = parseOr();
+            if (value === undefined) return undefined;
+            args.push(value);
+            if (tokens[position]?.value !== ",") break;
+            position += 1;
+          }
+        }
+        if (tokens[position]?.value !== ")") return undefined;
+        position += 1;
+        return applyMath(name, args);
+      }
+      return constants?.get(name);
     }
     if (token.type === "op" && token.value === "(") {
       const type = tokens[position + 1];

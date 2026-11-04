@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.81] - 2026-11-03
+
+### Added
+
+- Java default expressions evaluate `Math.max`, `Math.min`, and `Math.abs`.
+- Calls accept two or more arguments for `max`/`min` and exactly one for `abs`.
+- `Math.max`/`min` choose arguments by long-aware comparison; `abs` preserves int or long width.
+- Floating arguments stay floating.
+- Corpus adds `Marker.maxDefault()` with default `Math.max(3, 7)`; editing `7` to `9` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 106 to 107; `java-javadoc-fixture` runs 35 mutations with 30 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.84%; line coverage to 99.26%.
+
+### Limits
+
+- Other `Math` methods, user methods, and constructors stay unevaluated.
+- Float and double arithmetic remains JavaScript number arithmetic.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.80] - 2026-11-03
 
 ### Added
@@ -1478,3 +1499,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.78]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.78
 [0.1.79]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.79
 [0.1.80]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.80
+[0.1.81]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.81

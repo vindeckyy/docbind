@@ -365,6 +365,14 @@
         "to": 41,
         "symbol": "wide",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "maxDefault",
+        "from": 7,
+        "to": 9,
+        "symbol": "maxDefault",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

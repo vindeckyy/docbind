@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T00:04:25.980Z",
+  "generatedAt": "2026-11-04T00:08:31.361Z",
   "report": [
     {
       "name": "macro-fixture",
@@ -720,25 +720,14 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 29,
-      "bound": 29,
+      "anchors": 30,
+      "bound": 30,
       "bindRate": 1,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
       "mutations": [
-        {
-          "symbol": "castDiv",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
         {
           "symbol": "get",
           "rule": "L2-moved",
@@ -872,7 +861,29 @@
           "collateralRules": []
         },
         {
+          "symbol": "wide",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "command",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "maxDefault",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -894,7 +905,7 @@
           "collateralRules": []
         },
         {
-          "symbol": "flags",
+          "symbol": "castDiv",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -928,17 +939,6 @@
         },
         {
           "symbol": "fromConstant",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "RED",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -1079,6 +1079,19 @@
           "collateralRules": []
         },
         {
+          "symbol": "maxDefault",
+          "kind": "default",
+          "expectedRule": "L3-reshaped",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
           "symbol": "fromConstant",
           "kind": "constant",
           "expectedRule": "L3-reshaped",
@@ -1131,7 +1144,7 @@
           "collateralRules": []
         }
       ],
-      "hits": 34,
+      "hits": 35,
       "misses": 0,
       "collateral": 0
     }

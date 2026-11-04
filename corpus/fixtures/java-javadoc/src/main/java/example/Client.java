@@ -75,7 +75,8 @@ class Internal {
  * Marker docs: {@link Marker#value()}, {@code Marker#count}, {@code Marker#flag}, {@link Marker#tags()},
  * {@link Marker#fromConstant()}, {@link Marker#fromShared()}, {@link Marker#arithmetic()},
  * {@link Marker#intDiv()}, {@link Marker#halfConstant()}, {@link Marker#widened()},
- * {@link Marker#castDiv()}, {@link Marker#flags()}, and {@link Marker#wide()}.
+ * {@link Marker#castDiv()}, {@link Marker#flags()}, {@link Marker#wide()},
+ * and {@link Marker#maxDefault()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -103,6 +104,8 @@ public @interface Marker {
     int flags() default 6 & 3;
 
     long wide() default 1L << 40;
+
+    int maxDefault() default Math.max(3, 7);
 }
 
 class Constants {
