@@ -3,13 +3,14 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadConfig, writeDefaultConfig } from "./config.js";
 import { checkProject, markLockAdvanced } from "./check.js";
-import { emptyLock, lockContentEqual, lockPath, readLock } from "./lock/schema.js";
+import { emptyLock, lockContentEqual, lockPath, readLock, serializeLock } from "./lock/schema.js";
 import { writeLock } from "./lock/write.js";
 import { applyFixes } from "./fix.js";
 import { changedFiles, changedLines } from "./git.js";
 import { explain } from "./explain.js";
 import { applyAnnotations, suggestAnnotations } from "./adopt.js";
 import { describeLockDiff, diffLock } from "./lock/diff.js";
+import { migrateLock } from "./lock/migrate.js";
 import { formatHuman } from "./report/human.js";
 import { formatJson } from "./report/json.js";
 import { formatSarif } from "./report/sarif.js";
@@ -27,8 +28,8 @@ const HELP = `docbind ${ENGINE_VERSION}
 
 Usage:
   docbind init
-  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--no-lock] [--changed-only] [--base <rev>]
-  docbind lock [--check] [--diff] [--refresh]
+  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound] [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache] [--changed-only] [--base <rev>]
+  docbind lock [--check] [--diff] [--refresh]\ndocbind migrate [--check] [--json]
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
   docbind adopt [--write] [--json] [--contract]
@@ -41,6 +42,7 @@ Commands:
   lock      Rebuild docbind.lock.json
   fix       Rewrite safe renames and moved paths
   explain   Show why a token did or did not bind
+  migrate   Upgrade the lock file to the current format
   adopt     Propose explicit annotations for inferred bindings
   audit     Report binding coverage and unbound tokens
   stats     Print scan statistics`;
@@ -103,6 +105,8 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         unbound: { type: "boolean" },
         mode: { type: "string" },
         "no-lock": { type: "boolean" },
+        "allow-exec": { type: "boolean" },
+        "no-cache": { type: "boolean" },
         contract: { type: "boolean" },
         diff: { type: "boolean" },
       },
@@ -150,10 +154,30 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
 
     const config = loadConfig(io.cwd);
     if (option("no-lock")) config.lock = false;
+    if (option("allow-exec")) config.allowExec = true;
+    if (option("no-cache")) config.cache = false;
 
     if (command === "check") {
       const result = checkProject(io.cwd, config);
+      for (const warning of result.warnings) io.stderr(`warning: ${warning}`);
       let findings = result.findings;
+      if (option("unbound")) {
+        findings = [
+          ...findings,
+          ...result.unbound.map((entry): Finding => ({
+            id: `unbound-${entry.anchor.docPath}-${entry.anchor.line}-${entry.anchor.column}`,
+            rule: "L1-broken",
+            severity: "note",
+            doc: {
+              path: entry.anchor.docPath,
+              line: entry.anchor.line,
+              column: entry.anchor.column,
+              length: entry.anchor.length,
+            },
+            message: `unbound token: ${entry.anchor.token} (${entry.reason})`,
+          })),
+        ];
+      }
       if (option("changed-only")) {
         const changed = changedFiles(io.cwd, stringOption("base") ?? "origin/HEAD");
         if (changed.size > 0) {
@@ -187,6 +211,32 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         }
       }
       return findingsExit(findings, option("strict"));
+    }
+
+    if (command === "migrate") {
+      if (!existsSync(lockPath(io.cwd))) {
+        io.stderr("error: docbind.lock.json not found");
+        return 2;
+      }
+      const text = readFileSync(lockPath(io.cwd), "utf8");
+      let migrated: ReturnType<typeof migrateLock>;
+      try {
+        migrated = migrateLock(JSON.parse(text));
+      } catch (error) {
+        io.stderr(`error: ${(error as Error).message}`);
+        return 3;
+      }
+      if (option("check")) {
+        if (option("json")) io.stdout(JSON.stringify({ changed: migrated.changed, actions: migrated.actions }, null, 2));
+        else io.stdout(migrated.changed ? `lock needs migration: ${migrated.actions.join(", ")}` : "lock is current");
+        return migrated.changed ? 3 : 0;
+      }
+      if (migrated.changed) {
+        writeFileSync(lockPath(io.cwd), serializeLock(migrated.lock), "utf8");
+      }
+      if (option("json")) io.stdout(JSON.stringify({ changed: migrated.changed, actions: migrated.actions }, null, 2));
+      else io.stdout(migrated.changed ? `migrated lock: ${migrated.actions.join(", ")}` : "lock is current");
+      return 0;
     }
 
     if (command === "lock") {

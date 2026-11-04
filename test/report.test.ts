@@ -20,6 +20,7 @@ const result: CheckResult = {
   findings: [finding, { ...finding, id: "warn", rule: "S1-deprecated", severity: "warning" }],
   pending: [],
   unbound: [],
+  warnings: [],
   stats: {
     docsScanned: 1,
     codeFilesScanned: 2,

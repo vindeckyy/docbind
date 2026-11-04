@@ -1,0 +1,54 @@
+[
+  {
+    "id": "golden|java/Client|class|Client|0",
+    "name": "Client",
+    "kind": "class",
+    "qualifiedName": "golden.java.Client.Client",
+    "shapeHash": "464385e70e164ef2",
+    "shape": {
+      "kind": "class",
+      "extends": [],
+      "members": [],
+      "flags": [],
+      "visibility": "public"
+    }
+  },
+  {
+    "id": "golden|java/Client|method|Client.getUser|0",
+    "name": "getUser",
+    "kind": "method",
+    "qualifiedName": "golden.java.Client.Client.getUser",
+    "shapeHash": "3edc239f12f5a59e",
+    "shape": {
+      "kind": "method",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "id",
+          "kind": "positional",
+          "type": "int",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false
+        }
+      ],
+      "returnType": "String",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|java/Client|property|Client.LIMIT|0",
+    "name": "LIMIT",
+    "kind": "property",
+    "qualifiedName": "golden.java.Client.Client.LIMIT",
+    "shapeHash": "c29e7791e4a3039a",
+    "shape": {
+      "kind": "property",
+      "typeShape": "int",
+      "visibility": "public",
+      "flags": []
+    }
+  }
+]

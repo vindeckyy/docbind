@@ -1,0 +1,5 @@
+{
+  "lock": false,
+  "config": { "lock": false },
+  "expect": [{ "rule": "L3-reshaped", "severity": "error" }]
+}

@@ -187,6 +187,7 @@ export interface Tombstone {
 
 export interface LockFile {
   schema: number;
+  format?: string;
   engine: string;
   generation: number;
   anchors: LockEntry[];
@@ -248,6 +249,7 @@ export interface CheckResult {
   findings: Finding[];
   pending: Binding[];
   unbound: Array<{ anchor: DocAnchor; reason: string }>;
+  warnings: string[];
   stats: ProjectStats;
   lock: LockFile;
 }
@@ -273,6 +275,8 @@ export interface Config {
   javadoc: boolean;
   javaDefaults: boolean;
   lock: boolean;
+  allowExec: boolean;
+  cache: boolean;
 }
 
 export const RULES: Rule[] = [

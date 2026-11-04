@@ -9,3 +9,5 @@ PLAN.md
 .corpus/
 
 corpus/precision-[0-9]*.json
+
+.docbind-cache/

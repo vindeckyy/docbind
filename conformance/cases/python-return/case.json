@@ -1,0 +1,4 @@
+{
+  "lock": true,
+  "expect": [{ "rule": "L3-reshaped", "severity": "error" }]
+}

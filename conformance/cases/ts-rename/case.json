@@ -1,0 +1,4 @@
+{
+  "lock": true,
+  "expect": [{ "rule": "L4-renamed", "severity": "error" }]
+}

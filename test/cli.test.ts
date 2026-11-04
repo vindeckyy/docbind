@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.2.1");
+    expect((await cli(["--version"], root)).stdout).toBe("0.2.2");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -112,6 +112,14 @@ describe("CLI check", () => {
     expect((await cli(["check", "--strict"], root)).code).toBe(1);
   });
 
+  it("init produces a config and a green run", async () => {
+    const root = tempProject({ "README.md": "# Empty\n" });
+    expect((await cli(["init"], root)).code).toBe(0);
+    expect(readFileSync(join(root, "docbind.json"), "utf8")).toContain('"lock": true');
+    const run = await cli(["check"], root);
+    expect(run.code).toBe(0);
+  });
+
   it("reports binding coverage and unbound tokens", async () => {
     const root = project("Call `getUser(id)` and `ghost()` in prose.\n");
     const audit = await cli(["audit", "--json", "--unbound"], root);
@@ -162,6 +170,20 @@ describe("CLI check", () => {
     expect((await cli(["check"], root)).code).toBe(0);
     expect((await cli(["check", "--mode", "strict"], root)).code).toBe(1);
     expect((await cli(["check", "--mode", "gate"], root)).code).toBe(0);
+  });
+
+  it("migrates legacy locks and reports them", async () => {
+    const root = project();
+    writeFileSync(
+      join(root, "docbind.lock.json"),
+      JSON.stringify({ engine: "0.1.0", generation: 0, anchors: [], tombstones: [] }),
+    );
+    const needs = await cli(["migrate", "--check"], root);
+    expect(needs.code).toBe(3);
+    expect(needs.stdout).toContain("lock needs migration");
+    expect((await cli(["migrate"], root)).code).toBe(0);
+    expect((await cli(["migrate", "--check"], root)).code).toBe(0);
+    expect((await cli(["migrate", "--json"], root)).stdout).toContain('"changed": false');
   });
 
   it("renders semantic lock diffs", async () => {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T13:28:02.128Z",
+  "generatedAt": "2026-11-04T13:38:58.106Z",
   "report": [
     {
       "name": "slugify",
@@ -392,14 +392,14 @@
       "name": "thiserror",
       "repo": "dtolnay/thiserror",
       "commit": "3b29f0107e7900860c7a061c069958569eb458e7",
-      "nameOnlyFalsePositives": 121,
+      "nameOnlyFalsePositives": 130,
       "docs": 1,
       "docLines": 237,
       "falsePositivePerKLine": 0,
       "anchors": 162,
-      "bound": 23,
-      "unbound": 139,
-      "bindRate": 0.1419753086419753,
+      "bound": 32,
+      "unbound": 130,
+      "bindRate": 0.19753086419753085,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -436,32 +436,20 @@
       "name": "proc-macro-fixture",
       "repo": "local/proc-macro-crate",
       "commit": "fixture-v1",
-      "nameOnlyFalsePositives": 2,
+      "nameOnlyFalsePositives": 3,
       "docs": 1,
       "docLines": 8,
       "falsePositivePerKLine": 0,
       "anchors": 3,
-      "bound": 3,
-      "unbound": 0,
-      "bindRate": 1,
+      "bound": 0,
+      "unbound": 3,
+      "bindRate": 0,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "generated_method",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 1,
+      "mutations": [],
+      "hits": 0,
       "misses": 0,
       "collateral": 0
     },
@@ -904,27 +892,15 @@
       "docLines": 4,
       "falsePositivePerKLine": 0,
       "anchors": 1,
-      "bound": 1,
-      "unbound": 0,
-      "bindRate": 1,
+      "bound": 0,
+      "unbound": 1,
+      "bindRate": 0,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
       "docEditRules": [],
-      "mutations": [
-        {
-          "symbol": "source",
-          "rule": "L1-broken",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L1-broken"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        }
-      ],
-      "hits": 1,
+      "mutations": [],
+      "hits": 0,
       "misses": 0,
       "collateral": 0
     },

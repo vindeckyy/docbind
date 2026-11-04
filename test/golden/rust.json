@@ -1,0 +1,114 @@
+[
+  {
+    "id": "golden|rust/lib|class|Client|0",
+    "name": "Client",
+    "kind": "class",
+    "qualifiedName": "golden.rust.lib.Client",
+    "shapeHash": "6ca97ce070fd75fd",
+    "shape": {
+      "kind": "class",
+      "members": [
+        {
+          "name": "base",
+          "kind": "property",
+          "optional": false,
+          "shape": {
+            "kind": "property",
+            "typeShape": "String",
+            "visibility": "public"
+          }
+        }
+      ],
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|rust/lib|enum|Mode|0",
+    "name": "Mode",
+    "kind": "enum",
+    "qualifiedName": "golden.rust.lib.Mode",
+    "shapeHash": "b338b53cb5e778b1",
+    "shape": {
+      "kind": "enum",
+      "enumMembers": [
+        {
+          "name": "Fast",
+          "value": ""
+        },
+        {
+          "name": "Safe",
+          "value": ""
+        }
+      ],
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|rust/lib|function|get_user|0",
+    "name": "get_user",
+    "kind": "function",
+    "qualifiedName": "golden.rust.lib.get_user",
+    "shapeHash": "6c4b6b29a24b2eb0",
+    "shape": {
+      "kind": "function",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "id",
+          "type": "u32",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false
+        }
+      ],
+      "returnType": "String",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|rust/lib|method|Client.request|0",
+    "name": "request",
+    "kind": "method",
+    "qualifiedName": "golden.rust.lib.Client.request",
+    "shapeHash": "83f32fa45e468901",
+    "shape": {
+      "kind": "method",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "self",
+          "type": "&self",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false,
+          "kind": "receiver"
+        },
+        {
+          "name": "path",
+          "type": "&str",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false
+        }
+      ],
+      "returnType": "String",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|rust/lib|property|Client.base|0",
+    "name": "base",
+    "kind": "property",
+    "qualifiedName": "golden.rust.lib.Client.base",
+    "shapeHash": "156e3944ae9a958f",
+    "shape": {
+      "kind": "property",
+      "typeShape": "String",
+      "visibility": "public"
+    }
+  }
+]

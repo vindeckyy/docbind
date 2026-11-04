@@ -1,0 +1,5 @@
+{
+  "lock": true,
+  "config": { "languages": { "typescript": false, "python": false, "rust": false, "go": true } },
+  "expect": [{ "rule": "L1-broken", "severity": "error" }]
+}

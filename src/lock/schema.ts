@@ -17,6 +17,8 @@ const symbolKindSchema = z.enum([
   "module",
 ]);
 
+export const LOCK_FORMAT = "1.0.0";
+
 const anchorSchema = z
   .object({
     docPath: z.string(),
@@ -53,6 +55,7 @@ const tombstoneSchema = z
 const lockSchema = z
   .object({
     schema: z.literal(1),
+    format: z.string().regex(/^\d+\.\d+\.\d+$/u).optional(),
     engine: z.string(),
     generation: z.number().int().nonnegative(),
     anchors: z.array(anchorSchema),
@@ -67,6 +70,7 @@ export function lockPath(root: string): string {
 export function emptyLock(): LockFile {
   return {
     schema: 1,
+    format: LOCK_FORMAT,
     engine: ENGINE_VERSION,
     generation: 0,
     anchors: [],

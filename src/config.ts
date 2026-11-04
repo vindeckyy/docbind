@@ -10,6 +10,7 @@ export const DEFAULT_EXCLUDES = [
   "**/dist/**",
   "**/build/**",
   "**/target/**",
+  "**/.docbind-cache/**",
   "**/.venv/**",
   "**/site/**",
   "**/_build/**",
@@ -41,6 +42,8 @@ export const DEFAULT_CONFIG: Config = {
   javadoc: false,
   javaDefaults: false,
   lock: true,
+  allowExec: false,
+  cache: true,
 };
 
 const severitySchema = z.enum(["error", "warning", "note", "off"]);
@@ -77,6 +80,8 @@ const rawConfigSchema = z
     javadoc: z.boolean().optional(),
     javaDefaults: z.boolean().optional(),
     lock: z.boolean().optional(),
+    allowExec: z.boolean().optional(),
+    cache: z.boolean().optional(),
   })
   .strict();
 
@@ -103,6 +108,8 @@ export function parseConfig(input: unknown): Config {
     javadoc: raw.javadoc ?? DEFAULT_CONFIG.javadoc,
     javaDefaults: raw.javaDefaults ?? DEFAULT_CONFIG.javaDefaults,
     lock: raw.lock ?? DEFAULT_CONFIG.lock,
+    allowExec: raw.allowExec ?? DEFAULT_CONFIG.allowExec,
+    cache: raw.cache ?? DEFAULT_CONFIG.cache,
   };
 }
 

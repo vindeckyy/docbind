@@ -1,0 +1,162 @@
+[
+  {
+    "id": "golden|typescript|class|Client|0",
+    "name": "Client",
+    "kind": "class",
+    "qualifiedName": "golden.typescript.Client",
+    "shapeHash": "e0db914901214e5a",
+    "shape": {
+      "kind": "class",
+      "abstract": false,
+      "extends": [],
+      "implements": [],
+      "members": [
+        {
+          "name": "request",
+          "kind": "method",
+          "optional": false,
+          "shape": {
+            "kind": "method",
+            "async": false,
+            "generator": false,
+            "params": [
+              {
+                "name": "path",
+                "type": "string",
+                "optional": false,
+                "rest": false,
+                "hasDefault": false,
+                "kind": "positional"
+              }
+            ],
+            "returnType": "Promise<User>",
+            "visibility": "public",
+            "flags": []
+          }
+        }
+      ],
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|typescript|enum|Role|0",
+    "name": "Role",
+    "kind": "enum",
+    "qualifiedName": "golden.typescript.Role",
+    "shapeHash": "7e61b24adbc4c770",
+    "shape": {
+      "kind": "enum",
+      "enumMembers": [
+        {
+          "name": "Admin",
+          "value": "\"admin\""
+        },
+        {
+          "name": "Member",
+          "value": "\"member\""
+        }
+      ],
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|typescript|function|getUser|0",
+    "name": "getUser",
+    "kind": "function",
+    "qualifiedName": "golden.typescript.getUser",
+    "shapeHash": "1c8f0f5619b90f51",
+    "shape": {
+      "kind": "function",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "id",
+          "type": "UserId",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false,
+          "kind": "positional"
+        }
+      ],
+      "returnType": "User",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|typescript|interface|User|0",
+    "name": "User",
+    "kind": "interface",
+    "qualifiedName": "golden.typescript.User",
+    "shapeHash": "46c6acf628cd7794",
+    "shape": {
+      "kind": "interface",
+      "extends": [],
+      "members": [
+        {
+          "name": "id",
+          "kind": "property",
+          "optional": false,
+          "shape": {
+            "kind": "property",
+            "typeShape": "string",
+            "visibility": "public",
+            "flags": []
+          }
+        }
+      ],
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|typescript|method|Client.request|0",
+    "name": "request",
+    "kind": "method",
+    "qualifiedName": "golden.typescript.Client.request",
+    "shapeHash": "2938790c82c27f4d",
+    "shape": {
+      "kind": "method",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false,
+          "kind": "positional"
+        }
+      ],
+      "returnType": "Promise<User>",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|typescript|property|User.id|0",
+    "name": "id",
+    "kind": "property",
+    "qualifiedName": "golden.typescript.User.id",
+    "shapeHash": "b1be031c54d35bc8",
+    "shape": {
+      "kind": "property",
+      "typeShape": "string",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|typescript|type|UserId|0",
+    "name": "UserId",
+    "kind": "type",
+    "qualifiedName": "golden.typescript.UserId",
+    "shapeHash": "d4cbfe7456cc49e3",
+    "shape": {
+      "kind": "type",
+      "typeShape": "string",
+      "flags": []
+    }
+  }
+]

@@ -2,6 +2,33 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.2] - 2026-11-04
+
+### Added
+
+- `docbind migrate [--check] [--json]` upgrades lock files to the current format; `--check` exits 3 when migration is needed.
+- Lock files carry a semver `format` field. `schema` remains the breaking-change major.
+- `allowExec` config and `--allow-exec` gate the rustdoc `cargo` call. Without them, rustdoc extraction is skipped with a warning.
+- Surface cache in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file hashes. `--no-cache` bypasses it.
+- `docbind check --unbound` appends unbound tokens as SARIF/JSON notes.
+- Public conformance suite (`npm run conformance`) with six cases across TypeScript, Python, Go, Java, and lock-free contracts.
+- Golden extractor snapshots in `test/golden/` for TypeScript, Python, Rust, Go, and Java.
+- `npm run perf` synthetic 100k-LOC benchmark.
+- `Dockerfile`, `.pre-commit-hooks.yaml`, installation docs, threat model, RFC process, and tag-triggered release workflow.
+
+### Changed
+
+- SECURITY.md corrected: `cargo` is no longer claimed to be absent; it is gated by `allowExec`.
+- CI runs the conformance suite; release workflow runs gate, conformance, corpus fixtures, and build on every tag.
+- 102k synthetic LOC: 0.68 s cold, 0.29 s warm.
+
+### Limits
+
+- Docker image build was not verified locally because the Docker daemon was unavailable.
+- Single-file binaries are not produced; Bun is not installed.
+- The cache invalidates the whole surface on any code edit.
+- SCIP/LSIF, doctests, editor/CI integrations, npm publication, and independent evaluation remain open.
+
 ## [0.2.1] - 2026-11-04
 
 ### Added
@@ -1894,3 +1921,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.99]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.99
 [0.2.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.0
 [0.2.1]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.1
+[0.2.2]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.2

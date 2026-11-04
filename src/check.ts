@@ -10,6 +10,7 @@ import { mergeEntries, mergeTombstones } from "./lock/merge.js";
 import { readLock } from "./lock/schema.js";
 import { discoverCode, discoverDocs } from "./discover.js";
 import { extractSurface } from "./surface/index.js";
+import { readSurfaceCache, surfaceCacheKey, writeSurfaceCache } from "./cache.js";
 import { parseToken } from "./resolve/score.js";
 import type {
   Binding,
@@ -210,7 +211,11 @@ export interface CheckProjectOptions {
 export function checkProject(root: string, config: Config, options: CheckProjectOptions = {}): CheckResult {
   const docs = discoverDocs(root, config);
   const codeFiles = discoverCode(root, config);
-  const surface = extractSurface(root, codeFiles, config);
+  const cacheKey = config.cache ? surfaceCacheKey(root, codeFiles, config) : undefined;
+  const cached = cacheKey ? readSurfaceCache(root, cacheKey) : undefined;
+  const surface = cached ?? extractSurface(root, codeFiles, config);
+  if (cacheKey && !cached) writeSurfaceCache(root, cacheKey, surface);
+  const warnings = surface.error ? [surface.error] : [];
   const pythonHints = buildPythonTypeHints(surface.symbols);
   const goHints = buildGoTypeHints(surface.symbols);
   const parsedDocs = parseDocs(root, docs, pythonHints, goHints, config.asciidoc);
@@ -426,6 +431,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
     }),
     pending,
     unbound,
+    warnings,
     stats: {
       docsScanned: parsedDocs.docsScanned,
       codeFilesScanned: surface.filesScanned,

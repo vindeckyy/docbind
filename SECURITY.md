@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-The current 0.1.x line receives security fixes.
+The current 0.2.x line receives security fixes.
 
 ## Reporting a vulnerability
 
@@ -17,12 +17,15 @@ Include:
 
 ## Threat model
 
+The full model is in [docs/threat-model.md](docs/threat-model.md).
+
 `docbind` parses untrusted repository content in CI. It must not execute project code.
 
 - TypeScript and Python extractors parse source.
 - Rust and Go extractors use the bundled lexer and item parsers.
 - The Python worker reads source with `ast.parse`. It does not import the project.
-- The tool does not run `cargo`, `go`, package scripts, or build systems.
+- The tool does not run `go`, package scripts, or build systems.
+- `cargo` runs only when `languages.rustdoc` and `allowExec` are both enabled. Without `allowExec`, rustdoc extraction is skipped and a warning is printed.
 
 Relevant risk classes:
 

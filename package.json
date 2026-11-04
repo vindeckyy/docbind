@@ -1,6 +1,6 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Contract drift detection for symbol references in docs. Not a documentation linter.",
   "type": "module",
   "bin": {
@@ -26,7 +26,9 @@
     "bench": "tsx scripts/bench.ts",
     "thresholds": "tsx scripts/threshold-sweep.ts",
     "corpus:fixtures": "tsx scripts/corpus.ts --local-only --strict --out .corpus/fixtures-report.json --only macro-fixture,go-package-fixture,go-cycle-fixture,python-fields-fixture,rst-fixture,python-docstrings-fixture,python-asciidoc-fixture,java-javadoc-fixture,java-nolock-fixture",
-    "recall": "tsx scripts/recall.ts"
+    "recall": "tsx scripts/recall.ts",
+    "conformance": "tsx scripts/conformance.ts",
+    "perf": "tsx scripts/perf.ts"
   },
   "dependencies": {
     "ignore": "^7.0.14",

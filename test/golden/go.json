@@ -1,0 +1,92 @@
+[
+  {
+    "id": "golden|go/main|class|Client|0",
+    "name": "Client",
+    "kind": "class",
+    "qualifiedName": "golden.go.main.Client",
+    "shapeHash": "4d2fce52f2a374bf",
+    "shape": {
+      "kind": "class",
+      "members": [
+        {
+          "name": "Base",
+          "kind": "property",
+          "optional": false,
+          "shape": {
+            "kind": "property",
+            "typeShape": "string",
+            "visibility": "public"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden|go/main|function|GetUser|0",
+    "name": "GetUser",
+    "kind": "function",
+    "qualifiedName": "golden.go.main.GetUser",
+    "shapeHash": "212d182b03ffd688",
+    "shape": {
+      "kind": "function",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false
+        }
+      ],
+      "returnType": "string",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|go/main|method|Client.Request|0",
+    "name": "Request",
+    "kind": "method",
+    "qualifiedName": "golden.go.main.Client.Request",
+    "shapeHash": "861ebba5e6acb845",
+    "shape": {
+      "kind": "method",
+      "async": false,
+      "generator": false,
+      "params": [
+        {
+          "name": "receiver",
+          "type": "*Client",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false,
+          "kind": "receiver"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false
+        }
+      ],
+      "returnType": "string",
+      "visibility": "public",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|go/main|property|Client.Base|0",
+    "name": "Base",
+    "kind": "property",
+    "qualifiedName": "golden.go.main.Client.Base",
+    "shapeHash": "b1be031c54d35bc8",
+    "shape": {
+      "kind": "property",
+      "typeShape": "string",
+      "visibility": "public"
+    }
+  }
+]

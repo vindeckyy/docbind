@@ -7,14 +7,19 @@ nav:
   - Home: index.md
   - Demo: demo.md
   - Usage: usage.md
+  - Installation: installation.md
   - Configuration: configuration.md
   - Architecture: architecture.md
   - Scope and limits: scope.md
+  - Threat model: threat-model.md
   - Corpus: corpus.md
   - Recall: recall.md
+  - Conformance: conformance.md
   - Precision: precision.md
   - Performance: performance.md
   - Prior art: prior-art.md
+  - RFC process: rfc.md
+  - RFC template: rfcs/0000-template.md
 markdown_extensions:
   - tables
   - fenced_code

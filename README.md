@@ -144,7 +144,7 @@ The full design is in [docs/architecture.md](docs/architecture.md).
 
 Markdown and reStructuredText are the supported input formats. `docbind` reads inline code, headings, tables, fenced code, signature fences, and explicit references, plus RST literals, roles, and `code-block` directives. Python docstrings, AsciiDoc, and Javadoc are opt-in with `"docstrings": true`, `"asciidoc": true`, and `"javadoc": true`.
 
-It does not execute anything. Examples are parsed, never run. Example-output drift, such as a printed value that no longer matches the code, is invisible.
+It does not execute project code by default. Examples are parsed, never run, so example-output drift such as a printed value that no longer matches the code is invisible. Rustdoc extraction is the one exception: it invokes `cargo` only with `--allow-exec`, because rustdoc JSON requires a build.
 
 ## Install
 
@@ -168,17 +168,20 @@ npm link
 
 Commit `docbind.lock.json`. Run `docbind lock` after changing docs.
 
-A scoped npm package is reserved as `@vindeckyy/docbind` but is not published yet.
+A scoped npm package is reserved as `@vindeckyy/docbind` but is not published yet. Docker and pre-commit instructions are in [docs/installation.md](docs/installation.md).
 
 ## CLI
 
 ```text
 docbind init
-docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--changed-only] [--base <rev>]
+docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound]
+              [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache]
+              [--changed-only] [--base <rev>]
 docbind lock [--check] [--diff] [--refresh]
+docbind migrate [--check] [--json]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
-docbind adopt [--write] [--json]
+docbind adopt [--write] [--json] [--contract]
 docbind audit [--unbound] [--json]
 docbind stats
 ```
@@ -279,18 +282,26 @@ python3 -m venv .venv
 
 Architecture notes live in [docs/architecture.md](docs/architecture.md). Contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Engineering guarantees
+
+- `docbind check` does not execute project code. `cargo` for rustdoc is gated by `--allow-exec`; the threat model is in [docs/threat-model.md](docs/threat-model.md).
+- Lock files carry a semver format. `docbind migrate --check` exits 3 when the lock needs upgrading; `docbind migrate` rewrites it and is idempotent.
+- Surface extraction is cached in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file content hashes. `--no-cache` bypasses it.
+- `npm run conformance` runs a public, language-neutral suite. `npm run corpus:fixtures` is the mutation regression gate in CI.
+- Golden extractor snapshots live in `test/golden/`.
+
 ## Gate results
 
-Measured on the 0.2.0 tree:
+Measured on the 0.2.2 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 377 passing |
-| Statements | 98.5% |
-| Branches | 95.62% |
-| Functions | 98.93% |
-| Lines | 99.15% |
-| Changed-line coverage, feature diff | 99.15% |
+| Tests | 391 passing |
+| Statements | 98.1% |
+| Branches | 95.3% |
+| Functions | 98.09% |
+| Lines | 98.88% |
+| Changed-line coverage, feature diff | 98.88% |
 | Structure gate | 83 of 83 checks |
 | Docs build | `mkdocs build --strict` passes |
 

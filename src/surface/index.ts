@@ -24,7 +24,16 @@ export function extractSurface(root: string, files: string[], config: Config): E
   if (config.languages.rust && rustFiles.length > 0) {
     results.push(extractRust(root, rustFiles));
     if (config.languages.rustdoc) {
-      results.push(extractRustdoc(root, rustFiles));
+      if (config.allowExec) {
+        results.push(extractRustdoc(root, rustFiles));
+      } else {
+        results.push({
+          symbols: [],
+          parseFailures: 0,
+          filesScanned: 0,
+          error: "rustdoc skipped: cargo execution is disabled; pass --allow-exec or set allowExec to true",
+        });
+      }
     }
   }
   if (config.languages.go && goFiles.length > 0) {

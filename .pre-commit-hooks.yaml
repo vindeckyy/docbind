@@ -1,0 +1,7 @@
+- id: docbind
+  name: docbind check
+  description: Detect contract drift in documentation symbol references.
+  entry: docbind check
+  language: node
+  pass_filenames: false
+  require_serial: true

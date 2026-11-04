@@ -1,0 +1,10 @@
+.git
+.github
+node_modules
+coverage
+.corpus
+corpus
+test
+docs
+site
+*.md

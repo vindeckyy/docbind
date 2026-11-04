@@ -26,7 +26,8 @@
   "asciidoc": false,
   "javadoc": false,
   "javaDefaults": false,
-  "lock": true
+  "lock": true,
+  "allowExec": false
 }
 ```
 
@@ -43,6 +44,10 @@ TypeScript, Python, and Rust are on by default. Go is off. The rustdoc JSON extr
 Set `"docstrings": true` to scan Python module, class, and function docstrings. Backticked symbols and Sphinx roles become anchors on the source file. It is off by default because docstrings mix prose with code tokens more loosely than dedicated docs.
 
 ## AsciiDoc
+
+`cache` defaults to `true` and stores extracted symbols in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file hashes. `--no-cache` disables it. Add `.docbind-cache/` to `.gitignore`.
+
+`allowExec` defaults to `false`. Rustdoc extraction needs both `languages.rustdoc` and `allowExec`; without them `cargo` is not run and `check` prints a warning.
 
 Set `"asciidoc": true` and include `.adoc` or `.asciidoc` paths in `docs`. Backtick and `+monospace+` literals become anchors, and `[source,<lang>]` blocks with `----` or `....` delimiters are parsed as fences. It is off by default because single backticks and plus signs are common in prose.
 

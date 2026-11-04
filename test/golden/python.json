@@ -1,0 +1,86 @@
+[
+  {
+    "id": "golden|python/mod|class|Response|0",
+    "name": "Response",
+    "kind": "class",
+    "qualifiedName": "golden.python.mod.Response",
+    "shapeHash": "d6b8ba581fd4273c",
+    "shape": {
+      "kind": "class",
+      "extends": [],
+      "members": [
+        {
+          "name": "status",
+          "kind": "property",
+          "optional": true,
+          "shape": {
+            "kind": "property",
+            "typeShape": "int",
+            "flags": [],
+            "visibility": "public"
+          }
+        }
+      ],
+      "flags": [],
+      "visibility": "public"
+    }
+  },
+  {
+    "id": "golden|python/mod|const|MAX_RETRIES|0",
+    "name": "MAX_RETRIES",
+    "kind": "const",
+    "qualifiedName": "golden.python.mod.MAX_RETRIES",
+    "shapeHash": "9284783c72a3f3c2",
+    "shape": {
+      "kind": "const",
+      "typeShape": "",
+      "literalKind": "number",
+      "flags": []
+    }
+  },
+  {
+    "id": "golden|python/mod|function|get_response|0",
+    "name": "get_response",
+    "kind": "function",
+    "qualifiedName": "golden.python.mod.get_response",
+    "shapeHash": "62c47e3ce3d2d5cf",
+    "shape": {
+      "kind": "function",
+      "async": false,
+      "params": [
+        {
+          "name": "url",
+          "type": "str",
+          "optional": false,
+          "rest": false,
+          "hasDefault": false,
+          "kind": "positional"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "optional": true,
+          "rest": false,
+          "hasDefault": true,
+          "kind": "positional"
+        }
+      ],
+      "returnType": "Response",
+      "flags": [],
+      "visibility": "public"
+    }
+  },
+  {
+    "id": "golden|python/mod|property|Response.status|0",
+    "name": "status",
+    "kind": "property",
+    "qualifiedName": "golden.python.mod.Response.status",
+    "shapeHash": "c7baebea883bf214",
+    "shape": {
+      "kind": "property",
+      "typeShape": "int",
+      "flags": [],
+      "visibility": "public"
+    }
+  }
+]
