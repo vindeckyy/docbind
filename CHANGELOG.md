@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.85] - 2026-11-03
+
+### Added
+
+- Java default expressions evaluate reference casts to `String`, `Object`, `Number`, `CharSequence`, and boxed numeric or boolean types.
+- `(String) "x"` stays a string; `(Object) 5` keeps its numeric value.
+- Boolean literals now parse inside expressions, enabling `(Boolean) true`.
+- Corpus adds `Marker.refText()` with default `(String) "ok"`; editing `"ok"` to `"no"` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 110 to 111; `java-javadoc-fixture` runs 39 mutations with 34 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.95%; line coverage to 99.27%.
+
+### Limits
+
+- Casts are not type-checked against the operand's Java type; incompatible combinations return unevaluated only for the checked pairs.
+- User methods and constructors stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.84] - 2026-11-03
 
 ### Added
@@ -1567,3 +1587,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.82]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.82
 [0.1.83]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.83
 [0.1.84]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.84
+[0.1.85]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.85

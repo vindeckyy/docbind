@@ -249,6 +249,20 @@ interface EvaluatedConstant {
 
 const CAST_TYPES = new Set(["int", "long", "short", "byte", "double", "float"]);
 
+const REFERENCE_CAST_TYPES = new Set([
+  "String",
+  "Object",
+  "Number",
+  "CharSequence",
+  "Integer",
+  "Long",
+  "Short",
+  "Byte",
+  "Double",
+  "Float",
+  "Boolean",
+]);
+
 function isIntegralLiteral(text: string): boolean {
   return /^(?:0[xX][0-9a-fA-F]+|\d+)[lL]?$/u.test(text);
 }
@@ -390,11 +404,40 @@ function evaluateExpression(
         position += 1;
         return applyMath(name, args);
       }
+      if (name === "true" || name === "false") {
+        return { value: name === "true", integral: false };
+      }
       return constants?.get(name);
     }
     if (token.type === "op" && token.value === "(") {
       const type = tokens[position + 1];
       const close = tokens[position + 2];
+      if (type?.type === "ident" && REFERENCE_CAST_TYPES.has(type.value) && close?.value === ")") {
+        position += 3;
+        const operand = parsePrimary();
+        if (operand === undefined) return undefined;
+        if (type.value === "String" || type.value === "CharSequence") {
+          return typeof operand.value === "string" ? { value: operand.value, integral: false } : undefined;
+        }
+        if (type.value === "Boolean") {
+          return typeof operand.value === "boolean" ? { value: operand.value, integral: false } : undefined;
+        }
+        if (type.value === "Integer" || type.value === "Short" || type.value === "Byte") {
+          return typeof operand.value === "number"
+            ? { value: operand.value, integral: true, width: "int" }
+            : undefined;
+        }
+        if (type.value === "Long") {
+          return typeof operand.value === "number"
+            ? { value: operand.value, integral: true, width: "long" }
+            : undefined;
+        }
+        if (type.value === "Double" || type.value === "Float") {
+          return typeof operand.value === "number" ? { value: operand.value, integral: false } : undefined;
+        }
+        if (type.value === "Number" && typeof operand.value !== "number") return undefined;
+        return operand;
+      }
       if (type?.type === "ident" && CAST_TYPES.has(type.value) && close?.value === ")") {
         position += 3;
         const operand = parsePrimary();

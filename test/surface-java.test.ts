@@ -436,6 +436,25 @@ describe("Java surface", () => {
         "    double mathPowHuge() default Math.pow(10, 400);",
         "    double mathPowBad() default Math.pow(2);",
         "    double mathSqrtBad() default Math.sqrt(1, 2);",
+        "    String refString() default (String) \"x\";",
+        "    CharSequence refChars() default (CharSequence) \"y\";",
+        "    Object refObject() default (Object) 5;",
+        "    Number refNumber() default (Number) 5;",
+        "    Boolean refBool() default (Boolean) true;",
+        "    Integer refInteger() default (Integer) 5;",
+        "    Long refLong() default (Long) 5;",
+        "    Short refShort() default (Short) 5;",
+        "    Byte refByte() default (Byte) 5;",
+        "    Double refDouble() default (Double) 5;",
+        "    Float refFloat() default (Float) 5;",
+        "    String refBad() default (String) 5;",
+        "    Number refNumberBad() default (Number) \"x\";",
+        "    Boolean refBoolBad() default (Boolean) 5;",
+        "    String refEmpty() default (String);",
+        "    Integer refIntegerBad() default (Integer) \"x\";",
+        "    Long refLongBad() default (Long) \"x\";",
+        "    Double refDoubleBad() default (Double) \"x\";",
+        "    double mathPowExpLong() default Math.pow(1, 1L << 62);",
         "    double mathSqrtLong() default Math.sqrt(1L << 62);",
         "    double mathPowLong() default Math.pow(1L << 62, 1);",
         "    int bitsAnd() default 6 & 3;",
@@ -565,6 +584,29 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "mathPowNeg")?.shape.evaluatedDefault).toBe(0.5);
     expect(result.symbols.find((symbol) => symbol.name === "mathSqrtLong")?.shape.evaluatedDefault).toBe(2147483648);
     expect(result.symbols.find((symbol) => symbol.name === "mathPowLong")?.shape.evaluatedDefault).toBe(4611686018427388000);
+    expect(result.symbols.find((symbol) => symbol.name === "refString")?.shape.evaluatedDefault).toBe("x");
+    expect(result.symbols.find((symbol) => symbol.name === "refChars")?.shape.evaluatedDefault).toBe("y");
+    expect(result.symbols.find((symbol) => symbol.name === "refObject")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refNumber")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refBool")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "refInteger")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refLong")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refShort")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refByte")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refDouble")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "refFloat")?.shape.evaluatedDefault).toBe(5);
+    expect(result.symbols.find((symbol) => symbol.name === "mathPowExpLong")?.shape.evaluatedDefault).toBe(1);
+    for (const name of [
+      "refBad",
+      "refNumberBad",
+      "refBoolBad",
+      "refEmpty",
+      "refIntegerBad",
+      "refLongBad",
+      "refDoubleBad",
+    ]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     expect(result.symbols.find((symbol) => symbol.name === "mathUnknown")?.shape.evaluatedDefault).toBe(8);
     for (const name of ["mathSqrtNeg", "mathPowHuge", "mathPowBad", "mathSqrtBad"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();

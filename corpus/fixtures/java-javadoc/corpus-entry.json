@@ -125,6 +125,14 @@
       "to": 25,
       "symbol": "root",
       "expectedRule": "L3-reshaped"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "method": "refText",
+      "from": "ok",
+      "to": "no",
+      "symbol": "refText",
+      "expectedRule": "L3-reshaped"
     }
   ],
   "constantMutations": [
