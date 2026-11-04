@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.4.0] - 2026-11-04
+
+### Changed
+
+- **Coverage is now a gate.** `check --require-coverage=<0..1>` and `minCoverage` fail with exit 3 when verified annotation coverage is too low. `--coverage-ratchet` prevents regressions against `.docbind-coverage.json`.
+- **Adopted annotations carry provenance.** `adopt` writes `adopted confidence=<score>`; their findings are advisory until a human removes the tag. Audit separates verified, adopted, and inferred coverage.
+- **Strict mode skips hedged lines.** Lines containing "may", "typically", "roughly", "for example", and similar hedges no longer trigger strict abstention failures.
+- **Lock review requires human assertions.** A lock change must sit under an edited, non-adopted annotation. Review still does not prove the prose is true.
+- **Probes require `--allow-probes`.** `--allow-exec` alone does not run Docker probes. Docker is documented as an accidental-damage boundary, not a hostile-code sandbox.
+- **SCIP/LSIF are labeled binding-only.** `check` warns when an index loads that contracts are not checked for those symbols.
+- **`docbind strip`** removes annotation comments so the format has an exit path. GOVERNANCE.md documents succession and migration.
+- **Evidence claims downgraded.** Recall and leaderboard pages are now an explicit smoke matrix; n=13 cannot support per-class detection rates.
+- **Distribution hardening.** Releases publish `SHA256SUMS` and GitHub build provenance attestations; install docs pin tags and show verification commands.
+- **Extractor interface demoted.** The internal registry is no longer described as a public plugin API.
+
+### Limits
+
+- Third-party mutation generation is still missing. The held-out evaluation remains internal.
+- Docker probes are not a hostile-code sandbox and must never run on fork PRs.
+- npm publication, a second maintainer, and external reproduction remain blocked.
+
 ## [0.3.0] - 2026-11-04
 
 ### Changed
@@ -2025,3 +2046,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.6
 [0.2.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.7
 [0.3.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.3.0
+[0.4.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.4.0

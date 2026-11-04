@@ -9,7 +9,7 @@
 - The Python extractor starts `python3` and runs a bundled worker that calls `ast.parse`. It never imports project modules.
 - Git commands run only for `--changed-only`, `--mode=strict`, and `--base`; they are read-only diffs.
 - `languages.rustdoc` is off by default. Enabling it requires `--allow-exec` or `"allowExec": true` because it invokes `cargo`.
-- `docbind probe` requires `--allow-exec` and Docker. It runs a configured command with no network, a read-only root, a read-only repo mount, a non-root user, memory and CPU caps, and a timeout. It is not a hardened multi-tenant sandbox.
+- `docbind probe` requires `--allow-exec`, `--allow-probes`, and Docker. It runs a configured command with no network, a read-only root, a read-only repo mount, a non-root user, memory and CPU caps, and a timeout. It is not a hardened multi-tenant sandbox.
 
 ## Assets
 

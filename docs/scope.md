@@ -18,11 +18,19 @@ Inline annotations make binding exact:
 
 The resolver matches the project-relative file and name directly. Confidence scores, veto rules, ambiguity checks, and prose context do not apply. If the symbol is missing or duplicated in that file, the check fails instead of guessing.
 
-Findings from inferred anchors are always downgraded to notes and do not fail the build. Explicit findings keep their configured severity. `docbind check --strict` makes advisory notes fatal for teams that accept the false-positive risk.
+Findings from inferred anchors are always downgraded to notes and do not fail the build. Explicit findings keep their configured severity. `docbind check --strict` makes advisory notes fatal for teams that accept the false-positive risk. Strict abstentions skip hedged lines.
+
+Annotations written by `adopt` carry `adopted confidence=<score>` and stay advisory until the tag is removed. `--require-coverage` counts only human-asserted annotations. A repo with high inferred binding and low verified coverage fails the gate.
 
 Unannotated references still use heuristic binding. That path is useful for adoption, but it is not the sound mode. `docbind adopt` proposes annotations for existing inferred bindings, and `docbind audit --unbound` lists every token that stayed silent.
 
 `docbind check --mode=strict` fails when abstentions fall on changed lines; `--mode=gate` keeps them as notes. Strict mode is the risk posture for teams that want abstentions to block a diff.
+
+## Runtime checks are scoped
+
+Doctests verify only examples wired into a configured command. Examples that rotted because nobody ran them are invisible. `audit --examples` counts fenced blocks and names docs with no configured runner, so the gap is measurable but not closed.
+
+Probes can only exercise calls that fit a no-network, read-only container. Anything that touches I/O, auth, a database, time, or an external service is out of reach. Docker is an accidental-damage boundary, not a hostile-code sandbox. `probe` requires both `--allow-exec` and `--allow-probes`, and must not run on fork PRs.
 
 ## Silence is deliberate, and it has a cost
 
@@ -48,7 +56,7 @@ Use `docbind lock --check` in CI to fail when the lock is not derivable from the
 
 `docbind lock --diff` renders the rebuild as semantic changes: added and removed anchors, symbol moves, and contract hashes. Review that instead of reading raw JSON lock churn.
 
-`docbind lock --review` compares the rebuilt lock to the committed lock and checks that each changed anchor sits on an edited doc line. It fails when the lock moved without a doc change.
+`docbind lock --review` compares the rebuilt lock to the committed lock and checks that each changed anchor sits on an edited doc line under a human-asserted annotation. It prevents silent lock churn. It does not verify that the sentence is correct; a human can still assert a wrong contract.
 
 A no-lock workflow is available: annotate with an inline `contract=` hash and run `docbind check --no-lock`. The doc and the contract then live in one file and the lock is not read. `docbind adopt --contract` writes those annotations. Commit lock changes in the same review as the doc change or the contract change that caused them.
 

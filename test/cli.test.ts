@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.3.0");
+    expect((await cli(["--version"], root)).stdout).toBe("0.4.0");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -151,7 +151,8 @@ describe("CLI check", () => {
     expect(suggestions[0]?.annotation).toContain("src/users.ts#getUser");
     expect((await cli(["adopt", "--write"], root)).code).toBe(0);
     const doc = readFileSync(join(root, "docs/api.md"), "utf8");
-    expect(doc).toContain("<!-- docbind: symbol=src/users.ts#getUser -->");
+    expect(doc).toContain("symbol=src/users.ts#getUser");
+    expect(doc).toContain("adopted confidence=");
     expect((await cli(["adopt", "--json", "--write"], root)).code).toBe(0);
     const second = await cli(["adopt", "--json"], root);
     expect(JSON.parse(second.stdout)).toEqual([]);
@@ -192,18 +193,18 @@ describe("CLI check", () => {
     const previous = process.env.PATH;
     process.env.PATH = `${join(root, "bin")}:${previous ?? ""}`;
     try {
-      const text = await cli(["probe", "--allow-exec"], root);
+      const text = await cli(["probe", "--allow-exec", "--allow-probes"], root);
       expect(text.code).toBe(1);
       expect(text.stdout).toContain("1 probe finding");
-      const json = await cli(["probe", "--allow-exec", "--json"], root);
+      const json = await cli(["probe", "--allow-exec", "--allow-probes", "--json"], root);
       expect(json.code).toBe(1);
       expect(JSON.parse(json.stdout)[0].rule).toBe("D2-probe");
       writeFileSync(join(root, "bin/docker"), "#!/bin/sh\nexit 0\n");
       chmodSync(join(root, "bin/docker"), 0o755);
-      const ok = await cli(["probe", "--allow-exec"], root);
+      const ok = await cli(["probe", "--allow-exec", "--allow-probes"], root);
       expect(ok.code).toBe(0);
       expect(ok.stdout).toContain("0 probe findings");
-      expect((await cli(["probe", "--allow-exec", "--json"], root)).stdout.trim()).toBe("[]");
+      expect((await cli(["probe", "--allow-exec", "--allow-probes", "--json"], root)).stdout.trim()).toBe("[]");
     } finally {
       process.env.PATH = previous;
     }
@@ -271,8 +272,8 @@ describe("CLI check", () => {
     expect((await cli(["migrate", "--json"], root)).stdout).toContain('"changed": false');
   });
 
-  it("requires lock changes to be coupled to doc edits", async () => {
-    const root = project();
+  it("requires lock changes to be coupled to human-asserted doc edits", async () => {
+    const root = project("<!-- docbind: symbol=src/users.ts#getUser -->\n\nCall `getUser(id)`.\n");
     await lock(root);
     const git = (args: string[]): void => {
       execFileSync("git", ["-c", "user.name=Test", "-c", "user.email=test@example.com", ...args], {
@@ -290,8 +291,25 @@ describe("CLI check", () => {
     const uncoupled = await cli(["lock", "--review", "--json"], root);
     expect(uncoupled.code).toBe(3);
     expect(JSON.parse(uncoupled.stdout).uncoupled[0].docPath).toBe("docs/api.md");
-    writeFileSync(join(root, "docs/api.md"), "# API\n\nCall `fetchUser(id)`.\n");
+    writeFileSync(join(root, "docs/api.md"), "<!-- docbind: symbol=src/users.ts#fetchUser -->\n\nCall `fetchUser(id)`.\n");
     expect((await cli(["lock", "--review"], root)).code).toBe(0);
+  });
+
+  it("rejects adopted annotations as human assertions in review", async () => {
+    const root = project("<!-- docbind: symbol=src/users.ts#getUser adopted confidence=0.70 -->\n\nCall `getUser(id)`.\n");
+    await lock(root);
+    const git = (args: string[]): void => {
+      execFileSync("git", ["-c", "user.name=Test", "-c", "user.email=test@example.com", ...args], {
+        cwd: root,
+        stdio: "ignore",
+      });
+    };
+    git(["init"]);
+    git(["add", "."]);
+    git(["commit", "-m", "one"]);
+    writeFileSync(join(root, "src/users.ts"), code("fetchUser"));
+    writeFileSync(join(root, "docs/api.md"), "<!-- docbind: symbol=src/users.ts#fetchUser adopted confidence=0.70 -->\n\nCall `fetchUser(id)`.\n");
+    expect((await cli(["lock", "--review"], root)).code).toBe(3);
   });
 
   it("renders semantic lock diffs", async () => {
@@ -310,6 +328,55 @@ describe("CLI check", () => {
     writeFileSync(join(root, "docs/api.md"), "# API\n\nNo anchors.\n");
     const removed = await cli(["lock", "--diff"], root);
     expect(removed.stdout).toContain("no longer bound");
+  });
+
+  it("gates verified annotation coverage and ratchets regressions", async () => {
+    const root = project("<!-- docbind: symbol=src/users.ts#getUser -->\n\nCall `getUser(id)` and `ghost()`.\n");
+    expect((await cli(["check", "--require-coverage", "0.8"], root)).code).toBe(3);
+    expect((await cli(["check", "--require-coverage", "0.3"], root)).code).toBe(0);
+    expect((await cli(["check", "--write-coverage"], root)).code).toBe(0);
+    expect((await cli(["check", "--coverage-ratchet"], root)).code).toBe(0);
+    writeFileSync(join(root, "docs/api.md"), "Call `getUser(id)` and `ghost()`.\n");
+    expect((await cli(["check", "--coverage-ratchet"], root)).code).toBe(3);
+    expect((await cli(["check", "--require-coverage", "loud"], root)).code).toBe(2);
+    writeFileSync(join(root, "docbind.json"), JSON.stringify({ minCoverage: 1 }));
+    expect((await cli(["check"], root)).code).toBe(3);
+    writeFileSync(join(root, "docbind.json"), "{}");
+    rmSync(join(root, ".docbind-coverage.json"));
+    expect((await cli(["check", "--coverage-ratchet"], root)).code).toBe(3);
+  });
+
+  it("skips hedged lines in strict abstention mode", async () => {
+    const hedged = project("The API may change: `ghost()`.\n");
+    expect((await cli(["check", "--mode", "strict"], hedged)).code).toBe(0);
+    const plain = project("Call `ghost()`.\n");
+    expect((await cli(["check", "--mode", "strict"], plain)).code).toBe(1);
+  });
+
+  it("reports adopted annotations separately", async () => {
+    const root = project();
+    expect((await cli(["adopt", "--write"], root)).code).toBe(0);
+    const audit = await cli(["audit", "--json", "--adopted"], root);
+    const parsed = JSON.parse(audit.stdout) as { adopted: number; adoptedTokens: Array<{ token: string }> };
+    expect(parsed.adopted).toBe(1);
+    expect(parsed.adoptedTokens[0]?.token).toBe("getUser");
+    const text = await cli(["audit", "--adopted"], root);
+    expect(text.stdout).toContain("verified annotation coverage");
+    expect(text.stdout).toContain("confidence");
+    const examples = await cli(["audit", "--examples"], root);
+    expect(examples.stdout).toContain("example fences:");
+    const jsonExamples = await cli(["audit", "--examples", "--json"], root);
+    expect(JSON.parse(jsonExamples.stdout).examples.fences).toBe(0);
+  });
+
+  it("strips annotations through the CLI", async () => {
+    const root = project();
+    expect((await cli(["adopt", "--write"], root)).code).toBe(0);
+    const preview = await cli(["strip", "--json"], root);
+    expect(JSON.parse(preview.stdout).removed).toBe(1);
+    expect((await cli(["strip"], root)).stdout).toContain("1 annotation found");
+    expect((await cli(["strip", "--write"], root)).stdout).toContain("1 annotation removed");
+    expect(readFileSync(join(root, "docs/api.md"), "utf8")).not.toContain("docbind:");
   });
 
   it("reports invalid config", async () => {

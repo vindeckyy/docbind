@@ -12,9 +12,10 @@ docbind migrate [--check] [--json]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json]
-docbind audit [--unbound] [--json]
+docbind audit [--unbound] [--adopted] [--json]
 docbind doctest [--json]
 docbind probe [--json]
+docbind strip [--write] [--json]
 docbind stats
 ```
 
@@ -42,7 +43,9 @@ The path is project-relative. The part after `#` may be a bare name or a qualifi
 
 `docbind lock --diff` shows what a rebuild would change: additions, removals, symbol moves, and shape changes with old/new hashes. `--json` emits the same data for review tooling.
 
-`docbind adopt` proposes explicit annotations for inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent. `--contract` includes the current shape hash for lock-free checks.
+`docbind adopt` proposes annotations marked `adopted confidence=<score>`. They bind but stay advisory until a human removes the `adopted` tag. `docbind strip` removes annotations entirely for migration out.
+
+`docbind check --require-coverage 0.8` fails with exit 3 below 80% verified annotation coverage. `--coverage-ratchet` compares against `.docbind-coverage.json`; `--write-coverage` updates the baseline. Coverage counts only human-asserted annotations, not adopted or inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent. `--contract` includes the current shape hash for lock-free checks.
 
 `docbind check --no-lock` reads inline `contract=` assertions and ignores `docbind.lock.json`. The annotation must include the contract for reshape detection:
 
@@ -50,7 +53,7 @@ The path is project-relative. The part after `#` may be a bare name or a qualifi
 <!-- docbind: symbol=src/users.ts#getUser contract=3edc239f12f5a59e -->
 ```
 
-`docbind check --mode=strict` fails when unbound tokens fall on changed lines. `--mode=gate` is the default and keeps abstentions as notes.
+`docbind check --mode=strict` fails when unbound tokens fall on changed lines, but skips lines with hedging language such as "may", "typically", or "for example". `--mode=gate` is the default and keeps abstentions as notes.
 
 `init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only. `lock --check` verifies that the committed lock is current without writing it; use it in CI to catch stale locks.
 
@@ -89,7 +92,7 @@ Failures become `D1-doctest` findings. The command is skipped without `--allow-e
 }
 ```
 
-The container runs with `--network none`, a read-only root, a read-only mount of the repository, no extra capabilities, a 256 MiB memory cap, one CPU, and a 120-second timeout. Failures become `D2-probe` findings. The command is skipped without `--allow-exec`.
+The container runs with `--network none`, a read-only root, a read-only mount of the repository, no extra capabilities, a 256 MiB memory cap, one CPU, and a 120-second timeout. Failures become `D2-probe` findings. The command requires both `--allow-exec` and `--allow-probes`; the second flag is deliberate because Docker is not a hostile-code boundary.
 
 This is a process boundary, not a hardened multi-tenant sandbox. Run it only on trusted repositories.
 

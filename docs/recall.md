@@ -1,6 +1,8 @@
-# Recall and false-positive evidence
+# Smoke matrix, not a measurement
 
-`npm run recall` aggregates injected mutation classes from `corpus/report.json` and prints recall per language and class. Mutation hits are measured with the full checker; collateral findings are reported separately by the corpus harness.
+`npm run recall` aggregates injected mutation classes from `corpus/report.json`. This is a smoke matrix, not a benchmark: 13 class mutations across three languages, each authored by the maintainer against the maintainer's own heuristics. It cannot support per-class detection rates.
+
+Use it to catch regressions in known shapes. Do not cite it as recall.
 
 ## Mutation matrix
 
@@ -27,11 +29,11 @@ The mutations are token-located text edits against known source, not random fuzz
 
 ## Limits
 
-- One mutation per cell. This is a smoke matrix, not a statistical benchmark.
+- One mutation per cell. n=13. This is a smoke matrix, not a statistical benchmark.
 - Only Java, Python, and Go have class mutations. TypeScript, Rust, and the external repositories contribute rename/value/default mutations only.
-- The fixtures and mutations are maintainer-authored. There is no independent evaluation.
+- The fixtures and mutations are maintainer-authored against the maintainer's mental model. There is no third-party mutation generation and no external evaluation.
 - Recall is measured only for symbols that already bound. Unbound anchors are a separate false-negative surface; see [Corpus](corpus.md) and [Scope and limits](scope.md).
-- A 13/13 result says the detector handles these seeded shapes. It does not estimate recall on arbitrary repositories.
+- A 13/13 result says the detector handles these seeded shapes. It does not estimate recall on arbitrary repositories, overloads, reexports, decorator-modified signatures, generic constraints, or argument reshuffling.
 
 ## Reproduce
 

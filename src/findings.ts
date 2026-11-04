@@ -34,6 +34,7 @@ export function makeFinding(input: FindingInput, config: Config): Finding | unde
       : {}),
     message: input.message,
     inferred: !anchor.explicitSymbol,
+    adopted: anchor.adopted === true,
     ...(input.suggestion ? { suggestion: input.suggestion } : {}),
     ...(input.fix ? { fix: input.fix } : {}),
   };

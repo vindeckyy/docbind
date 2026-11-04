@@ -232,6 +232,9 @@ export function checkProject(root: string, config: Config, options: CheckProject
     ...(config.requireIndex && indexSymbols.length === 0
       ? ["degraded: no SCIP/LSIF symbols; native extractors are the fallback"]
       : []),
+    ...(indexSymbols.length > 0
+      ? [`index mode: ${indexSymbols.length} symbols are binding-only; contracts are not checked`]
+      : []),
   ];
   const pythonHints = buildPythonTypeHints(surface.symbols);
   const goHints = buildGoTypeHints(surface.symbols);
@@ -437,7 +440,18 @@ export function checkProject(root: string, config: Config, options: CheckProject
 
   const finalized = dedupeFindings(findings);
   for (const finding of finalized) {
-    if (finding.inferred) finding.severity = "note";
+    if (finding.inferred || finding.adopted) finding.severity = "note";
+  }
+  const anchorByKey = new Map(anchors.map((anchor) => [anchorKey(anchor), anchor]));
+  let verifiedExplicit = 0;
+  let adoptedCount = 0;
+  let inferredCount = 0;
+  for (const entry of nextLock.anchors) {
+    const anchor = anchorByKey.get(anchorKey(entry));
+    if (!anchor) continue;
+    if (anchor.adopted) adoptedCount += 1;
+    else if (anchor.explicitSymbol) verifiedExplicit += 1;
+    else inferredCount += 1;
   }
   return {
     findings: finalized.sort((left, right) => {
@@ -447,6 +461,12 @@ export function checkProject(root: string, config: Config, options: CheckProject
     pending,
     unbound,
     warnings,
+    coverage: {
+      verifiedExplicit,
+      adopted: adoptedCount,
+      inferred: inferredCount,
+      annotationCoverage: anchors.length === 0 ? 0 : verifiedExplicit / anchors.length,
+    },
     stats: {
       docsScanned: parsedDocs.docsScanned,
       codeFilesScanned: surface.filesScanned,

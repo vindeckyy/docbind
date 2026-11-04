@@ -13,6 +13,8 @@ import { describeLockDiff, diffLock } from "./lock/diff.js";
 import { migrateLock } from "./lock/migrate.js";
 import { runDoctests } from "./doctest.js";
 import { runProbes } from "./probe.js";
+import { stripAnnotations } from "./strip.js";
+import { auditExamples } from "./examples.js";
 import { formatHuman } from "./report/human.js";
 import { formatJson } from "./report/json.js";
 import { formatSarif } from "./report/sarif.js";
@@ -35,9 +37,10 @@ Usage:
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
   docbind adopt [--write] [--json] [--contract]
-  docbind audit [--unbound] [--json]
+  docbind audit [--unbound] [--adopted] [--examples] [--json]
   docbind doctest [--json]
   docbind probe [--json]
+  docbind strip [--write] [--json]
   docbind stats
 
 Commands:
@@ -51,6 +54,7 @@ Commands:
   audit     Report binding coverage and unbound tokens
   doctest   Run configured doctest commands and report failures
   probe     Run configured commands in a Docker sandbox
+  strip     Remove docbind annotation comments from docs
   stats     Print scan statistics`;
 
 function failure(io: CliIO, message: string): number {
@@ -81,6 +85,78 @@ function printFindings(
   } else {
     io.stdout(formatHuman({ ...result, findings }, { all: options.all }));
   }
+}
+
+const HEDGE = /\b(?:roughly|typically|may|might|could|possibly|usually|generally|approximately|about|such as|for example|e\.g\.)\b/iu;
+
+function strictEligible(cwd: string, anchor: { docPath: string; line: number }, cache: Map<string, string[]>): boolean {
+  let lines = cache.get(anchor.docPath);
+  if (!lines) {
+    try {
+      lines = readFileSync(join(cwd, anchor.docPath), "utf8").split(/\r?\n/u);
+    } catch {
+      lines = [];
+    }
+    cache.set(anchor.docPath, lines);
+  }
+  const text = lines[anchor.line - 1] ?? "";
+  return !HEDGE.test(text);
+}
+
+function hasHumanAnnotation(root: string, docPath: string, line: number | undefined): boolean {
+  if (line === undefined) return false;
+  let lines: string[];
+  try {
+    lines = readFileSync(join(root, docPath), "utf8").split(/\r?\n/u);
+  } catch {
+    return false;
+  }
+  for (let index = Math.max(0, line - 6); index < line; index += 1) {
+    const text = lines[index] ?? "";
+    if (/docbind:\s*symbol=/u.test(text) && !/\badopted\b/u.test(text)) return true;
+  }
+  return false;
+}
+
+function coverageGate(
+  result: ReturnType<typeof checkProject>,
+  config: ReturnType<typeof loadConfig>,
+  io: CliIO,
+  options: { required?: number; ratchet: boolean; write: boolean },
+): number {
+  const coverage = result.coverage.annotationCoverage;
+  const required = Math.max(options.required ?? 0, config.minCoverage);
+  const path = join(io.cwd, ".docbind-coverage.json");
+  let baseline: number | undefined;
+  if (options.ratchet) {
+    try {
+      baseline = (JSON.parse(readFileSync(path, "utf8")) as { coverage?: number }).coverage;
+    } catch {
+      baseline = undefined;
+    }
+  }
+  if (options.write) {
+    writeFileSync(path, `${JSON.stringify({
+      coverage,
+      verifiedExplicit: result.coverage.verifiedExplicit,
+      anchors: result.stats.anchors,
+    }, null, 2)}\n`, "utf8");
+  }
+  if (required > 0 && coverage + 1e-9 < required) {
+    io.stderr(`coverage: verified annotation coverage ${(coverage * 100).toFixed(1)}% is below required ${(required * 100).toFixed(1)}%`);
+    return 3;
+  }
+  if (options.ratchet) {
+    if (baseline === undefined) {
+      io.stderr("coverage: no .docbind-coverage.json baseline; run check --write-coverage first");
+      return 3;
+    }
+    if (coverage + 1e-9 < baseline) {
+      io.stderr(`coverage: verified annotation coverage regressed from ${(baseline * 100).toFixed(1)}% to ${(coverage * 100).toFixed(1)}%`);
+      return 3;
+    }
+  }
+  return 0;
 }
 
 export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Promise<number> {
@@ -116,6 +192,12 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         index: { type: "string", multiple: true },
         review: { type: "boolean" },
         "require-index": { type: "boolean" },
+        "require-coverage": { type: "string" },
+        "coverage-ratchet": { type: "boolean" },
+        "write-coverage": { type: "boolean" },
+        "allow-probes": { type: "boolean" },
+        adopted: { type: "boolean" },
+        examples: { type: "boolean" },
         contract: { type: "boolean" },
         diff: { type: "boolean" },
       },
@@ -212,18 +294,36 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         const base = stringOption("base") ?? "origin/HEAD";
         const lines = changedLines(io.cwd, base);
         const files = changedFiles(io.cwd, base);
+        const lineCache = new Map<string, string[]>();
         const strictUnbound = result.unbound.filter((entry) => {
-          if (lines.size === 0 && files.size === 0) return true;
-          const changed = lines.get(entry.anchor.docPath);
-          if (changed) return changed.has(entry.anchor.line);
-          return files.has(entry.anchor.docPath);
+          const changed =
+            lines.size === 0 && files.size === 0
+              ? true
+              : (() => {
+                  const changedLines = lines.get(entry.anchor.docPath);
+                  if (changedLines) return changedLines.has(entry.anchor.line);
+                  return files.has(entry.anchor.docPath);
+                })();
+          return changed && strictEligible(io.cwd, entry.anchor, lineCache);
         });
         if (strictUnbound.length > 0) {
           io.stderr(`strict: ${strictUnbound.length} unbound token${strictUnbound.length === 1 ? "" : "s"} on changed lines`);
           return 1;
         }
       }
-      return findingsExit(findings, option("strict"));
+      const exit = findingsExit(findings, option("strict"));
+      if (exit !== 0) return exit;
+      const required = stringOption("require-coverage");
+      const requiredValue = required === undefined ? undefined : Number(required);
+      if (requiredValue !== undefined && (!Number.isFinite(requiredValue) || requiredValue < 0 || requiredValue > 1)) {
+        io.stderr("error: --require-coverage must be a number between 0 and 1");
+        return 2;
+      }
+      return coverageGate(result, config, io, {
+        ...(requiredValue !== undefined ? { required: requiredValue } : {}),
+        ratchet: option("coverage-ratchet"),
+        write: option("write-coverage"),
+      });
     }
 
     if (command === "migrate") {
@@ -269,6 +369,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
           ...diff.changed.map((change) => change.after),
         ];
         const uncoupled = changes.filter((entry) => {
+          if (!hasHumanAnnotation(io.cwd, entry.docPath, entry.line)) return true;
           const changed = lines.get(entry.docPath);
           if (changed && entry.line !== undefined) return !changed.has(entry.line);
           return !files.has(entry.docPath);
@@ -378,9 +479,24 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
       return 0;
     }
 
+    if (command === "strip") {
+      const stripped = stripAnnotations(io.cwd, config, option("write"));
+      if (option("json")) {
+        io.stdout(JSON.stringify(stripped, null, 2));
+      } else {
+        for (const file of stripped.files) io.stdout(`stripped ${file}`);
+        io.stdout(`${stripped.removed} annotation${stripped.removed === 1 ? "" : "s"} ${option("write") ? "removed" : "found"}`);
+      }
+      return 0;
+    }
+
     if (command === "probe") {
       if (!config.allowExec) {
         io.stderr("error: probes execute project tooling; pass --allow-exec or set allowExec to true");
+        return 2;
+      }
+      if (!option("allow-probes")) {
+        io.stderr("error: probes require --allow-probes; Docker is not a hostile-code boundary");
         return 2;
       }
       if (config.probes.length === 0) {
@@ -423,12 +539,28 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     if (command === "audit") {
       const result = checkProject(io.cwd, config);
       const coverage = result.stats.anchors === 0 ? 0 : result.stats.bound / result.stats.anchors;
+      const examples = option("examples") ? auditExamples(io.cwd, config) : undefined;
       if (option("json")) {
         io.stdout(JSON.stringify({
           anchors: result.stats.anchors,
           bound: result.stats.bound,
           unbound: result.stats.unbound,
           coverage,
+          annotationCoverage: result.coverage.annotationCoverage,
+          verifiedExplicit: result.coverage.verifiedExplicit,
+          adopted: result.coverage.adopted,
+          inferred: result.coverage.inferred,
+          adoptedTokens: option("adopted")
+            ? result.pending
+                .filter((binding) => binding.anchor.adopted)
+                .map((binding) => ({
+                  path: binding.anchor.docPath,
+                  line: binding.anchor.line,
+                  token: binding.anchor.token,
+                  confidence: binding.anchor.adoptConfidence,
+                }))
+            : undefined,
+          examples,
           tokens: option("unbound")
             ? result.unbound.map((entry) => ({
                 path: entry.anchor.docPath,
@@ -442,7 +574,17 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         return 0;
       }
       io.stdout(`binding coverage: ${result.stats.bound}/${result.stats.anchors} (${(coverage * 100).toFixed(1)}%)`);
-      io.stdout(`unbound: ${result.stats.unbound}`);
+      io.stdout(`verified annotation coverage: ${result.coverage.verifiedExplicit}/${result.stats.anchors} (${(result.coverage.annotationCoverage * 100).toFixed(1)}%)`);
+      io.stdout(`adopted: ${result.coverage.adopted}; inferred: ${result.coverage.inferred}; unbound: ${result.stats.unbound}`);
+      if (examples) {
+        io.stdout(`example fences: ${examples.fences}; docs with examples: ${examples.docsWithExamples.length}; configured for doctests: ${examples.configuredDocs.length}`);
+        for (const doc of examples.unconfiguredDocs) io.stdout(`uncovered example doc: ${doc}`);
+      }
+      if (option("adopted")) {
+        for (const entry of result.pending.filter((binding) => binding.anchor.adopted)) {
+          io.stdout(`${entry.anchor.docPath}:${entry.anchor.line}:${entry.anchor.column} ${entry.anchor.token} (confidence ${entry.anchor.adoptConfidence ?? "?"})`);
+        }
+      }
       if (option("unbound")) {
         for (const entry of result.unbound) {
           io.stdout(`${entry.anchor.docPath}:${entry.anchor.line}:${entry.anchor.column} ${entry.anchor.token} (${entry.reason})`);

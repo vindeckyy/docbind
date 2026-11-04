@@ -21,6 +21,7 @@ const result: CheckResult = {
   pending: [],
   unbound: [],
   warnings: [],
+  coverage: { verifiedExplicit: 0, adopted: 0, inferred: 0, annotationCoverage: 0 },
   stats: {
     docsScanned: 1,
     codeFilesScanned: 2,

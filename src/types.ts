@@ -155,6 +155,9 @@ export interface DocAnchor {
   signatureShape?: Shape;
   explicitSymbol?: string;
   explicitContract?: string;
+  adopted?: boolean;
+  adoptConfidence?: number;
+  contextText?: string;
 }
 
 export interface LockEntry {
@@ -222,6 +225,7 @@ export interface Finding {
   suggestion?: string;
   fix?: Fix;
   inferred?: boolean;
+  adopted?: boolean;
 }
 
 export interface Binding {
@@ -253,6 +257,7 @@ export interface CheckResult {
   pending: Binding[];
   unbound: Array<{ anchor: DocAnchor; reason: string }>;
   warnings: string[];
+  coverage: { verifiedExplicit: number; adopted: number; inferred: number; annotationCoverage: number };
   stats: ProjectStats;
   lock: LockFile;
 }
@@ -295,6 +300,7 @@ export interface Config {
   lock: boolean;
   allowExec: boolean;
   cache: boolean;
+  minCoverage: number;
   indexes: string[];
   doctests: DoctestCommand[];
   probes: ProbeCommand[];

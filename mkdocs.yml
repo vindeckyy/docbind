@@ -15,13 +15,14 @@ nav:
   - Threat model: threat-model.md
   - Corpus: corpus.md
   - Recall: recall.md
-  - Leaderboard: leaderboard.md
+  - Evidence log: leaderboard.md
   - Held-out evaluation: evaluation.md
   - Case study: case-study.md
   - Conformance: conformance.md
   - Precision: precision.md
   - Performance: performance.md
   - Prior art: prior-art.md
+  - Governance: governance.md
   - RFC process: rfc.md
   - RFC template: rfcs/0000-template.md
 markdown_extensions:

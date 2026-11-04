@@ -14,6 +14,7 @@ function adoption(over: Partial<Adoption> = {}): Adoption {
     column: 1,
     token: "getUser",
     symbolId: "id",
+    confidence: 0.7,
     annotation: "<!-- docbind: symbol=src/users.ts#getUser -->",
     ...over,
   };
@@ -28,7 +29,9 @@ describe("adopt", () => {
     });
     const suggestions = suggestAnnotations(root, parseConfig({}));
     expect(suggestions).toHaveLength(1);
-    expect(suggestions[0]?.annotation).toBe("<!-- docbind: symbol=src/users.ts#getUser -->");
+    expect(suggestions[0]?.annotation).toContain("symbol=src/users.ts#getUser");
+    expect(suggestions[0]?.annotation).toContain("adopted confidence=");
+    expect(suggestions[0]?.confidence).toBeGreaterThan(0);
   });
 
   it("does not suggest when an explicit annotation already covers the symbol", () => {
@@ -38,6 +41,18 @@ describe("adopt", () => {
       "docs/api.md": "<!-- docbind: symbol=src/users.ts#getUser -->\nCall `getUser(id)`.\n",
     });
     expect(suggestAnnotations(root, parseConfig({}))).toEqual([]);
+  });
+
+  it("dedupes repeated tokens and sorts across files", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": "export function getUser(id: string): string { return id; }\n",
+      "docs/z.md": "Call `getUser(id)` and `getUser(id)`.\n",
+      "docs/a.md": "Call `getUser(id)`.\n",
+    });
+    const suggestions = suggestAnnotations(root, parseConfig({}));
+    expect(suggestions).toHaveLength(2);
+    expect(suggestions.map((suggestion) => suggestion.docPath)).toEqual(["docs/a.md", "docs/z.md"]);
   });
 
   it("inserts once, skips existing annotations, and ignores out-of-range lines", () => {

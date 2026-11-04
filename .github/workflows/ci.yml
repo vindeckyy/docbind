@@ -25,4 +25,4 @@ jobs:
           mkdir -p /tmp/docbind-probe
           cd /tmp/docbind-probe
           printf '%s\n' '{"allowExec":true,"probes":[{"name":"true","image":"alpine:3.20","command":"true","args":[]}]}' > docbind.json
-          node "$GITHUB_WORKSPACE/dist/main.js" probe --allow-exec
+          node "$GITHUB_WORKSPACE/dist/main.js" probe --allow-exec --allow-probes

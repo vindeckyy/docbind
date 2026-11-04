@@ -63,6 +63,9 @@ function walk(
     const match = /docbind:\s*symbol=([^\s>]+)/u.exec(value);
     if (match?.[1]) {
       const contract = /contract=([0-9a-f]+)/u.exec(value)?.[1];
+      const adopted = /\badopted\b/u.test(value);
+      const confidence = /confidence=([0-9.]+)/u.exec(value)?.[1];
+      const adoptConfidence = confidence ? Number(confidence) : undefined;
       const raw = match[1];
       const hash = raw.lastIndexOf("#");
       const token = (hash >= 0 ? raw.slice(hash + 1) : raw).trim();
@@ -81,7 +84,10 @@ function walk(
           localDecls: [],
           fragment: false,
           explicitSymbol: raw,
+          contextText: blockText,
           ...(contract ? { explicitContract: contract } : {}),
+          ...(adopted ? { adopted: true } : {}),
+          ...(adoptConfidence !== undefined && Number.isFinite(adoptConfidence) ? { adoptConfidence } : {}),
         });
       }
     }

@@ -28,6 +28,18 @@ Brand new docs can bind exactly with an inline annotation:
 
 Explicit annotations skip confidence scoring and ambiguity. When the symbol disappears or moves, the check fails. Inferred findings are always notes and do not fail the build unless `--strict` is passed; explicit findings stay fatal. That makes the annotated surface the sound gate and keeps heuristic output advisory.
 
+Annotations written by `docbind adopt` carry `adopted confidence=<score>`. They bind, but their findings stay advisory until a human removes the `adopted` tag. Audit reports verified, adopted, and inferred coverage separately.
+
+Verified annotation coverage is the number the gate should use:
+
+```sh
+docbind check --require-coverage 0.8
+docbind check --coverage-ratchet
+docbind check --write-coverage   # update the ratchet baseline once
+```
+
+`--require-coverage` fails with exit 3 below the threshold. `--coverage-ratchet` reads `.docbind-coverage.json` and fails when verified coverage regresses. `audit --examples` counts fenced examples and names docs that no configured doctest covers. The threshold counts only human-asserted annotations, not adopted or inferred bindings.
+
 This is static analysis. It does not run project code, build the project, or generate docs.
 
 ```text
@@ -131,7 +143,7 @@ Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or genera
 
 LSIF and SCIP indexes provide binding-only symbols: existence and location, not parameter or return shapes. They are useful for languages and monorepos where a native extractor is unavailable. A stale index is a stale binding source. `.scip` files are decoded as protobuf; other index paths are read as LSIF JSON lines.
 
-Extractors implement a versioned in-process plugin interface (`EXTRACTOR_API_VERSION` in `src/surface/plugins.ts`) and are covered by golden snapshots and the conformance suite.
+Extractors share an internal registry (`src/surface/plugins.ts`) covered by golden snapshots and the conformance suite. It is not a public plugin API and carries no compatibility promise.
 
 ## Precision model
 
@@ -190,9 +202,10 @@ docbind migrate [--check] [--json]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json] [--contract]
-docbind audit [--unbound] [--json]
+docbind audit [--unbound] [--adopted] [--json]
 docbind doctest [--json]
 docbind probe [--json]
+docbind strip [--write] [--json]
 docbind stats
 ```
 
@@ -308,26 +321,28 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 - Lock files carry a semver format. `docbind migrate --check` exits 3 when the lock needs upgrading; `docbind migrate` rewrites it and is idempotent.
 - Surface extraction is cached in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file content hashes. `--no-cache` bypasses it.
 - `npm run conformance` runs a public, language-neutral suite. `npm run corpus:fixtures` is the mutation regression gate in CI.
-- `docbind lock --review` exits 3 when a lock change is not coupled to the corresponding doc line.
+- `docbind lock --review` exits 3 unless each lock change is coupled to an edited line under a human-asserted annotation. It prevents silent lock churn; it does not prove the prose is true.
+- `docbind strip` removes annotation comments and leaves the surrounding prose intact, so the format has an exit path.
 - `docbind doctest` runs configured commands only with `--allow-exec` and turns failures into `D1-doctest` findings. pytest, mdbook, and typedoc examples are command entries, not built-in runners.
-- `docbind probe` runs configured calls in Docker with `--network none`, a read-only root, a read-only repo mount, and memory/CPU limits. Failures become `D2-probe` findings. It also requires `--allow-exec`.
+- `docbind probe` requires both `--allow-exec` and `--allow-probes`. It runs configured calls in Docker with `--network none`, a read-only root, a read-only repo mount, and memory/CPU limits. Docker is an accidental-damage boundary, not a hostile-code sandbox. Never run probes on fork PRs.
+- SCIP and LSIF symbols are binding-only. When an index loads, `check` warns that contracts are not checked for those symbols.
 - LSIF and SCIP indexes are consumed with `--index`. `--require-index` warns when no index symbols are available and native parsers are the fallback.
 - Single-file binaries are built with Bun for Linux, macOS, and Windows in the release workflow. Python extraction in a binary needs the `python/` directory beside it or `DOCBIND_PYTHON_WORKER`.
 - Golden extractor snapshots live in `test/golden/`.
 
 ## Gate results
 
-Measured on the 0.3.0 tree:
+Measured on the 0.4.0 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 414 passing |
-| Statements | 98.02% |
+| Tests | 422 passing |
+| Statements | 97.98% |
 | Branches | 95.02% |
-| Functions | 97.9% |
-| Lines | 98.83% |
-| Changed-line coverage, feature diff | 98.84% |
-| Structure gate | 92 of 92 checks |
+| Functions | 97.95% |
+| Lines | 98.78% |
+| Changed-line coverage, feature diff | 98.79% |
+| Structure gate | 93 of 93 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes. Runtime measurements are in [docs/performance.md](docs/performance.md).

@@ -9,6 +9,7 @@ export interface Adoption {
   column: number;
   token: string;
   symbolId: string;
+  confidence: number;
   annotation: string;
 }
 
@@ -25,7 +26,7 @@ export function suggestAnnotations(root: string, config: Config, includeContract
     const anchor = binding.anchor;
     if (anchor.explicitSymbol) continue;
     const contract = includeContract ? ` contract=${binding.symbol.shapeHash}` : "";
-    const annotation = `<!-- docbind: symbol=${binding.symbol.filePath}#${binding.symbol.name}${contract} -->`;
+    const annotation = `<!-- docbind: symbol=${binding.symbol.filePath}#${binding.symbol.name}${contract} adopted confidence=${binding.score.toFixed(2)} -->`;
     if (explicit.has(`${anchor.docPath}\u0000${binding.symbol.filePath}#${binding.symbol.name}`)) continue;
     const key = `${anchor.docPath}\u0000${anchor.line}\u0000${annotation}`;
     if (seen.has(key)) continue;
@@ -36,6 +37,7 @@ export function suggestAnnotations(root: string, config: Config, includeContract
       column: anchor.column,
       token: anchor.token,
       symbolId: binding.symbol.id,
+      confidence: binding.score,
       annotation,
     });
   }

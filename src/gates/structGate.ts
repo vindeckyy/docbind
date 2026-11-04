@@ -66,6 +66,7 @@ export const REQUIRED_FILES = [
   "docs/case-study.md",
   "docs/threat-model.md",
   "docs/rfc.md",
+  "docs/governance.md",
   "docs/conformance.md",
   "docs/scope.md",
   "docs/precision.md",
