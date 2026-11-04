@@ -2,6 +2,17 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.96] - 2026-11-04
+
+### Fixed
+
+- `npm run corpus:fixtures` wrote its local-only report to `corpus/report.json`, overwriting the full 15-case snapshot and desynchronising the published table. It now writes to `.corpus/fixtures-report.json`.
+
+### Changed
+
+- Refreshed the full corpus snapshot to 15 cases, 842 of 3409 anchors bound, 2567 unbound, 118 of 118 mutations.
+- Replaced the runaway Java fixture description with a concise coverage summary.
+
 ## [0.1.95] - 2026-11-04
 
 ### Added
@@ -1783,3 +1794,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.93]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.93
 [0.1.94]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.94
 [0.1.95]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.95
+[0.1.96]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.96
