@@ -46,6 +46,8 @@ The corpus publishes unbound counts next to bound counts. Those numbers are the 
 
 Use `docbind lock --check` in CI to fail when the lock is not derivable from the current docs. That makes the lock a cache of the docs, not authority over them. The command does not rewrite the lock.
 
+`docbind lock --diff` renders the rebuild as semantic changes: added and removed anchors, symbol moves, and contract hashes. Review that instead of reading raw JSON lock churn.
+
 A no-lock workflow is available: annotate with an inline `contract=` hash and run `docbind check --no-lock`. The doc and the contract then live in one file and the lock is not read. `docbind adopt --contract` writes those annotations. Commit lock changes in the same review as the doc change or the contract change that caused them.
 
 ## Heuristics are fragile

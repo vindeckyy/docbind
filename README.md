@@ -175,7 +175,7 @@ A scoped npm package is reserved as `@vindeckyy/docbind` but is not published ye
 ```text
 docbind init
 docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--changed-only] [--base <rev>]
-docbind lock [--check] [--refresh]
+docbind lock [--check] [--diff] [--refresh]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json]
@@ -190,7 +190,7 @@ docbind stats
 | 2 | config, IO, or parse failure that prevents a trustworthy run |
 | 3 | lock is out of date |
 
-`check` is read-only. `lock` updates the baseline. `lock --check` fails when the lock is not derivable from the current docs. `fix` rewrites safe renames and moved paths only.
+`check` is read-only. `lock` updates the baseline. `lock --check` fails when the lock is not derivable from the current docs. `lock --diff` renders semantic changes for the rebuild: added anchors, removed anchors, symbol moves, and contract changes with old/new hashes. `fix` rewrites safe renames and moved paths only.
 
 ## Audit coverage
 
@@ -281,16 +281,16 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.99 tree:
+Measured on the 0.2.0 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 373 passing |
-| Statements | 98.51% |
-| Branches | 95.74% |
-| Functions | 98.92% |
-| Lines | 99.14% |
-| Changed-line coverage, feature diff | 99.14% |
+| Tests | 377 passing |
+| Statements | 98.5% |
+| Branches | 95.62% |
+| Functions | 98.93% |
+| Lines | 99.15% |
+| Changed-line coverage, feature diff | 99.15% |
 | Structure gate | 83 of 83 checks |
 | Docs build | `mkdocs build --strict` passes |
 

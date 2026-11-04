@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.1.99");
+    expect((await cli(["--version"], root)).stdout).toBe("0.2.0");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -162,6 +162,24 @@ describe("CLI check", () => {
     expect((await cli(["check"], root)).code).toBe(0);
     expect((await cli(["check", "--mode", "strict"], root)).code).toBe(1);
     expect((await cli(["check", "--mode", "gate"], root)).code).toBe(0);
+  });
+
+  it("renders semantic lock diffs", async () => {
+    const root = project();
+    expect((await cli(["lock"], root)).code).toBe(0);
+    writeFileSync(
+      join(root, "src/users.ts"),
+      "export interface User { id: string }\nexport function getUser(id: number): User { return { id: String(id) }; }\nexport class Client { request(path: string): Promise<User> { return Promise.resolve({ id: path }); } }\n",
+    );
+    const changed = await cli(["lock", "--diff"], root);
+    expect(changed.code).toBe(0);
+    expect(changed.stdout).toContain("contract changed");
+    expect(changed.stdout).toContain("getUser");
+    const json = await cli(["lock", "--diff", "--json"], root);
+    expect(JSON.parse(json.stdout).changed).toHaveLength(1);
+    writeFileSync(join(root, "docs/api.md"), "# API\n\nNo anchors.\n");
+    const removed = await cli(["lock", "--diff"], root);
+    expect(removed.stdout).toContain("no longer bound");
   });
 
   it("reports invalid config", async () => {

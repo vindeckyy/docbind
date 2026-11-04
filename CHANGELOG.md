@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.0] - 2026-11-04
+
+### Added
+
+- `docbind lock --diff` renders semantic lock changes: added anchors, removed anchors, symbol moves, and contract changes with old/new hashes.
+- `--json` emits the same diff as structured data.
+- Diff mode rebuilds from current docs, so it exposes drift instead of comparing against the current baseline.
+
+### Changed
+
+- 377 tests, 98.5% statements, 95.62% branches, 99.15% lines.
+
+### Limits
+
+- Tombstone changes are reported as counts, not per-entry semantics.
+- Raw shape text is included for contract changes; large shapes make long diffs.
+- npm publication, SCIP, binaries, and independent evaluation remain open.
+
 ## [0.1.99] - 2026-11-04
 
 ### Added
@@ -1854,3 +1872,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.97]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.97
 [0.1.98]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.98
 [0.1.99]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.99
+[0.2.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.0

@@ -9,6 +9,7 @@ import { applyFixes } from "./fix.js";
 import { changedFiles, changedLines } from "./git.js";
 import { explain } from "./explain.js";
 import { applyAnnotations, suggestAnnotations } from "./adopt.js";
+import { describeLockDiff, diffLock } from "./lock/diff.js";
 import { formatHuman } from "./report/human.js";
 import { formatJson } from "./report/json.js";
 import { formatSarif } from "./report/sarif.js";
@@ -27,7 +28,7 @@ const HELP = `docbind ${ENGINE_VERSION}
 Usage:
   docbind init
   docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--mode gate|strict] [--no-lock] [--changed-only] [--base <rev>]
-  docbind lock [--check] [--refresh]
+  docbind lock [--check] [--diff] [--refresh]
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
   docbind adopt [--write] [--json] [--contract]
@@ -103,6 +104,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         mode: { type: "string" },
         "no-lock": { type: "boolean" },
         contract: { type: "boolean" },
+        diff: { type: "boolean" },
       },
     });
   } catch (error) {
@@ -188,8 +190,18 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     }
 
     if (command === "lock") {
-      const result = checkProject(io.cwd, config, { ignoreBaseline: option("refresh") });
+      const result = checkProject(io.cwd, config, { ignoreBaseline: option("refresh") || option("diff") });
       const expected = markLockAdvanced({ ...result.lock, engine: ENGINE_VERSION });
+      if (option("diff")) {
+        const current = readLock(io.cwd);
+        const diff = diffLock(current, expected);
+        if (option("json")) {
+          io.stdout(JSON.stringify(diff, null, 2));
+        } else {
+          for (const line of describeLockDiff(diff)) io.stdout(line);
+        }
+        return 0;
+      }
       if (option("check")) {
         if (!existsSync(lockPath(io.cwd))) {
           io.stderr("lock is missing");

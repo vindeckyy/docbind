@@ -5,7 +5,7 @@
 ```text
 docbind init
 docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed-only] [--base <rev>]
-docbind lock [--check] [--refresh]
+docbind lock [--check] [--diff] [--refresh]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json]
@@ -28,6 +28,8 @@ Explicit binding:
 ```
 
 The path is project-relative. The part after `#` may be a bare name or a qualified member. Explicit bindings skip confidence scoring; if the symbol is missing or the name is ambiguous within that file, the check fails.
+
+`docbind lock --diff` shows what a rebuild would change: additions, removals, symbol moves, and shape changes with old/new hashes. `--json` emits the same data for review tooling.
 
 `docbind adopt` proposes explicit annotations for inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent. `--contract` includes the current shape hash for lock-free checks.
 
