@@ -191,6 +191,14 @@
       "to": 4,
       "symbol": "boxed",
       "expectedRule": "L3-reshaped"
+    },
+    {
+      "file": "src/main/java/example/SharedConstants.java",
+      "field": "PREFIX",
+      "from": "shared",
+      "to": "other",
+      "symbol": "sharedPrefix",
+      "expectedRule": "L3-reshaped"
     }
   ]
 }

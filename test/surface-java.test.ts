@@ -476,6 +476,14 @@ describe("Java surface", () => {
         "    boolean startsBad() default \"hello\".startsWith(1);",
         "    int subNoArgs() default \"hello\".substring();",
         "    boolean startsArity() default \"hello\".startsWith(\"a\", \"b\");",
+        "    boolean constStarts() default Constants.NAME.startsWith(\"na\");",
+        "    boolean constEnds() default Constants.NAME.endsWith(\"ed\");",
+        "    String constSub() default Constants.NAME.substring(0, 3);",
+        "    int constChain() default Constants.NAME.substring(1).length();",
+        "    boolean constBad() default Constants.LIMIT.startsWith(\"1\");",
+        "    String constSubOob() default Constants.NAME.substring(0, 99);",
+        "    int plainCall() default max(1, 2);",
+        "    int numMethod() default (5).length();",
         "    String subFloat() default \"hello\".substring(1.5);",
         "    String subEmptyArg() default \"hello\".substring(1, );",
         "    String subNoComma() default \"hello\".substring(1 2);",
@@ -632,6 +640,13 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "endsYes")?.shape.evaluatedDefault).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "subOne")?.shape.evaluatedDefault).toBe("ello");
     expect(result.symbols.find((symbol) => symbol.name === "subTwo")?.shape.evaluatedDefault).toBe("el");
+    expect(result.symbols.find((symbol) => symbol.name === "constStarts")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "constEnds")?.shape.evaluatedDefault).toBe(true);
+    expect(result.symbols.find((symbol) => symbol.name === "constSub")?.shape.evaluatedDefault).toBe("nam");
+    expect(result.symbols.find((symbol) => symbol.name === "constChain")?.shape.evaluatedDefault).toBe(4);
+    for (const name of ["constBad", "constSubOob", "plainCall", "numMethod"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of [
       "subBadOrder",
       "subBadRange",

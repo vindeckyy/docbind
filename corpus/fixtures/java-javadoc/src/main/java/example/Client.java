@@ -78,7 +78,7 @@ class Internal {
  * {@link Marker#castDiv()}, {@link Marker#flags()}, {@link Marker#wide()},
  * {@link Marker#maxDefault()}, {@link Marker#rounded()}, {@link Marker#root()},
  * {@link Marker#boxed()}, {@link Marker#refText()}, {@link Marker#textLength()},
- * and {@link Marker#prefix()}.
+ * {@link Marker#prefix()}, and {@link Marker#sharedPrefix()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -120,6 +120,8 @@ public @interface Marker {
     int textLength() default "docbind".length();
 
     boolean prefix() default "docbind".startsWith("doc");
+
+    boolean sharedPrefix() default SharedConstants.PREFIX.startsWith("sha");
 }
 
 class Constants {

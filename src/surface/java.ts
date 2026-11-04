@@ -444,28 +444,7 @@ function evaluateExpression(
     }
     if (token.type === "string") {
       position += 1;
-      if (
-        tokens[position]?.value === "." &&
-        tokens[position + 1]?.type === "ident" &&
-        tokens[position + 2]?.value === "("
-      ) {
-        const method = tokens[position + 1]?.value as string;
-        position += 3;
-        const args: EvaluatedConstant[] = [];
-        if (tokens[position]?.value !== ")") {
-          while (true) {
-            const argument = parseOr();
-            if (argument === undefined) return undefined;
-            args.push(argument);
-            if (tokens[position]?.value !== ",") break;
-            position += 1;
-          }
-        }
-        if (tokens[position]?.value !== ")") return undefined;
-        position += 1;
-        return applyStringMethod(method, token.value, args);
-      }
-      return { value: token.value, integral: false };
+      return applyPostfix({ value: token.value, integral: false });
     }
     if (token.type === "ident") {
       const name = token.value;
@@ -484,12 +463,19 @@ function evaluateExpression(
         }
         if (tokens[position]?.value !== ")") return undefined;
         position += 1;
-        return applyMath(name, args);
+        const separator = name.lastIndexOf(".");
+        if (separator > 0) {
+          const receiver = constants?.get(name.slice(0, separator));
+          if (receiver !== undefined && typeof receiver.value === "string") {
+            return applyPostfix(applyStringMethod(name.slice(separator + 1), receiver.value, args));
+          }
+        }
+        return applyPostfix(applyMath(name, args));
       }
       if (name === "true" || name === "false") {
-        return { value: name === "true", integral: false };
+        return applyPostfix({ value: name === "true", integral: false });
       }
-      return constants?.get(name);
+      return applyPostfix(constants?.get(name));
     }
     if (token.type === "op" && token.value === "(") {
       const type = tokens[position + 1];
@@ -567,7 +553,7 @@ function evaluateExpression(
       const value = parseOr();
       if (value === undefined || tokens[position]?.value !== ")") return undefined;
       position += 1;
-      return value;
+      return applyPostfix(value);
     }
     /* v8 ignore next */
     if (token.type === "op" && token.value === "-") {
@@ -584,6 +570,34 @@ function evaluateExpression(
       return typeof value?.value === "number" ? { value: -value.value, integral: false } : undefined;
     }
     return undefined;
+  };
+
+  const applyPostfix = (initial: EvaluatedConstant | undefined): EvaluatedConstant | undefined => {
+    let value = initial;
+    while (
+      value !== undefined &&
+      tokens[position]?.value === "." &&
+      tokens[position + 1]?.type === "ident" &&
+      tokens[position + 2]?.value === "("
+    ) {
+      const method = tokens[position + 1]?.value as string;
+      position += 3;
+      const args: EvaluatedConstant[] = [];
+      if (tokens[position]?.value !== ")") {
+        while (true) {
+          const argument = parseOr();
+          if (argument === undefined) return undefined;
+          args.push(argument);
+          if (tokens[position]?.value !== ",") break;
+          position += 1;
+        }
+      }
+      if (tokens[position]?.value !== ")") return undefined;
+      position += 1;
+      if (typeof value.value !== "string") return undefined;
+      value = applyStringMethod(method, value.value, args);
+    }
+    return value;
   };
 
   const parseMul = (): EvaluatedConstant | undefined => {

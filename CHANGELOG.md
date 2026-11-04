@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.88] - 2026-11-03
+
+### Added
+
+- String constants now support the same methods as string literals: `length`, `isEmpty`, `startsWith`, `endsWith`, and `substring`.
+- Method chains work, for example `Constants.NAME.substring(1).length()`.
+- Dotted call names split into a receiver constant and a method when the receiver resolves to a string.
+- Corpus adds `Marker.sharedPrefix()` using `SharedConstants.PREFIX.startsWith("sha")`; editing the PREFIX constant must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 113 to 114; `java-javadoc-fixture` runs 42 mutations with 37 anchors, all hitting with zero collateral.
+- Branch coverage stays at 96.02%; line coverage at 99.25%.
+
+### Limits
+
+- Only the five string methods evaluate; other string APIs stay unresolved.
+- User methods and constructors stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.87] - 2026-11-03
 
 ### Added
@@ -1630,3 +1650,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.85]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.85
 [0.1.86]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.86
 [0.1.87]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.87
+[0.1.88]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.88
