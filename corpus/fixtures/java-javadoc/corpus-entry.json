@@ -149,6 +149,14 @@
       "to": "bin",
       "symbol": "prefix",
       "expectedRule": "L3-reshaped"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "method": "at",
+      "from": "bind",
+      "to": "doc",
+      "symbol": "at",
+      "expectedRule": "L3-reshaped"
     }
   ],
   "constantMutations": [

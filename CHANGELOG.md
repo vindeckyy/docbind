@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.89] - 2026-11-03
+
+### Added
+
+- String literals and constants support `.indexOf(text)` and `.replace(from, to)`.
+- `indexOf` returns an integral index or `-1`; `replace` replaces every occurrence.
+- Wrong arity or non-string arguments stay unevaluated.
+- Corpus adds `Marker.at()` with default `"docbind".indexOf("bind")`; editing `bind` to `doc` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 114 to 115; `java-javadoc-fixture` runs 43 mutations with 38 anchors, all hitting with zero collateral.
+- Branch coverage rose to 96.04%; line coverage to 99.26%.
+
+### Limits
+
+- Only seven string methods evaluate; other string APIs stay unresolved.
+- User methods and constructors stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.88] - 2026-11-03
 
 ### Added
@@ -1651,3 +1671,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.86]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.86
 [0.1.87]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.87
 [0.1.88]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.88
+[0.1.89]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.89

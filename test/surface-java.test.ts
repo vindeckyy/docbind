@@ -484,6 +484,14 @@ describe("Java surface", () => {
         "    String constSubOob() default Constants.NAME.substring(0, 99);",
         "    int plainCall() default max(1, 2);",
         "    int numMethod() default (5).length();",
+        "    int idx() default \"hello\".indexOf(\"ll\");",
+        "    int idxMissing() default \"hello\".indexOf(\"z\");",
+        "    String repl() default \"a-b-c\".replace(\"-\", \"+\");",
+        "    int idxConst() default Constants.NAME.indexOf(\"am\");",
+        "    String replConst() default Constants.NAME.replace(\"n\", \"N\");",
+        "    int idxBad() default \"x\".indexOf(1);",
+        "    String replBad() default \"x\".replace(\"x\");",
+        "    String replBadType() default \"x\".replace(\"x\", 1);",
         "    String subFloat() default \"hello\".substring(1.5);",
         "    String subEmptyArg() default \"hello\".substring(1, );",
         "    String subNoComma() default \"hello\".substring(1 2);",
@@ -644,6 +652,14 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "constEnds")?.shape.evaluatedDefault).toBe(true);
     expect(result.symbols.find((symbol) => symbol.name === "constSub")?.shape.evaluatedDefault).toBe("nam");
     expect(result.symbols.find((symbol) => symbol.name === "constChain")?.shape.evaluatedDefault).toBe(4);
+    expect(result.symbols.find((symbol) => symbol.name === "idx")?.shape.evaluatedDefault).toBe(2);
+    expect(result.symbols.find((symbol) => symbol.name === "idxMissing")?.shape.evaluatedDefault).toBe(-1);
+    expect(result.symbols.find((symbol) => symbol.name === "repl")?.shape.evaluatedDefault).toBe("a+b+c");
+    expect(result.symbols.find((symbol) => symbol.name === "idxConst")?.shape.evaluatedDefault).toBe(1);
+    expect(result.symbols.find((symbol) => symbol.name === "replConst")?.shape.evaluatedDefault).toBe("Named");
+    for (const name of ["idxBad", "replBad", "replBadType"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     for (const name of ["constBad", "constSubOob", "plainCall", "numMethod"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }

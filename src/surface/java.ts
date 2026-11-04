@@ -401,6 +401,16 @@ function applyStringMethod(
   if (name === "isEmpty" && args.length === 0) {
     return { value: text.length === 0, integral: false };
   }
+  if (name === "indexOf" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return { value: text.indexOf(argument.value), integral: true, width: "int" };
+  }
+  if (name === "replace" && args.length === 2) {
+    const [from, to] = args as [EvaluatedConstant, EvaluatedConstant];
+    if (typeof from.value !== "string" || typeof to.value !== "string") return undefined;
+    return { value: text.split(from.value).join(to.value), integral: false };
+  }
   if ((name === "startsWith" || name === "endsWith") && args.length === 1) {
     const argument = args[0] as EvaluatedConstant;
     if (typeof argument.value !== "string") return undefined;
