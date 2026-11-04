@@ -34,6 +34,7 @@ export const DEFAULT_CONFIG: Config = {
     "L3-reshaped": "error",
     "L4-renamed": "error",
     "S1-deprecated": "off",
+    "D1-doctest": "error",
   },
   maxFindings: 200,
   minConfidence: 0.6,
@@ -44,6 +45,8 @@ export const DEFAULT_CONFIG: Config = {
   lock: true,
   allowExec: false,
   cache: true,
+  indexes: [],
+  doctests: [],
 };
 
 const severitySchema = z.enum(["error", "warning", "note", "off"]);
@@ -70,6 +73,7 @@ const rawConfigSchema = z
         "L3-reshaped": severitySchema.optional(),
         "L4-renamed": severitySchema.optional(),
         "S1-deprecated": severitySchema.optional(),
+        "D1-doctest": severitySchema.optional(),
       })
       .strict()
       .optional(),
@@ -82,6 +86,19 @@ const rawConfigSchema = z
     lock: z.boolean().optional(),
     allowExec: z.boolean().optional(),
     cache: z.boolean().optional(),
+    indexes: z.array(z.string()).optional(),
+    doctests: z
+      .array(
+        z
+          .object({
+            name: z.string(),
+            command: z.string(),
+            args: z.array(z.string()),
+            docs: z.array(z.string()).optional(),
+          })
+          .strict(),
+      )
+      .optional(),
   })
   .strict();
 
@@ -110,6 +127,8 @@ export function parseConfig(input: unknown): Config {
     lock: raw.lock ?? DEFAULT_CONFIG.lock,
     allowExec: raw.allowExec ?? DEFAULT_CONFIG.allowExec,
     cache: raw.cache ?? DEFAULT_CONFIG.cache,
+    indexes: raw.indexes ?? DEFAULT_CONFIG.indexes,
+    doctests: raw.doctests ?? DEFAULT_CONFIG.doctests,
   };
 }
 

@@ -1,0 +1,16 @@
+{
+  "name": "docbind-vscode",
+  "displayName": "docbind",
+  "description": "Show docbind binding findings inline and add explicit annotations.",
+  "version": "0.1.0",
+  "publisher": "vindeckyy",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters"],
+  "activationEvents": ["onLanguage:markdown"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "docbind.check", "title": "docbind: Check workspace" }
+    ]
+  }
+}

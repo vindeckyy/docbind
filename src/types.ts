@@ -117,6 +117,7 @@ export interface Symbol {
   bodyHash: string;
   contractFlags: ContractFlag[];
   packageExport?: boolean;
+  indexOnly?: boolean;
   goReexport?: { packageName: string; receiver?: string; name: string };
   goValue?: string;
   parentId?: string;
@@ -199,7 +200,8 @@ export type Rule =
   | "L2-moved"
   | "L3-reshaped"
   | "L4-renamed"
-  | "S1-deprecated";
+  | "S1-deprecated"
+  | "D1-doctest";
 
 export type Severity = "error" | "warning" | "note" | "off";
 
@@ -254,6 +256,13 @@ export interface CheckResult {
   lock: LockFile;
 }
 
+export interface DoctestCommand {
+  name: string;
+  command: string;
+  args: string[];
+  docs?: string[];
+}
+
 export interface LanguageConfig {
   typescript: boolean;
   python: boolean;
@@ -277,6 +286,8 @@ export interface Config {
   lock: boolean;
   allowExec: boolean;
   cache: boolean;
+  indexes: string[];
+  doctests: DoctestCommand[];
 }
 
 export const RULES: Rule[] = [
@@ -285,4 +296,5 @@ export const RULES: Rule[] = [
   "L3-reshaped",
   "L4-renamed",
   "S1-deprecated",
+  "D1-doctest",
 ];

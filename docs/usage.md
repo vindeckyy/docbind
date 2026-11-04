@@ -7,12 +7,13 @@ docbind init
 docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound]
               [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache]
               [--changed-only] [--base <rev>]
-docbind lock [--check] [--diff] [--refresh]
+docbind lock [--check] [--diff] [--review] [--refresh]
 docbind migrate [--check] [--json]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json]
 docbind audit [--unbound] [--json]
+docbind doctest [--json]
 docbind stats
 ```
 
@@ -32,9 +33,11 @@ Explicit binding:
 
 The path is project-relative. The part after `#` may be a bare name or a qualified member. Explicit bindings skip confidence scoring; if the symbol is missing or the name is ambiguous within that file, the check fails.
 
-`docbind check --unbound` appends unbound tokens as SARIF/JSON notes. `--no-cache` bypasses `.docbind-cache/`. `--allow-exec` permits the rustdoc `cargo` call.
+`docbind check --index docs/index.lsif` adds LSIF export monikers as binding-only symbols. `docbind check --unbound` appends unbound tokens as SARIF/JSON notes. `--no-cache` bypasses `.docbind-cache/`. `--allow-exec` permits the rustdoc `cargo` call.
 
 `docbind migrate` upgrades a lock file to the current format. `--check` exits 3 when migration is needed, so CI can reject stale lock formats without rewriting them.
+
+`docbind lock --review` fails (exit 3) when a lock change is not coupled to an edited line in the corresponding doc. It is the review-time guard against blessing stale docs.
 
 `docbind lock --diff` shows what a rebuild would change: additions, removals, symbol moves, and shape changes with old/new hashes. `--json` emits the same data for review tooling.
 
@@ -49,6 +52,22 @@ The path is project-relative. The part after `#` may be a bare name or a qualifi
 `docbind check --mode=strict` fails when unbound tokens fall on changed lines. `--mode=gate` is the default and keeps abstentions as notes.
 
 `init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only. `lock --check` verifies that the committed lock is current without writing it; use it in CI to catch stale locks.
+
+## Doctests
+
+`docbind doctest` runs commands from `doctests` in `docbind.json`. Each entry is an argv array, not a shell string:
+
+```json
+{
+  "allowExec": true,
+  "doctests": [
+    { "name": "pytest", "command": "python3", "args": ["-m", "pytest", "--doctest-modules"], "docs": ["docs/python.md"] },
+    { "name": "mdbook", "command": "mdbook", "args": ["test"], "docs": ["docs/rust.md"] }
+  ]
+}
+```
+
+Failures become `D1-doctest` findings. The command is skipped without `--allow-exec` or `"allowExec": true`. Commands run in the project root with a 120-second timeout and a 16 MiB output cap.
 
 ## CI
 

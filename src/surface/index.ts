@@ -1,32 +1,12 @@
 import type { Config, Symbol } from "../types.js";
-import { extractPython } from "./python.js";
-import { extractRust } from "./rust.js";
-import { extractRustdoc } from "./rustdoc.js";
-import { extractGo } from "./go.js";
-import { extractJava } from "./java.js";
+import { BUILTIN_EXTRACTORS, filesFor } from "./plugins.js";
 import type { DocstringEntry, ExtractResult } from "./protocol.js";
-import { extractTypescript } from "./typescript.js";
 
 export function extractSurface(root: string, files: string[], config: Config): ExtractResult {
-  const pythonFiles = files.filter((file) => file.endsWith(".py"));
-  const rustFiles = files.filter((file) => file.endsWith(".rs"));
-  const goFiles = files.filter((file) => file.endsWith(".go"));
-  const javaFiles = files.filter((file) => file.endsWith(".java"));
-  const scriptFiles = files.filter((file) => !/\.(?:py|rs|go)$/u.test(file));
   const results: ExtractResult[] = [];
-
-  if (config.languages.typescript && scriptFiles.length > 0) {
-    results.push(extractTypescript(root, scriptFiles));
-  }
-  if (config.languages.python && pythonFiles.length > 0) {
-    results.push(extractPython(root, pythonFiles));
-  }
-  if (config.languages.rust && rustFiles.length > 0) {
-    results.push(extractRust(root, rustFiles));
-    if (config.languages.rustdoc) {
-      if (config.allowExec) {
-        results.push(extractRustdoc(root, rustFiles));
-      } else {
+  for (const plugin of BUILTIN_EXTRACTORS) {
+    if (!plugin.enabled(config)) {
+      if (plugin.id === "rustdoc" && config.languages.rustdoc) {
         results.push({
           symbols: [],
           parseFailures: 0,
@@ -34,13 +14,10 @@ export function extractSurface(root: string, files: string[], config: Config): E
           error: "rustdoc skipped: cargo execution is disabled; pass --allow-exec or set allowExec to true",
         });
       }
+      continue;
     }
-  }
-  if (config.languages.go && goFiles.length > 0) {
-    results.push(extractGo(root, goFiles));
-  }
-  if (config.javadoc && javaFiles.length > 0) {
-    results.push(extractJava(root, javaFiles, config.javaDefaults));
+    const selected = filesFor(plugin, files);
+    if (selected.length > 0) results.push(plugin.extract({ root, files: selected, config }));
   }
 
   const symbols: Symbol[] = [];
@@ -85,5 +62,10 @@ export function extractSurface(root: string, files: string[], config: Config): E
   };
 }
 
-export { extractTypescript, extractPython, extractRust, extractRustdoc, extractGo, extractJava };
+export { extractTypescript } from "./typescript.js";
+export { extractPython } from "./python.js";
+export { extractRust } from "./rust.js";
+export { extractRustdoc } from "./rustdoc.js";
+export { extractGo } from "./go.js";
+export { extractJava } from "./java.js";
 export type { DocstringEntry, ExtractResult };

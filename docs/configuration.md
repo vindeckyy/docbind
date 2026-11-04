@@ -18,7 +18,8 @@
     "L2-moved": "error",
     "L3-reshaped": "error",
     "L4-renamed": "error",
-    "S1-deprecated": "off"
+    "S1-deprecated": "off",
+    "D1-doctest": "error"
   },
   "maxFindings": 200,
   "minConfidence": 0.6,
@@ -27,7 +28,10 @@
   "javadoc": false,
   "javaDefaults": false,
   "lock": true,
-  "allowExec": false
+  "allowExec": false,
+  "cache": true,
+  "indexes": [],
+  "doctests": []
 }
 ```
 
@@ -46,6 +50,8 @@ Set `"docstrings": true` to scan Python module, class, and function docstrings. 
 ## AsciiDoc
 
 `cache` defaults to `true` and stores extracted symbols in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file hashes. `--no-cache` disables it. Add `.docbind-cache/` to `.gitignore`.
+
+`indexes` lists LSIF files, relative to the project root or absolute. Index symbols are binding-only: contract shape checks are skipped. `doctests` lists `{ name, command, args, docs }` entries; they run only through `docbind doctest` with `allowExec`. `docbind check --index` appends indexes for one run.
 
 `allowExec` defaults to `false`. Rustdoc extraction needs both `languages.rustdoc` and `allowExec`; without them `cargo` is not run and `check` prints a warning.
 

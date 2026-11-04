@@ -1,0 +1,6 @@
+{"type":"vertex","label":"metaData","id":0,"version":"0.4.3","projectRoot":"file:///"}
+{"type":"vertex","label":"document","id":1,"uri":"src/users.ts","languageId":"typescript"}
+{"type":"vertex","label":"range","id":2,"start":{"line":0,"character":13},"end":{"line":0,"character":20}}
+{"type":"edge","label":"contains","outV":1,"inV":2}
+{"type":"vertex","label":"moniker","id":3,"kind":"export","scheme":"tsc","identifier":"app.src.users.getUser"}
+{"type":"edge","label":"next","outV":2,"inV":3}

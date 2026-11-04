@@ -11,6 +11,7 @@ import { readLock } from "./lock/schema.js";
 import { discoverCode, discoverDocs } from "./discover.js";
 import { extractSurface } from "./surface/index.js";
 import { readSurfaceCache, surfaceCacheKey, writeSurfaceCache } from "./cache.js";
+import { extractLsif } from "./surface/lsif.js";
 import { parseToken } from "./resolve/score.js";
 import type {
   Binding,
@@ -106,7 +107,7 @@ function reshapedFinding(
 }
 
 function signatureFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
-  if (!anchor.signatureShape) return undefined;
+  if (symbol.indexOnly || !anchor.signatureShape) return undefined;
   const delta = compareShapeClaims(anchor.signatureShape, symbol.shape);
   if (!delta.breaking) return undefined;
   return makeFinding(
@@ -121,6 +122,7 @@ function signatureFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Fi
 }
 
 function inlineContractFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
+  if (symbol.indexOnly) return undefined;
   if (!anchor.explicitContract || anchor.explicitContract === symbol.shapeHash) return undefined;
   return makeFinding(
     {
@@ -215,7 +217,15 @@ export function checkProject(root: string, config: Config, options: CheckProject
   const cached = cacheKey ? readSurfaceCache(root, cacheKey) : undefined;
   const surface = cached ?? extractSurface(root, codeFiles, config);
   if (cacheKey && !cached) writeSurfaceCache(root, cacheKey, surface);
-  const warnings = surface.error ? [surface.error] : [];
+  const lsif = config.indexes.length > 0 ? extractLsif(root, config.indexes) : { symbols: [] };
+  if (lsif.symbols.length > 0) {
+    const native = new Set(surface.symbols.map((symbol) => `${symbol.filePath}\u0000${symbol.name}`));
+    surface.symbols.push(...lsif.symbols.filter((symbol) => !native.has(`${symbol.filePath}\u0000${symbol.name}`)));
+  }
+  const warnings = [
+    ...(surface.error ? [surface.error] : []),
+    ...(lsif.error ? [lsif.error] : []),
+  ];
   const pythonHints = buildPythonTypeHints(surface.symbols);
   const goHints = buildGoTypeHints(surface.symbols);
   const parsedDocs = parseDocs(root, docs, pythonHints, goHints, config.asciidoc);

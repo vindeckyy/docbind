@@ -40,6 +40,10 @@ A token that never bound cannot become a finding. Brokenness comes from a tombst
 
 TypeScript and Python use dedicated parsers. Rust and Go use a shared lexer with language item parsers. The lexer masks comments and strings while preserving byte offsets, so type text and line numbers stay exact.
 
+Each extractor implements the same versioned `ExtractorPlugin` interface (`src/surface/plugins.ts`): id, API version, extensions, enable predicate, and `extract`. Built-ins are the TypeScript, Python, Rust, rustdoc, Go, and Java plugins. The golden snapshots in `test/golden/` pin one output per language; `conformance/cases/` pins end-to-end rule behavior. Third-party extractors can implement the interface in-process; there is no dynamic plugin loading.
+
+LSIF ingestion converts export monikers into symbols with file, line, name, and qualified name. It sets `indexOnly`, which skips shape comparison because LSIF carries no parameter or return contract.
+
 ## Gates
 
 - 95% test coverage.

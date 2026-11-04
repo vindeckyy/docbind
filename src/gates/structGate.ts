@@ -60,6 +60,8 @@ export const REQUIRED_FILES = [
   "docs/corpus.md",
   "docs/recall.md",
   "docs/installation.md",
+  "docs/integrations.md",
+  "docs/leaderboard.md",
   "docs/threat-model.md",
   "docs/rfc.md",
   "docs/conformance.md",

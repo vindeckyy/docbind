@@ -11,6 +11,7 @@ import { explain } from "./explain.js";
 import { applyAnnotations, suggestAnnotations } from "./adopt.js";
 import { describeLockDiff, diffLock } from "./lock/diff.js";
 import { migrateLock } from "./lock/migrate.js";
+import { runDoctests } from "./doctest.js";
 import { formatHuman } from "./report/human.js";
 import { formatJson } from "./report/json.js";
 import { formatSarif } from "./report/sarif.js";
@@ -28,12 +29,13 @@ const HELP = `docbind ${ENGINE_VERSION}
 
 Usage:
   docbind init
-  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound] [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache] [--changed-only] [--base <rev>]
-  docbind lock [--check] [--diff] [--refresh]\ndocbind migrate [--check] [--json]
+  docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound] [--index <lsif>] [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache] [--changed-only] [--base <rev>]
+  docbind lock [--check] [--diff] [--review] [--refresh]\ndocbind migrate [--check] [--json]
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
   docbind adopt [--write] [--json] [--contract]
   docbind audit [--unbound] [--json]
+  docbind doctest [--json]
   docbind stats
 
 Commands:
@@ -45,6 +47,7 @@ Commands:
   migrate   Upgrade the lock file to the current format
   adopt     Propose explicit annotations for inferred bindings
   audit     Report binding coverage and unbound tokens
+  doctest   Run configured doctest commands and report failures
   stats     Print scan statistics`;
 
 function failure(io: CliIO, message: string): number {
@@ -107,6 +110,8 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         "no-lock": { type: "boolean" },
         "allow-exec": { type: "boolean" },
         "no-cache": { type: "boolean" },
+        index: { type: "string", multiple: true },
+        review: { type: "boolean" },
         contract: { type: "boolean" },
         diff: { type: "boolean" },
       },
@@ -156,6 +161,9 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     if (option("no-lock")) config.lock = false;
     if (option("allow-exec")) config.allowExec = true;
     if (option("no-cache")) config.cache = false;
+    if (Array.isArray(values.index)) {
+      config.indexes = [...config.indexes, ...values.index.filter((value): value is string => typeof value === "string")];
+    }
 
     if (command === "check") {
       const result = checkProject(io.cwd, config);
@@ -240,8 +248,42 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     }
 
     if (command === "lock") {
-      const result = checkProject(io.cwd, config, { ignoreBaseline: option("refresh") || option("diff") });
+      const result = checkProject(io.cwd, config, {
+        ignoreBaseline: option("refresh") || option("diff") || option("review"),
+      });
       const expected = markLockAdvanced({ ...result.lock, engine: ENGINE_VERSION });
+      if (option("review")) {
+        const current = readLock(io.cwd);
+        const diff = diffLock(current, expected);
+        const base = stringOption("base") ?? "origin/HEAD";
+        const lines = changedLines(io.cwd, base);
+        const files = changedFiles(io.cwd, base);
+        const changes = [
+          ...diff.added,
+          ...diff.removed,
+          ...diff.changed.map((change) => change.after),
+        ];
+        const uncoupled = changes.filter((entry) => {
+          const changed = lines.get(entry.docPath);
+          if (changed && entry.line !== undefined) return !changed.has(entry.line);
+          return !files.has(entry.docPath);
+        });
+        const report = {
+          coupled: changes.length - uncoupled.length,
+          uncoupled: uncoupled.map((entry) => ({
+            docPath: entry.docPath,
+            line: entry.line,
+            token: entry.token,
+            symbol: entry.qualifiedName,
+          })),
+        };
+        if (option("json")) io.stdout(JSON.stringify(report, null, 2));
+        else if (report.uncoupled.length === 0) io.stdout(`lock changes coupled to doc edits: ${report.coupled}`);
+        else for (const entry of report.uncoupled) {
+          io.stdout(`${entry.docPath}:${entry.line ?? "?"} ${entry.token} (${entry.symbol})`);
+        }
+        return report.uncoupled.length === 0 ? 0 : 3;
+      }
       if (option("diff")) {
         const current = readLock(io.cwd);
         const diff = diffLock(current, expected);
@@ -329,6 +371,27 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
       for (const file of applied.changedFiles) io.stdout(`updated ${file}`);
       io.stdout(`inserted ${applied.inserted} annotations`);
       return 0;
+    }
+
+    if (command === "doctest") {
+      if (!config.allowExec) {
+        io.stderr("error: doctest commands execute project tooling; pass --allow-exec or set allowExec to true");
+        return 2;
+      }
+      if (config.doctests.length === 0) {
+        io.stderr("error: no doctests configured; add doctests to docbind.json");
+        return 2;
+      }
+      const findings = runDoctests(io.cwd, config);
+      if (option("json")) {
+        io.stdout(JSON.stringify(findings, null, 2));
+      } else {
+        for (const finding of findings) {
+          io.stdout(`${finding.doc.path}:${finding.doc.line} ${finding.severity} ${finding.rule} ${finding.message}`);
+        }
+        io.stdout(`${findings.length} doctest finding${findings.length === 1 ? "" : "s"}`);
+      }
+      return findings.length > 0 ? 1 : 0;
     }
 
     if (command === "audit") {

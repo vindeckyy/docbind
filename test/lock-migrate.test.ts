@@ -37,6 +37,17 @@ describe("lock migration", () => {
     expect(second.actions).toEqual([]);
   });
 
+  it("fills missing sections and rejects malformed entries", () => {
+    const result = migrateLock({ engine: "0.1.0" });
+    expect(result.changed).toBe(true);
+    expect(result.actions).toContain("add empty anchors");
+    expect(result.actions).toContain("add empty tombstones");
+    expect(result.actions).toContain("set generation 0");
+    expect(() => migrateLock({ schema: 1, anchors: [], tombstones: "bad" })).toThrow(/tombstones must be an array/u);
+    expect(() => migrateLock({ schema: 1, anchors: [null], tombstones: [] })).toThrow(/anchor 0 must be an object/u);
+    expect(() => migrateLock({ schema: 1, anchors: [], tombstones: [null] })).toThrow(/tombstone 0 must be an object/u);
+  });
+
   it("rejects newer schemas and non-objects", () => {
     expect(() => migrateLock({ schema: 2 })).toThrow(/newer than this engine/u);
     expect(() => migrateLock({ schema: 0 })).toThrow(/unsupported lock schema/u);

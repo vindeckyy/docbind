@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.2.3");
+    expect((await cli(["--version"], root)).stdout).toBe("0.2.4");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -172,6 +172,54 @@ describe("CLI check", () => {
     expect((await cli(["check", "--mode", "gate"], root)).code).toBe(0);
   });
 
+  it("runs configured doctests only with allowExec", async () => {
+    const root = tempProject({
+      "README.md": "# Docs\n",
+      "docbind.json": JSON.stringify({
+        doctests: [{ name: "bad", command: process.execPath, args: ["-e", "process.exit(1)"], docs: ["README.md"] }],
+      }),
+    });
+    expect((await cli(["doctest"], root)).code).toBe(2);
+    const failed = await cli(["doctest", "--allow-exec", "--json"], root);
+    expect(failed.code).toBe(1);
+    const findings = JSON.parse(failed.stdout) as Array<{ rule: string; severity: string }>;
+    expect(findings[0]?.rule).toBe("D1-doctest");
+    expect(findings[0]?.severity).toBe("error");
+    const text = await cli(["doctest", "--allow-exec"], root);
+    expect(text.code).toBe(1);
+    expect(text.stdout).toContain("1 doctest finding");
+    const none = await cli(["doctest", "--allow-exec"], tempProject({ "README.md": "# Docs\n" }));
+    expect(none.code).toBe(2);
+    const ok = await cli(
+      ["doctest", "--allow-exec"],
+      tempProject({
+        "README.md": "# Docs\n",
+        "docbind.json": JSON.stringify({ doctests: [{ name: "ok", command: process.execPath, args: ["-e", ""] }] }),
+      }),
+    );
+    expect(ok.code).toBe(0);
+    expect(ok.stdout).toContain("0 doctest findings");
+  });
+
+  it("binds through an LSIF index", async () => {
+    const root = project("<!-- docbind: symbol=src/extra.ts#indexedUser -->\n\nCall `indexedUser(id)`.\n");
+    writeFileSync(join(root, "src/extra.ts"), "export const other = 1;\n");
+    const index = join(root, "indexed.lsif");
+    writeFileSync(
+      index,
+      [
+        '{"type":"vertex","label":"document","id":1,"uri":"src/extra.ts"}',
+        '{"type":"vertex","label":"range","id":2,"start":{"line":0,"character":13},"end":{"line":0,"character":24}}',
+        '{"type":"edge","label":"contains","outV":1,"inV":2}',
+        '{"type":"vertex","label":"moniker","id":3,"kind":"export","scheme":"tsc","identifier":"app.src.extra.indexedUser"}',
+        '{"type":"edge","label":"next","outV":2,"inV":3}',
+      ].join("\n"),
+    );
+    expect((await cli(["check"], root)).code).toBe(1);
+    const indexed = await cli(["check", "--index", index], root);
+    expect(indexed.code).toBe(0);
+  });
+
   it("migrates legacy locks and reports them", async () => {
     const root = project();
     writeFileSync(
@@ -184,6 +232,29 @@ describe("CLI check", () => {
     expect((await cli(["migrate"], root)).code).toBe(0);
     expect((await cli(["migrate", "--check"], root)).code).toBe(0);
     expect((await cli(["migrate", "--json"], root)).stdout).toContain('"changed": false');
+  });
+
+  it("requires lock changes to be coupled to doc edits", async () => {
+    const root = project();
+    await lock(root);
+    const git = (args: string[]): void => {
+      execFileSync("git", ["-c", "user.name=Test", "-c", "user.email=test@example.com", ...args], {
+        cwd: root,
+        stdio: "ignore",
+      });
+    };
+    git(["init"]);
+    git(["add", "."]);
+    git(["commit", "-m", "one"]);
+    writeFileSync(join(root, "src/users.ts"), code("fetchUser"));
+    const text = await cli(["lock", "--review"], root);
+    expect(text.code).toBe(3);
+    expect(text.stdout).toContain("docs/api.md:3 getUser");
+    const uncoupled = await cli(["lock", "--review", "--json"], root);
+    expect(uncoupled.code).toBe(3);
+    expect(JSON.parse(uncoupled.stdout).uncoupled[0].docPath).toBe("docs/api.md");
+    writeFileSync(join(root, "docs/api.md"), "# API\n\nCall `fetchUser(id)`.\n");
+    expect((await cli(["lock", "--review"], root)).code).toBe(0);
   });
 
   it("renders semantic lock diffs", async () => {

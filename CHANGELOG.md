@@ -2,6 +2,30 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.4] - 2026-11-04
+
+### Added
+
+- LSIF ingestion: `--index <file>` and `indexes` add binding-only symbols from export monikers.
+- Versioned extractor plugin interface (`EXTRACTOR_API_VERSION = 1`) with built-in plugins for TypeScript, Python, Rust, rustdoc, Go, and Java.
+- `docbind doctest [--json]` runs configured `doctests` commands with `--allow-exec` and reports `D1-doctest` findings.
+- `docbind lock --review` fails when a lock change is not coupled to the corresponding doc line.
+- GitLab CI snippet, Jenkinsfile, and a minimal VS Code extension with diagnostics and an annotation quick fix.
+- Public leaderboard page and integrations page.
+
+### Changed
+
+- CLI help, README, configuration, architecture, usage, and scope docs cover indexes, doctests, lock review, and the plugin API.
+- GitHub Action uses Node 22.
+- 14 of the 44 checklist subtasks remain open; 30 are closed.
+
+### Limits
+
+- SCIP ingestion is not implemented; LSIF symbols have no shape contracts.
+- The VS Code extension is source-only, not Marketplace-published; the Docker image build is unverified locally.
+- Doctest runners are user-configured commands, not built-in pytest/mdbook drivers.
+- Sandboxed behavior probes, npm publication, and independent evaluation remain open.
+
 ## [0.2.3] - 2026-11-04
 
 ### Fixed
@@ -1931,3 +1955,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.1]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.1
 [0.2.2]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.2
 [0.2.3]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.3
+[0.2.4]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.4

@@ -8,12 +8,14 @@ nav:
   - Demo: demo.md
   - Usage: usage.md
   - Installation: installation.md
+  - Integrations: integrations.md
   - Configuration: configuration.md
   - Architecture: architecture.md
   - Scope and limits: scope.md
   - Threat model: threat-model.md
   - Corpus: corpus.md
   - Recall: recall.md
+  - Leaderboard: leaderboard.md
   - Conformance: conformance.md
   - Precision: precision.md
   - Performance: performance.md

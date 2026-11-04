@@ -104,6 +104,7 @@ The demo copies [`examples/basic`](examples/basic) to a temporary directory, ren
 | L3 | Signature or member contract changed |
 | L4 | Symbol was renamed, with a conservative fix |
 | S1 | Symbol is deprecated and the doc does not say so, opt-in |
+| D1 | A configured doctest or example command failed, opt-in |
 
 Additive changes stay silent: a new optional parameter, an added overload, an optional field, a new enum variant, or a widened return union.
 
@@ -118,12 +119,18 @@ Ignored by default: plain prose names without backticks, unlabeled fences, histo
 | Rust | built-in lexer and item parser | on |
 | Rust proc macros | opt-in rustdoc JSON | off |
 | Go | built-in lexer and declaration parser | off |
+| Java | built-in declaration parser | off (`javadoc`) |
+| Any language | LSIF index (`--index <file>`) | off |
 
 Go is opt-in. Set `"go": true` in `docbind.json`.
 
-The rustdoc extractor is also opt-in. It runs `cargo +nightly rustdoc --output-format json`, which executes build scripts and proc macros. Enable it only on trusted code.
+The rustdoc extractor is also opt-in. It runs `cargo +nightly rustdoc --output-format json`, which executes build scripts and proc macros. It requires `--allow-exec` or `"allowExec": true`; without that, extraction is skipped with a warning. Enable it only on trusted code.
 
 Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or generated bindings.
+
+LSIF indexes provide binding-only symbols: existence and location, not parameter or return shapes. They are useful for languages and monorepos where a native extractor is unavailable. A stale index is a stale binding source.
+
+Extractors implement a versioned in-process plugin interface (`EXTRACTOR_API_VERSION` in `src/surface/plugins.ts`) and are covered by golden snapshots and the conformance suite.
 
 ## Precision model
 
@@ -176,13 +183,14 @@ A scoped npm package is reserved as `@vindeckyy/docbind` but is not published ye
 docbind init
 docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound]
               [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache]
-              [--changed-only] [--base <rev>]
-docbind lock [--check] [--diff] [--refresh]
+              [--index <lsif>] [--changed-only] [--base <rev>]
+docbind lock [--check] [--diff] [--review] [--refresh]
 docbind migrate [--check] [--json]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json] [--contract]
 docbind audit [--unbound] [--json]
+docbind doctest [--json]
 docbind stats
 ```
 
@@ -235,13 +243,19 @@ The repository also ships a composite action in [`action/action.yml`](action/act
     "L2-moved": "error",
     "L3-reshaped": "error",
     "L4-renamed": "error",
-    "S1-deprecated": "off"
+    "S1-deprecated": "off",
+    "D1-doctest": "error"
   },
   "maxFindings": 200,
   "minConfidence": 0.6,
   "docstrings": false,
   "asciidoc": false,
-  "javadoc": false
+  "javadoc": false,
+  "lock": true,
+  "allowExec": false,
+  "cache": true,
+  "indexes": [],
+  "doctests": []
 }
 ```
 
@@ -288,21 +302,24 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 - Lock files carry a semver format. `docbind migrate --check` exits 3 when the lock needs upgrading; `docbind migrate` rewrites it and is idempotent.
 - Surface extraction is cached in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file content hashes. `--no-cache` bypasses it.
 - `npm run conformance` runs a public, language-neutral suite. `npm run corpus:fixtures` is the mutation regression gate in CI.
+- `docbind lock --review` exits 3 when a lock change is not coupled to the corresponding doc line.
+- `docbind doctest` runs configured commands only with `--allow-exec` and turns failures into `D1-doctest` findings. pytest, mdbook, and typedoc examples are command entries, not built-in runners.
+- LSIF indexes are consumed with `--index`; SCIP ingestion is not implemented.
 - Golden extractor snapshots live in `test/golden/`.
 
 ## Gate results
 
-Measured on the 0.2.3 tree:
+Measured on the 0.2.4 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 391 passing |
-| Statements | 98.1% |
-| Branches | 95.3% |
-| Functions | 98.09% |
+| Tests | 403 passing |
+| Statements | 98.14% |
+| Branches | 95.35% |
+| Functions | 97.84% |
 | Lines | 98.88% |
-| Changed-line coverage, feature diff | 98.88% |
-| Structure gate | 83 of 83 checks |
+| Changed-line coverage, feature diff | 98.89% |
+| Structure gate | 90 of 90 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes. Runtime measurements are in [docs/performance.md](docs/performance.md).

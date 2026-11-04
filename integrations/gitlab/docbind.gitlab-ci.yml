@@ -1,0 +1,8 @@
+docbind:
+  image: node:22-alpine
+  script:
+    - npx --yes github:vindeckyy/docbind check --sarif docbind.sarif
+  artifacts:
+    when: always
+    paths:
+      - docbind.sarif
