@@ -47,6 +47,7 @@ export const DEFAULT_CONFIG: Config = {
   cache: true,
   indexes: [],
   doctests: [],
+  requireIndex: false,
 };
 
 const severitySchema = z.enum(["error", "warning", "note", "off"]);
@@ -87,6 +88,7 @@ const rawConfigSchema = z
     allowExec: z.boolean().optional(),
     cache: z.boolean().optional(),
     indexes: z.array(z.string()).optional(),
+    requireIndex: z.boolean().optional(),
     doctests: z
       .array(
         z
@@ -129,6 +131,7 @@ export function parseConfig(input: unknown): Config {
     cache: raw.cache ?? DEFAULT_CONFIG.cache,
     indexes: raw.indexes ?? DEFAULT_CONFIG.indexes,
     doctests: raw.doctests ?? DEFAULT_CONFIG.doctests,
+    requireIndex: raw.requireIndex ?? DEFAULT_CONFIG.requireIndex,
   };
 }
 

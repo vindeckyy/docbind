@@ -6,6 +6,7 @@ import { findPackageRoot, modulePathFor } from "../discover.js";
 import type { DocstringEntry, ExtractResult } from "./protocol.js";
 
 function workerPath(): string {
+  if (process.env.DOCBIND_PYTHON_WORKER) return process.env.DOCBIND_PYTHON_WORKER;
   const here = dirname(fileURLToPath(import.meta.url));
   const candidates = [
     join(here, "../../python/docbind_extract.py"),

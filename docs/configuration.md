@@ -51,7 +51,9 @@ Set `"docstrings": true` to scan Python module, class, and function docstrings. 
 
 `cache` defaults to `true` and stores extracted symbols in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file hashes. `--no-cache` disables it. Add `.docbind-cache/` to `.gitignore`.
 
-`indexes` lists LSIF files, relative to the project root or absolute. Index symbols are binding-only: contract shape checks are skipped. `doctests` lists `{ name, command, args, docs }` entries; they run only through `docbind doctest` with `allowExec`. `docbind check --index` appends indexes for one run.
+`indexes` lists LSIF or SCIP files, relative to the project root or absolute. Index symbols are binding-only: contract shape checks are skipped. `doctests` lists `{ name, command, args, docs }` entries; they run only through `docbind doctest` with `allowExec`. `docbind check --index` appends indexes for one run.
+
+`requireIndex` defaults to `false`. When true, `check` warns if no index symbols were loaded and native extractors are the fallback. `docbind check --require-index` enables it for one run.
 
 `allowExec` defaults to `false`. Rustdoc extraction needs both `languages.rustdoc` and `allowExec`; without them `cargo` is not run and `check` prints a warning.
 

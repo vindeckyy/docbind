@@ -4,3 +4,4 @@ python-return
 go-visibility
 java-signature
 no-lock-contract
+scip-bind

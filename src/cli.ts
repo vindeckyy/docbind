@@ -112,6 +112,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         "no-cache": { type: "boolean" },
         index: { type: "string", multiple: true },
         review: { type: "boolean" },
+        "require-index": { type: "boolean" },
         contract: { type: "boolean" },
         diff: { type: "boolean" },
       },
@@ -161,6 +162,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     if (option("no-lock")) config.lock = false;
     if (option("allow-exec")) config.allowExec = true;
     if (option("no-cache")) config.cache = false;
+    if (option("require-index")) config.requireIndex = true;
     if (Array.isArray(values.index)) {
       config.indexes = [...config.indexes, ...values.index.filter((value): value is string => typeof value === "string")];
     }

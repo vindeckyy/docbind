@@ -12,6 +12,7 @@ import { discoverCode, discoverDocs } from "./discover.js";
 import { extractSurface } from "./surface/index.js";
 import { readSurfaceCache, surfaceCacheKey, writeSurfaceCache } from "./cache.js";
 import { extractLsif } from "./surface/lsif.js";
+import { extractScip } from "./surface/scip.js";
 import { parseToken } from "./resolve/score.js";
 import type {
   Binding,
@@ -217,14 +218,20 @@ export function checkProject(root: string, config: Config, options: CheckProject
   const cached = cacheKey ? readSurfaceCache(root, cacheKey) : undefined;
   const surface = cached ?? extractSurface(root, codeFiles, config);
   if (cacheKey && !cached) writeSurfaceCache(root, cacheKey, surface);
-  const lsif = config.indexes.length > 0 ? extractLsif(root, config.indexes) : { symbols: [] };
-  if (lsif.symbols.length > 0) {
+  const indexed = config.indexes.map((path) =>
+    path.endsWith(".scip") ? extractScip(root, path) : extractLsif(root, [path]),
+  );
+  const indexSymbols = indexed.flatMap((result) => result.symbols);
+  if (indexSymbols.length > 0) {
     const native = new Set(surface.symbols.map((symbol) => `${symbol.filePath}\u0000${symbol.name}`));
-    surface.symbols.push(...lsif.symbols.filter((symbol) => !native.has(`${symbol.filePath}\u0000${symbol.name}`)));
+    surface.symbols.push(...indexSymbols.filter((symbol) => !native.has(`${symbol.filePath}\u0000${symbol.name}`)));
   }
   const warnings = [
     ...(surface.error ? [surface.error] : []),
-    ...(lsif.error ? [lsif.error] : []),
+    ...indexed.flatMap((result) => (result.error ? [result.error] : [])),
+    ...(config.requireIndex && indexSymbols.length === 0
+      ? ["degraded: no SCIP/LSIF symbols; native extractors are the fallback"]
+      : []),
   ];
   const pythonHints = buildPythonTypeHints(surface.symbols);
   const goHints = buildGoTypeHints(surface.symbols);

@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.5] - 2026-11-04
+
+### Added
+
+- SCIP ingestion: `.scip` indexes are decoded as protobuf and converted to binding-only symbols. Verified against a real `scip-typescript` index.
+- `--require-index` and `requireIndex` warn when no index symbols load and native parsers are the fallback.
+- `npm run binaries` builds a single-file Bun executable for the current platform; the release workflow builds Linux, macOS, and Windows binaries and attaches them to the release.
+- Conformance case `scip-bind` uses a real `scip-typescript` index.
+
+### Changed
+
+- README, installation, configuration, usage, and scope docs cover SCIP, binaries, and the fallback warning.
+- 41 subtasks are closed; 6 remain open, 3 of them blocked on people or credentials.
+
+### Limits
+
+- SCIP symbols are binding-only; no parameter or return shapes.
+- Python extraction in a binary needs the `python/` worker file or `DOCBIND_PYTHON_WORKER`.
+- Docker image build is still unverified locally; sandboxed probes, npm publication, and independent evaluation remain open.
+
 ## [0.2.4] - 2026-11-04
 
 ### Added
@@ -1956,3 +1976,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.2]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.2
 [0.2.3]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.3
 [0.2.4]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.4
+[0.2.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.5

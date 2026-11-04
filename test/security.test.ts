@@ -20,10 +20,36 @@ describe("execution gating", () => {
     expect(checkProject(root, config).warnings[0]).toContain("rustdoc skipped");
   });
 
+  it("honors a Python worker override", () => {
+    const root = tempProject({ "src/app.py": "def get_user():\n    return 1\n" });
+    const previous = process.env.DOCBIND_PYTHON_WORKER;
+    process.env.DOCBIND_PYTHON_WORKER = "/missing/worker.py";
+    try {
+      const result = extractSurface(root, ["src/app.py"], parseConfig({}));
+      expect(result.error).toContain("/missing/worker.py");
+    } finally {
+      if (previous === undefined) delete process.env.DOCBIND_PYTHON_WORKER;
+      else process.env.DOCBIND_PYTHON_WORKER = previous;
+    }
+  });
+
   it("honors allowExec in config", () => {
     const root = tempProject({ "src/lib.rs": "pub fn get_user() {}\n", "Cargo.toml": "[package]\nname = \"x\"\n" });
     const config = parseConfig({ languages: { rustdoc: true }, allowExec: true });
     expect(config.allowExec).toBe(true);
     expect(root.length).toBeGreaterThan(0);
+  });
+});
+
+describe("index requirement", () => {
+  it("warns when an index is required and none supplied", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": "export function getUser(id: string): string { return id; }\n",
+      "docs/api.md": "Call `getUser(id)`.\n",
+    });
+    const result = checkProject(root, parseConfig({ requireIndex: true }));
+    expect(result.warnings.some((warning) => warning.startsWith("degraded:"))).toBe(true);
+    expect(checkProject(root, parseConfig({})).warnings).toEqual([]);
   });
 });

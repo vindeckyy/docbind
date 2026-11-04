@@ -288,6 +288,7 @@ export interface Config {
   cache: boolean;
   indexes: string[];
   doctests: DoctestCommand[];
+  requireIndex: boolean;
 }
 
 export const RULES: Rule[] = [

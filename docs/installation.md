@@ -41,4 +41,10 @@ See [Usage](usage.md#ci) for the workflow form, SARIF upload, and exit codes.
 
 ## Binaries
 
-Single-file binaries are not published yet. The npm and Docker paths above are the supported install routes.
+The release workflow builds `docbind-<os>-<arch>` with Bun for Linux, macOS, and Windows and attaches them to the GitHub release. `npm run binaries` builds the current platform into `dist/bin/`.
+
+```sh
+dist/bin/docbind-darwin-arm64 --version
+```
+
+The binary bundles TypeScript, Rust, Go, and Java extraction. Python extraction still needs `python/docbind_extract.py` beside the binary or `DOCBIND_PYTHON_WORKER` pointing at it, because the worker is a separate Python file. The binary does not replace the npm path for Python-only projects.

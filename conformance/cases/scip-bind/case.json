@@ -1,0 +1,8 @@
+{
+  "lock": false,
+  "config": {
+    "languages": { "typescript": false, "python": false, "rust": false, "go": false, "rustdoc": false },
+    "indexes": ["index.scip"]
+  },
+  "expect": []
+}

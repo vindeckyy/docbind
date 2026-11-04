@@ -120,7 +120,7 @@ Ignored by default: plain prose names without backticks, unlabeled fences, histo
 | Rust proc macros | opt-in rustdoc JSON | off |
 | Go | built-in lexer and declaration parser | off |
 | Java | built-in declaration parser | off (`javadoc`) |
-| Any language | LSIF index (`--index <file>`) | off |
+| Any language | LSIF or SCIP index (`--index <file>`) | off |
 
 Go is opt-in. Set `"go": true` in `docbind.json`.
 
@@ -128,7 +128,7 @@ The rustdoc extractor is also opt-in. It runs `cargo +nightly rustdoc --output-f
 
 Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or generated bindings.
 
-LSIF indexes provide binding-only symbols: existence and location, not parameter or return shapes. They are useful for languages and monorepos where a native extractor is unavailable. A stale index is a stale binding source.
+LSIF and SCIP indexes provide binding-only symbols: existence and location, not parameter or return shapes. They are useful for languages and monorepos where a native extractor is unavailable. A stale index is a stale binding source. `.scip` files are decoded as protobuf; other index paths are read as LSIF JSON lines.
 
 Extractors implement a versioned in-process plugin interface (`EXTRACTOR_API_VERSION` in `src/surface/plugins.ts`) and are covered by golden snapshots and the conformance suite.
 
@@ -183,7 +183,7 @@ A scoped npm package is reserved as `@vindeckyy/docbind` but is not published ye
 docbind init
 docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--unbound]
               [--mode gate|strict] [--no-lock] [--allow-exec] [--no-cache]
-              [--index <lsif>] [--changed-only] [--base <rev>]
+              [--index <index>] [--require-index] [--changed-only] [--base <rev>]
 docbind lock [--check] [--diff] [--review] [--refresh]
 docbind migrate [--check] [--json]
 docbind fix [--write]
@@ -304,21 +304,22 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 - `npm run conformance` runs a public, language-neutral suite. `npm run corpus:fixtures` is the mutation regression gate in CI.
 - `docbind lock --review` exits 3 when a lock change is not coupled to the corresponding doc line.
 - `docbind doctest` runs configured commands only with `--allow-exec` and turns failures into `D1-doctest` findings. pytest, mdbook, and typedoc examples are command entries, not built-in runners.
-- LSIF indexes are consumed with `--index`; SCIP ingestion is not implemented.
+- LSIF and SCIP indexes are consumed with `--index`. `--require-index` warns when no index symbols are available and native parsers are the fallback.
+- Single-file binaries are built with Bun for Linux, macOS, and Windows in the release workflow. Python extraction in a binary needs the `python/` directory beside it or `DOCBIND_PYTHON_WORKER`.
 - Golden extractor snapshots live in `test/golden/`.
 
 ## Gate results
 
-Measured on the 0.2.4 tree:
+Measured on the 0.2.5 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 403 passing |
-| Statements | 98.14% |
-| Branches | 95.35% |
-| Functions | 97.84% |
-| Lines | 98.88% |
-| Changed-line coverage, feature diff | 98.89% |
+| Tests | 410 passing |
+| Statements | 98.04% |
+| Branches | 95.09% |
+| Functions | 97.89% |
+| Lines | 98.87% |
+| Changed-line coverage, feature diff | 98.87% |
 | Structure gate | 90 of 90 checks |
 | Docs build | `mkdocs build --strict` passes |
 
