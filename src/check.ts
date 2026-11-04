@@ -391,8 +391,14 @@ export function checkProject(root: string, config: Config, options: CheckProject
     tombstones: mergeTombstones(lock.tombstones, freshTombstones, referenced, lock.generation),
   };
 
+  const finalized = dedupeFindings(findings);
+  if (anchors.some((anchor) => anchor.explicitSymbol)) {
+    for (const finding of finalized) {
+      if (finding.inferred) finding.severity = "note";
+    }
+  }
   return {
-    findings: dedupeFindings(findings).sort((left, right) => {
+    findings: finalized.sort((left, right) => {
       if (left.doc.path !== right.doc.path) return left.doc.path.localeCompare(right.doc.path);
       return left.doc.line - right.doc.line;
     }),

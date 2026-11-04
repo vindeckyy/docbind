@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.98] - 2026-11-04
+
+### Added
+
+- Once any explicit annotation exists, inferred findings are downgraded to notes and do not fail the build.
+- Explicit findings keep their configured severity, so the annotated surface stays a sound gate.
+- Findings carry an `inferred` marker in JSON/SARIF output.
+
+### Changed
+
+- 370 tests, 98.52% statements, 95.75% branches, 99.14% lines.
+
+### Limits
+
+- Repositories with no explicit annotations keep the old severity behavior; advisory mode is opt-in by adding one annotation.
+- Annotation proposals remain Markdown-only.
+- No-lock mode, SCIP, binaries, and independent evaluation remain open.
+
 ## [0.1.97] - 2026-11-04
 
 ### Added
@@ -1814,3 +1832,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.95]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.95
 [0.1.96]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.96
 [0.1.97]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.97
+[0.1.98]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.98

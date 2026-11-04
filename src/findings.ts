@@ -33,6 +33,7 @@ export function makeFinding(input: FindingInput, config: Config): Finding | unde
       ? { code: { path: input.symbol.filePath, line: input.symbol.line, symbolId: input.symbol.id } }
       : {}),
     message: input.message,
+    inferred: !anchor.explicitSymbol,
     ...(input.suggestion ? { suggestion: input.suggestion } : {}),
     ...(input.fix ? { fix: input.fix } : {}),
   };

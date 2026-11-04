@@ -887,6 +887,39 @@ describe("check pipeline", () => {
     expect(checkProject(root, disabled).pending).toEqual([]);
   });
 
+  it("downgrades inferred findings when explicit annotations exist", () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": [
+        "export function getUser(id: string): string { return id; }",
+        "export function removeUser(id: string): string { return id; }",
+        "",
+      ].join("\n"),
+      "docs/api.md": "<!-- docbind: symbol=src/users.ts#getUser -->\n\nCall `removeUser(id)`.\n",
+    });
+    const config = parseConfig({});
+    lockNow(root, config);
+    writeFileSync(
+      join(root, "src/users.ts"),
+      [
+        "export function getUser(id: string): string { return id; }",
+        "export function deleteUser(id: string): string { return id; }",
+        "",
+      ].join("\n"),
+    );
+    const inferred = checkProject(root, config);
+    const finding = inferred.findings.find((entry) => entry.rule === "L4-renamed");
+    expect(finding?.severity).toBe("note");
+    expect(finding?.inferred).toBe(true);
+    writeFileSync(
+      join(root, "src/users.ts"),
+      "export function deleteUser(id: string): string { return id; }\n",
+    );
+    const explicit = checkProject(root, config);
+    expect(explicit.findings.some((entry) => entry.severity === "error")).toBe(true);
+    expect(explicit.findings.filter((entry) => entry.inferred).every((entry) => entry.severity === "note")).toBe(true);
+  });
+
   it("binds explicit annotations exactly and reports missing symbols", () => {
     const root = tempProject(
       files(

@@ -216,6 +216,7 @@ export interface Finding {
   message: string;
   suggestion?: string;
   fix?: Fix;
+  inferred?: boolean;
 }
 
 export interface Binding {

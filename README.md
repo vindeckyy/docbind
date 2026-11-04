@@ -26,7 +26,7 @@ Brand new docs can bind exactly with an inline annotation:
 <!-- docbind: symbol=src/users.ts#getUser -->
 ```
 
-Explicit annotations skip confidence scoring and ambiguity. When the symbol disappears or moves, the check fails. Unannotated prose falls back to heuristic binding, which is advisory by nature.
+Explicit annotations skip confidence scoring and ambiguity. When the symbol disappears or moves, the check fails. Once a repository has any explicit annotation, inferred findings are downgraded to notes and do not fail the build; explicit findings stay fatal. Unannotated repositories keep the previous behavior.
 
 This is static analysis. It does not run project code, build the project, or generate docs.
 
@@ -281,13 +281,13 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.97 tree:
+Measured on the 0.1.98 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 369 passing |
+| Tests | 370 passing |
 | Statements | 98.52% |
-| Branches | 95.74% |
+| Branches | 95.75% |
 | Functions | 98.92% |
 | Lines | 99.14% |
 | Changed-line coverage, feature diff | 99.14% |
