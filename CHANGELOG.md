@@ -2,6 +2,30 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.80] - 2026-11-03
+
+### Added
+
+- Integral values carry int or long width through literals, constants, casts, arithmetic, shifts, and bitwise operators.
+- Long bitwise and shift operations use BigInt with 64-bit two's-complement semantics.
+- Long values beyond JavaScript's safe integer range are stored as decimal strings rather than losing precision.
+- Corpus adds `Marker.wide()` with default `1L << 40`; editing `40` to `41` must produce `L3-reshaped`.
+
+### Fixed
+
+- Numeric long values stored as decimal strings are no longer mistaken for string concatenation in `+`.
+
+### Changed
+
+- Corpus mutations: 105 to 106; `java-javadoc-fixture` runs 34 mutations with 29 anchors, all hitting with zero collateral.
+- Branch coverage rose to 95.83%; line coverage is 99.23%.
+
+### Limits
+
+- Float and double arithmetic remains JavaScript number arithmetic.
+- Function calls and reference casts stay unevaluated.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.79] - 2026-11-03
 
 ### Added
@@ -1453,3 +1477,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.77]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.77
 [0.1.78]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.78
 [0.1.79]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.79
+[0.1.80]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.80

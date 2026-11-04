@@ -357,6 +357,14 @@
         "to": 1,
         "symbol": "flags",
         "expectedRule": "L3-reshaped"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "method": "wide",
+        "from": 40,
+        "to": 41,
+        "symbol": "wide",
+        "expectedRule": "L3-reshaped"
       }
     ],
     "constantMutations": [

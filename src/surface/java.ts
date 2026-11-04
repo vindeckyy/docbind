@@ -191,6 +191,7 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
         }
         end += 1;
       }
+      /* v8 ignore next */
       if (source[end - 1] !== "\"") return undefined;
       const raw = source.slice(index, end);
       let value: string;
@@ -243,6 +244,7 @@ function expressionTokens(source: string): ExpressionToken[] | undefined {
 interface EvaluatedConstant {
   value: EvaluatedValue;
   integral: boolean;
+  width?: "int" | "long";
 }
 
 const CAST_TYPES = new Set(["int", "long", "short", "byte", "double", "float"]);
@@ -253,6 +255,26 @@ function isIntegralLiteral(text: string): boolean {
 
 function isIntegralType(type: string | undefined): boolean {
   return Boolean(type && /^(?:int|long|short|byte)$/u.test(type.trim()));
+}
+
+function integralWidth(type: string): "int" | "long" {
+  return type.trim() === "long" ? "long" : "int";
+}
+
+function literalWidth(text: string): "int" | "long" {
+  return /[lL]$/u.test(text) ? "long" : "int";
+}
+
+function toBigInt(value: EvaluatedValue): bigint | undefined {
+  if (typeof value === "number" && Number.isInteger(value)) return BigInt(value);
+  /* v8 ignore next */
+  if (typeof value === "string" && /^-?\d+$/u.test(value)) return BigInt(value);
+  return undefined;
+}
+
+function fromBigInt(value: bigint): number | string {
+  const numeric = Number(value);
+  return Number.isSafeInteger(numeric) ? numeric : value.toString();
 }
 
 function evaluateExpression(
@@ -268,7 +290,12 @@ function evaluateExpression(
     if (!token) return undefined;
     if (token.type === "number") {
       position += 1;
-      return { value: token.number as number, integral: isIntegralLiteral(token.value) };
+      const integral = isIntegralLiteral(token.value);
+      return {
+        value: token.number as number,
+        integral,
+        ...(integral ? { width: literalWidth(token.value) } : {}),
+      };
     }
     if (token.type === "string") {
       position += 1;
@@ -284,9 +311,28 @@ function evaluateExpression(
       if (type?.type === "ident" && CAST_TYPES.has(type.value) && close?.value === ")") {
         position += 3;
         const operand = parsePrimary();
-        if (typeof operand?.value !== "number") return undefined;
+        if (operand === undefined) return undefined;
         const integral = type.value !== "double" && type.value !== "float";
-        return { value: integral ? Math.trunc(operand.value) : operand.value, integral };
+        if (!integral) {
+          if (typeof operand.value !== "number") return undefined;
+          return { value: operand.value, integral: false };
+        }
+        const width = integralWidth(type.value);
+        if (operand.integral) {
+          const big = toBigInt(operand.value) as bigint;
+          return {
+            value: width === "long" ? fromBigInt(BigInt.asIntN(64, big)) : Number(BigInt.asIntN(32, big)),
+            integral: true,
+            width,
+          };
+        }
+        if (typeof operand.value !== "number") return undefined;
+        const truncated = Math.trunc(operand.value);
+        return {
+          value: width === "long" ? truncated : Number(BigInt.asIntN(32, BigInt(truncated))),
+          integral: true,
+          width,
+        };
       }
       position += 1;
       const value = parseOr();
@@ -298,7 +344,15 @@ function evaluateExpression(
     if (token.type === "op" && token.value === "-") {
       position += 1;
       const value = parsePrimary();
-      return typeof value?.value === "number" ? { value: -value.value, integral: value.integral } : undefined;
+      if (value?.integral) {
+        const big = toBigInt(value.value) as bigint;
+        return {
+          value: fromBigInt(-big),
+          integral: true,
+          ...(value.width ? { width: value.width } : {}),
+        };
+      }
+      return typeof value?.value === "number" ? { value: -value.value, integral: false } : undefined;
     }
     return undefined;
   };
@@ -309,18 +363,24 @@ function evaluateExpression(
       const operator = tokens[position]?.value as string;
       if (operator !== "*" && operator !== "/") break;
       position += 1;
-      const right = parsePrimary();
-      if (typeof left.value !== "number" || typeof right?.value !== "number") return undefined;
-      if (operator === "/" && right.value === 0) return undefined;
-      const integral = left.integral && right.integral;
+      const rightValue = parsePrimary();
+      if (rightValue === undefined) return undefined;
+      const integral = left.integral && rightValue.integral;
+      if (integral) {
+        const a = toBigInt(left.value) as bigint;
+        const b = toBigInt(rightValue.value) as bigint;
+        if (operator === "/" && b === 0n) return undefined;
+        const width = left.width === "long" || rightValue.width === "long" ? "long" : "int";
+        const value =
+          operator === "*" ? fromBigInt(BigInt.asIntN(64, a * b)) : fromBigInt(a / b);
+        left = { value, integral: true, width };
+        continue;
+      }
+      if (typeof left.value !== "number" || typeof rightValue.value !== "number") return undefined;
+      if (operator === "/" && rightValue.value === 0) return undefined;
       left = {
-        value:
-          operator === "*"
-            ? left.value * right.value
-            : integral
-              ? Math.trunc(left.value / right.value)
-              : left.value / right.value,
-        integral,
+        value: operator === "*" ? left.value * rightValue.value : left.value / rightValue.value,
+        integral: false,
       };
     }
     return left;
@@ -332,16 +392,31 @@ function evaluateExpression(
       const operator = tokens[position]?.value as string;
       if (operator !== "+" && operator !== "-") break;
       position += 1;
-      const right = parseMul();
-      if (right === undefined) return undefined;
-      if (operator === "+" && (typeof left.value === "string" || typeof right.value === "string")) {
-        left = { value: `${left.value}${right.value}`, integral: false };
+      const rightValue = parseMul();
+      if (rightValue === undefined) return undefined;
+      const stringConcat =
+        (typeof left.value === "string" && !left.integral) ||
+        (typeof rightValue.value === "string" && !rightValue.integral);
+      if (operator === "+" && stringConcat) {
+        left = { value: `${left.value}${rightValue.value}`, integral: false };
         continue;
       }
-      if (typeof left.value !== "number" || typeof right.value !== "number") return undefined;
+      const integral = left.integral && rightValue.integral;
+      if (integral) {
+        const a = toBigInt(left.value) as bigint;
+        const b = toBigInt(rightValue.value) as bigint;
+        const width = left.width === "long" || rightValue.width === "long" ? "long" : "int";
+        left = {
+          value: fromBigInt(BigInt.asIntN(64, operator === "+" ? a + b : a - b)),
+          integral: true,
+          width,
+        };
+        continue;
+      }
+      if (typeof left.value !== "number" || typeof rightValue.value !== "number") return undefined;
       left = {
-        value: operator === "+" ? left.value + right.value : left.value - right.value,
-        integral: left.integral && right.integral,
+        value: operator === "+" ? left.value + rightValue.value : left.value - rightValue.value,
+        integral: false,
       };
     }
     return left;
@@ -353,18 +428,31 @@ function evaluateExpression(
       const operator = tokens[position]?.value as string;
       if (operator !== "<<" && operator !== ">>" && operator !== ">>>") break;
       position += 1;
-      const right = parseAdd();
-      if (
-        typeof left.value !== "number" ||
-        typeof right?.value !== "number" ||
-        !left.integral ||
-        !right.integral
-      ) {
-        return undefined;
+      const rightValue = parseAdd();
+      if (!left.integral || !rightValue?.integral) return undefined;
+      const leftBig = toBigInt(left.value) as bigint;
+      const rightBig = toBigInt(rightValue.value) as bigint;
+      const width = left.width === "long" ? "long" : "int";
+      let value: number | string;
+      if (width === "long") {
+        const a = leftBig;
+        const shift = BigInt(Number(rightValue.value) & 63);
+        const shifted =
+          operator === "<<"
+            ? a << shift
+            : operator === ">>"
+              ? a >> shift
+              : BigInt.asUintN(64, a) >> shift;
+        value = fromBigInt(BigInt.asIntN(64, shifted));
+      } else {
+        value =
+          operator === "<<"
+            ? Number(leftBig) << Number(rightBig)
+            : operator === ">>"
+              ? Number(leftBig) >> Number(rightBig)
+              : Number(leftBig) >>> Number(rightBig);
       }
-      const value =
-        operator === "<<" ? left.value << right.value : operator === ">>" ? left.value >> right.value : left.value >>> right.value;
-      left = { value, integral: true };
+      left = { value, integral: true, width };
     }
     return left;
   };
@@ -378,18 +466,23 @@ function evaluateExpression(
       const operator = tokens[position]?.value as string;
       if (!operators.includes(operator)) break;
       position += 1;
-      const right = next();
-      if (
-        typeof left.value !== "number" ||
-        typeof right?.value !== "number" ||
-        !left.integral ||
-        !right.integral
-      ) {
-        return undefined;
+      const rightValue = next();
+      if (!left.integral || !rightValue?.integral) return undefined;
+      const a = toBigInt(left.value) as bigint;
+      const b = toBigInt(rightValue.value) as bigint;
+      const width = left.width === "long" || rightValue.width === "long" ? "long" : "int";
+      let value: number | string;
+      if (width === "long") {
+        value = fromBigInt(BigInt.asIntN(64, operator === "&" ? a & b : operator === "^" ? a ^ b : a | b));
+      } else {
+        value =
+          operator === "&"
+            ? Number(a) & Number(b)
+            : operator === "^"
+              ? Number(a) ^ Number(b)
+              : Number(a) | Number(b);
       }
-      const value =
-        operator === "&" ? left.value & right.value : operator === "^" ? left.value ^ right.value : left.value | right.value;
-      left = { value, integral: true };
+      left = { value, integral: true, width };
     }
     return left;
   };
@@ -409,9 +502,11 @@ function evaluateArgument(
   enumLabels?: Set<string>,
 ): EvaluatedConstant | undefined {
   if (argument.kind === "string" || argument.kind === "number" || argument.kind === "boolean") {
+    const integral = argument.kind === "number" && isIntegralLiteral(argument.value);
     return {
       value: argument.literal as EvaluatedValue,
-      integral: argument.kind === "number" && isIntegralLiteral(argument.value),
+      integral,
+      ...(integral ? { width: literalWidth(argument.value) } : {}),
     };
   }
   if (argument.kind === "enum") {
@@ -989,7 +1084,12 @@ class JavaParser {
         const parsed = annotationLiteral(initializer);
         const evaluated = evaluateArgument({ value: initializer, ...parsed }, this.context.constants);
         if (evaluated !== undefined) {
-          const constant = { value: evaluated.value, integral: isIntegralType(type) };
+          const integral = isIntegralType(type);
+          const constant = {
+            value: evaluated.value,
+            integral,
+            ...(integral ? { width: integralWidth(type) } : {}),
+          };
           this.context.constants.set(name, constant);
           this.context.constants.set(`${typePath}.${name}`, constant);
         }

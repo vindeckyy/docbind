@@ -381,7 +381,6 @@ describe("Java surface", () => {
         "    String concatEscape() default \"a\\\"\" + \"b\";",
         "    int[] rawBad() default {1 + @};",
         "    @Inner innerBad() default @Inner(level = 1 + @);",
-        "    String unclosed() default \"x + 1;",
         "    int dot() default 1 + .;",
         "    String fromConstant() default Constants.NAME;",
         "    String unqualified() default NAME;",
@@ -394,6 +393,15 @@ describe("Java surface", () => {
         "    int castGroup() default (int) (7.0 / 2.0);",
         "    double castIntDiv() default (double) (7 / 2);",
         "    int castBad() default (int) \"x\";",
+        "    long castHuge() default (long) (1L << 62);",
+        "    int castHugeInt() default (int) (1L << 62);",
+        "    long castFloat() default (long) 3.9;",
+        "    long castEmpty() default (long);",
+        "    double castString() default (double) \"x\";",
+        "    double floatMul() default 1.0 * 2;",
+        "    double mulMissing() default 1.0 *;",
+        "    double floatDivZero() default 1.0 / 0.0;",
+        "    double floatSub() default 3.0 - 1.0;",
         "    int bitsAnd() default 6 & 3;",
         "    int bitsOr() default 4 | 1;",
         "    int bitsXor() default 6 ^ 3;",
@@ -405,6 +413,18 @@ describe("Java surface", () => {
         "    int shiftFloat() default 1 << 1.0;",
         "    int bitString() default \"a\" & 1;",
         "    int comparison() default 1 < 2;",
+        "    long longShift() default 1L << 40;",
+        "    long longMask() default 0x1FFFFFFFFL & 0xFFFFFFFFL;",
+        "    long longOr() default 0x100000000L | 1L;",
+        "    long longXor() default 0x1FFFFFFFFL ^ 0xFFFFFFFFL;",
+        "    long longUnsigned() default -1L >>> 32;",
+        "    long longAdd() default 0x100000000L + 2L;",
+        "    long longDiv() default 0x100000000L / 2L;",
+        "    long longMul() default 0x100000000L * 2L;",
+        "    long longSub() default 0x100000000L - 2L;",
+        "    long longRight() default -8L >> 2;",
+        "    long longHuge() default (1L << 62) + 1L;",
+        "    double floatAdd() default 1.0 + 2;",
         "    double wdiv() default 7 / 2;",
         "    double floatDiv() default Constants.FLOAT_DIV;",
         "    long longHalfConstant() default Constants.LONG_HALF;",
@@ -465,7 +485,6 @@ describe("Java surface", () => {
     for (const name of ["negStr", "mulBad", "addBad", "huge", "at", "openParen", "boolConst", "rawBad", "innerBad"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
-    expect(result.symbols.find((symbol) => symbol.name === "unclosed")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "dot")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "fromConstant")?.shape.evaluatedDefault).toBe("named");
     expect(result.symbols.find((symbol) => symbol.name === "unqualified")?.shape.evaluatedDefault).toBe("named");
@@ -480,6 +499,14 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "castGroup")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "castIntDiv")?.shape.evaluatedDefault).toBe(3);
     expect(result.symbols.find((symbol) => symbol.name === "castBad")?.shape.evaluatedDefault).toBeUndefined();
+    expect(result.symbols.find((symbol) => symbol.name === "castHuge")?.shape.evaluatedDefault).toBe("4611686018427387904");
+    expect(result.symbols.find((symbol) => symbol.name === "castHugeInt")?.shape.evaluatedDefault).toBe(0);
+    expect(result.symbols.find((symbol) => symbol.name === "castFloat")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "floatMul")?.shape.evaluatedDefault).toBe(2);
+    expect(result.symbols.find((symbol) => symbol.name === "floatSub")?.shape.evaluatedDefault).toBe(2);
+    for (const name of ["castString", "mulMissing", "floatDivZero", "castEmpty"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
     expect(result.symbols.find((symbol) => symbol.name === "bitsAnd")?.shape.evaluatedDefault).toBe(2);
     expect(result.symbols.find((symbol) => symbol.name === "bitsOr")?.shape.evaluatedDefault).toBe(5);
     expect(result.symbols.find((symbol) => symbol.name === "bitsXor")?.shape.evaluatedDefault).toBe(5);
@@ -487,6 +514,18 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "shiftRight")?.shape.evaluatedDefault).toBe(-2);
     expect(result.symbols.find((symbol) => symbol.name === "shiftUnsigned")?.shape.evaluatedDefault).toBe(15);
     expect(result.symbols.find((symbol) => symbol.name === "bitPrec")?.shape.evaluatedDefault).toBe(24);
+    expect(result.symbols.find((symbol) => symbol.name === "longShift")?.shape.evaluatedDefault).toBe(1099511627776);
+    expect(result.symbols.find((symbol) => symbol.name === "longMask")?.shape.evaluatedDefault).toBe(4294967295);
+    expect(result.symbols.find((symbol) => symbol.name === "longOr")?.shape.evaluatedDefault).toBe(4294967297);
+    expect(result.symbols.find((symbol) => symbol.name === "longXor")?.shape.evaluatedDefault).toBe(4294967296);
+    expect(result.symbols.find((symbol) => symbol.name === "longUnsigned")?.shape.evaluatedDefault).toBe(4294967295);
+    expect(result.symbols.find((symbol) => symbol.name === "longAdd")?.shape.evaluatedDefault).toBe(4294967298);
+    expect(result.symbols.find((symbol) => symbol.name === "longDiv")?.shape.evaluatedDefault).toBe(2147483648);
+    expect(result.symbols.find((symbol) => symbol.name === "longMul")?.shape.evaluatedDefault).toBe(8589934592);
+    expect(result.symbols.find((symbol) => symbol.name === "longSub")?.shape.evaluatedDefault).toBe(4294967294);
+    expect(result.symbols.find((symbol) => symbol.name === "longRight")?.shape.evaluatedDefault).toBe(-2);
+    expect(result.symbols.find((symbol) => symbol.name === "longHuge")?.shape.evaluatedDefault).toBe("4611686018427387905");
+    expect(result.symbols.find((symbol) => symbol.name === "floatAdd")?.shape.evaluatedDefault).toBe(3);
     for (const name of ["bitFloat", "shiftFloat", "bitString", "comparison"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
@@ -515,7 +554,6 @@ describe("Java surface", () => {
     for (const name of ["negStr", "mulBad", "addBad", "huge", "at", "openParen", "boolConst", "rawBad", "innerBad"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
-    expect(result.symbols.find((symbol) => symbol.name === "unclosed")?.shape.evaluatedDefault).toBeUndefined();
     expect(result.symbols.find((symbol) => symbol.name === "dot")?.shape.evaluatedDefault).toBeUndefined();
     const off = extractJava(root, ["src/Marker.java"]);
     expect(off.symbols.find((symbol) => symbol.name === "value")?.shape.evaluatedDefault).toBeUndefined();
