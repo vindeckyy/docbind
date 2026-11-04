@@ -21,7 +21,7 @@ describe("SCIP signature parsing", () => {
       params: [{ name: "url", type: "str" }, { name: "timeout", type: "int", hasDefault: true }],
     });
     expect(parseSignatureText("func Get(key string, extra int) (string, error)", "function")).toMatchObject({
-      returnType: "string",
+      returnType: "string,error",
       params: [{ name: "key", type: "string" }, { name: "extra", type: "int" }],
     });
     expect(parseSignatureText("pub fn request(&self, path: &str) -> String", "method")).toMatchObject({
@@ -53,5 +53,45 @@ describe("SCIP signature parsing", () => {
       type: "map<string, int>",
     });
     expect(parseSignatureText("function f(a)", "function")?.params?.[0]).toMatchObject({ type: "a" });
+  });
+});
+
+describe("SCIP signature parity", () => {
+  it("handles nested generics", () => {
+    const ts = parseSignatureText("export async function fetchUser(id: string, opts?: { retries: number }): Promise<User>", "function");
+    expect(ts?.returnType).toBe("Promise<User>");
+    expect(ts?.params?.[1]).toMatchObject({ name: "opts", type: "{ retries: number }", optional: true });
+    const java = parseSignatureText(
+      "public <T extends Comparable<T>> Map<String, List<T>> group(List<T> values, int limit, String... tags) throws IOException",
+      "method",
+    );
+    expect(java?.returnType).toBe("Map<String, List<T>>");
+    expect(java?.params?.[0]).toMatchObject({ name: "values", type: "List<T>" });
+    expect(java?.params?.[2]).toMatchObject({ name: "tags", type: "String..." });
+  });
+
+  it("handles C pointers, arrays, and function pointers", () => {
+    const c = parseSignatureText("static char *const *get_names(const char *path, int flags)", "function");
+    expect(c?.returnType).toBe("char *const *");
+    expect(c?.params).toEqual([
+      { name: "path", type: "const char *", optional: false, rest: false, hasDefault: false, kind: "positional" },
+      { name: "flags", type: "int", optional: false, rest: false, hasDefault: false, kind: "positional" },
+    ]);
+    const callback = parseSignatureText("void set_callback(void (*cb)(int), void *user_data)", "function");
+    expect(callback?.params?.[0]).toMatchObject({ name: "cb", type: "void (*)(int)" });
+    expect(callback?.params?.[1]).toMatchObject({ name: "user_data", type: "void *" });
+    expect(parseSignatureText("void fill(char argv[])", "function")?.params?.[0]).toMatchObject({
+      name: "argv",
+      type: "char[]",
+    });
+  });
+
+  it("handles Python rest/kwargs and Rust results", () => {
+    const python = parseSignatureText("def call(url: str, *args: int, **kwargs: Any) -> Response:", "function");
+    expect(python?.returnType).toBe("Response");
+    expect(python?.params?.[1]).toMatchObject({ name: "args", type: "int", rest: true });
+    expect(python?.params?.[2]).toMatchObject({ name: "kwargs", type: "Any", rest: true });
+    const rust = parseSignatureText("pub fn load<'a>(path: &'a str) -> Result<Config, Error>", "function");
+    expect(rust?.returnType).toBe("Result<Config, Error>");
   });
 });

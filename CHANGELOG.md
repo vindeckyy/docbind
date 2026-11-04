@@ -2,6 +2,20 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.8.0] - 2026-11-04
+
+### Changed
+
+- **Signature parser rewritten for parity.** Nested generics, Java type parameters and varargs, Go multi-returns, C pointers/arrays/function pointers, Python rest/kwargs, and Rust results parse into parameter and return shapes.
+- **Binding-only symbols fail by default.** `requireContracts` defaults to `true`; LSIF and unsigned SCIP symbols exit 3 unless `--allow-binding-only` or `"requireContracts": false` is explicit.
+- 8/8 conformance cases and expanded signature tests cover the new parser.
+
+### Limits
+
+- Textual signature parsing still cannot recover overload resolution, macros, or full C++ declarator grammar.
+- LSIF has no signature field; it remains existence-only and now fails by default.
+- npm publication, a second maintainer, and external reproduction remain blocked.
+
 ## [0.7.0] - 2026-11-04
 
 ### Added
@@ -2093,3 +2107,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.5.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.5.0
 [0.6.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.6.0
 [0.7.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.7.0
+[0.8.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.8.0

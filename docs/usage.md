@@ -35,7 +35,7 @@ Explicit binding:
 
 The path is project-relative. The part after `#` may be a bare name or a qualified member. Explicit bindings skip confidence scoring; if the symbol is missing or the name is ambiguous within that file, the check fails.
 
-`docbind check --index docs/index.scip` adds SCIP symbols, including parsed signatures when the index provides them. `.scip` paths are decoded as protobuf; other paths are LSIF and remain binding-only. `--require-index` warns when no index symbols load. `docbind check --unbound` appends unbound tokens as SARIF/JSON notes. `--no-cache` bypasses `.docbind-cache/`. `--allow-exec` permits the rustdoc `cargo` call.
+`docbind check --index docs/index.scip` adds SCIP symbols, including parsed signatures when the index provides them. `.scip` paths are decoded as protobuf; other paths are LSIF and remain binding-only. Binding-only symbols fail by default; pass `--allow-binding-only` to accept existence-only checks. `--require-index` warns when no index symbols load. `docbind check --unbound` appends unbound tokens as SARIF/JSON notes. `--no-cache` bypasses `.docbind-cache/`. `--allow-exec` permits the rustdoc `cargo` call.
 
 `docbind migrate` upgrades a lock file to the current format. `--check` exits 3 when migration is needed, so CI can reject stale lock formats without rewriting them.
 

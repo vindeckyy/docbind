@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.7.0");
+    expect((await cli(["--version"], root)).stdout).toBe("0.8.0");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -256,7 +256,8 @@ describe("CLI check", () => {
       ].join("\n"),
     );
     expect((await cli(["check"], root)).code).toBe(1);
-    const indexed = await cli(["check", "--index", index], root);
+    expect((await cli(["check", "--index", index], root)).code).toBe(3);
+    const indexed = await cli(["check", "--index", index, "--allow-binding-only"], root);
     expect(indexed.code).toBe(0);
     expect((await cli(["check", "--index", index, "--require-contracts"], root)).code).toBe(3);
     expect((await cli(["check", "--require-contracts"], project())).code).toBe(0);

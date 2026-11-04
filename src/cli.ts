@@ -197,6 +197,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         "coverage-ratchet": { type: "boolean" },
         "no-coverage-ratchet": { type: "boolean" },
         "require-contracts": { type: "boolean" },
+        "allow-binding-only": { type: "boolean" },
         "no-coverage-gate": { type: "boolean" },
         "write-coverage": { type: "boolean" },
         "allow-probes": { type: "boolean" },
@@ -253,6 +254,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
     if (option("no-cache")) config.cache = false;
     if (option("require-index")) config.requireIndex = true;
     if (option("no-coverage-gate")) config.minCoverage = 0;
+    if (option("allow-binding-only")) config.requireContracts = false;
     if (Array.isArray(values.index)) {
       config.indexes = [...config.indexes, ...values.index.filter((value): value is string => typeof value === "string")];
     }
