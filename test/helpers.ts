@@ -29,6 +29,13 @@ export async function cli(
   args: string[],
   cwd: string,
 ): Promise<{ code: number; stdout: string; stderr: string }> {
+  return cliRaw([...args, "--no-coverage-gate"], cwd);
+}
+
+export async function cliRaw(
+  args: string[],
+  cwd: string,
+): Promise<{ code: number; stdout: string; stderr: string }> {
   const stdout: string[] = [];
   const stderr: string[] = [];
   const code = await runCli(args, {

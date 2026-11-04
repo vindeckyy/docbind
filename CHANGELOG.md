@@ -2,6 +2,19 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.6.0] - 2026-11-04
+
+### Changed
+
+- **Breaking default:** `check` now enforces a 0.8 verified annotation coverage floor. `docbind init` writes `minCoverage: 0.8`. `--no-coverage-gate` or `minCoverage: 0` disables it while adopting.
+- Adopt must be run before a fresh repository can pass the default gate. The quickstart now shows `init`, `adopt --write`, then `check`.
+- Automatic ratchet remains active once `.docbind-coverage.json` exists.
+
+### Limits
+
+- `--no-coverage-gate` is an escape hatch; teams can still disable the floor.
+- npm publication, a second maintainer, and external reproduction remain blocked.
+
 ## [0.5.0] - 2026-11-04
 
 ### Changed
@@ -2063,3 +2076,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.3.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.3.0
 [0.4.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.4.0
 [0.5.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.5.0
+[0.6.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.6.0

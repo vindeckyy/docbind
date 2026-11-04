@@ -46,7 +46,7 @@ export const DEFAULT_CONFIG: Config = {
   lock: true,
   allowExec: false,
   cache: true,
-  minCoverage: 0,
+  minCoverage: 0.8,
   requireContracts: false,
   indexes: [],
   doctests: [],

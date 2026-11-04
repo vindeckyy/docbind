@@ -38,7 +38,7 @@ docbind check --coverage-ratchet
 docbind check --write-coverage   # update the ratchet baseline once
 ```
 
-`--require-coverage` fails with exit 3 below the threshold. Once `.docbind-coverage.json` exists, every `check` ratchets against it automatically; `--no-coverage-ratchet` opts out for one run. `audit --examples` counts fenced examples and names docs that no configured doctest covers. The threshold counts only human-asserted annotations, not adopted or inferred bindings.
+`check` enforces a **0.8 verified-coverage floor by default**. Below 80% human-asserted annotations it exits 3. Adopted annotations do not count until the `adopted` tag is removed. `docbind init` writes the same floor. Use `--no-coverage-gate` or `"minCoverage": 0` only while adopting. `--require-coverage` overrides the floor upward for one run. Once `.docbind-coverage.json` exists, every `check` also ratchets against it; `--no-coverage-ratchet` opts out for one run. `audit --examples` counts fenced examples and names docs that no configured doctest covers. The threshold counts only human-asserted annotations, not adopted or inferred bindings.
 
 This is static analysis. It does not run project code, build the project, or generate docs.
 
@@ -173,6 +173,9 @@ The `docbind` npm name is held by an unrelated package. A scoped package is rese
 ```sh
 npx --yes github:vindeckyy/docbind --version
 npx --yes github:vindeckyy/docbind init
+npx --yes github:vindeckyy/docbind adopt --write
+# Review each proposed binding, then remove the "adopted" tag.
+npx --yes github:vindeckyy/docbind check --no-coverage-gate
 npx --yes github:vindeckyy/docbind check
 ```
 
@@ -332,11 +335,11 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.5.0 tree:
+Measured on the 0.6.0 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 422 passing |
+| Tests | 423 passing |
 | Statements | 97.98% |
 | Branches | 95.03% |
 | Functions | 97.95% |

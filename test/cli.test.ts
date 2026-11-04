@@ -3,7 +3,7 @@ import { runCli } from "../src/cli.js";
 import { execFileSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { cli, tempProject } from "./helpers.js";
+import { cli, cliRaw, tempProject } from "./helpers.js";
 
 const code = (name = "getUser"): string =>
   `export interface User { id: string }\nexport function ${name}(id: string): User { return { id }; }\nexport class Client { request(path: string): Promise<User> { return Promise.resolve({ id: path }); } }\n`;
@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.5.0");
+    expect((await cli(["--version"], root)).stdout).toBe("0.6.0");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -112,12 +112,14 @@ describe("CLI check", () => {
     expect((await cli(["check", "--strict"], root)).code).toBe(1);
   });
 
-  it("init produces a config and a green run", async () => {
+  it("init writes the 0.8 coverage floor and enforces it", async () => {
     const root = tempProject({ "README.md": "# Empty\n" });
     expect((await cli(["init"], root)).code).toBe(0);
-    expect(readFileSync(join(root, "docbind.json"), "utf8")).toContain('"lock": true');
-    const run = await cli(["check"], root);
-    expect(run.code).toBe(0);
+    const config = readFileSync(join(root, "docbind.json"), "utf8");
+    expect(config).toContain('"lock": true');
+    expect(config).toContain('"minCoverage": 0.8');
+    expect((await cliRaw(["check"], root)).code).toBe(3);
+    expect((await cli(["check"], root)).code).toBe(0);
   });
 
   it("reports binding coverage and unbound tokens", async () => {
@@ -330,6 +332,15 @@ describe("CLI check", () => {
     writeFileSync(join(root, "docs/api.md"), "# API\n\nNo anchors.\n");
     const removed = await cli(["lock", "--diff"], root);
     expect(removed.stdout).toContain("no longer bound");
+  });
+
+  it("enforces the default coverage floor unless disabled", async () => {
+    const root = project("Call `getUser(id)` and `ghost()` in prose.\n");
+    const enforced = await cliRaw(["check"], root);
+    expect(enforced.code).toBe(3);
+    expect(enforced.stderr).toContain("below required 80.0%");
+    expect((await cli(["check"], root)).code).toBe(0);
+    expect((await cliRaw(["check", "--no-coverage-gate"], root)).code).toBe(0);
   });
 
   it("gates verified annotation coverage and ratchets regressions", async () => {

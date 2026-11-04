@@ -31,7 +31,7 @@
   "lock": true,
   "allowExec": false,
   "cache": true,
-  "minCoverage": 0,
+  "minCoverage": 0.8,
   "indexes": [],
   "doctests": [],
   "probes": []
@@ -58,7 +58,7 @@ Set `"docstrings": true` to scan Python module, class, and function docstrings. 
 
 `requireContracts` defaults to `false`. When true, `check` exits 3 if any bound anchor uses a binding-only SCIP/LSIF symbol without a native extractor shape. `--require-contracts` enables it for one run.
 
-`minCoverage` defaults to `0`. A value above zero makes `check` fail with exit 3 when verified annotation coverage is lower. CLI `--require-coverage` overrides it for one run. A committed `.docbind-coverage.json` enables the ratchet automatically; `--no-coverage-ratchet` disables it for one run.
+`minCoverage` defaults to `0.8`. `check` fails with exit 3 below 80% verified annotation coverage. `--no-coverage-gate` or `"minCoverage": 0` disables the floor while adopting. CLI `--require-coverage` overrides it for one run. A committed `.docbind-coverage.json` enables the ratchet automatically; `--no-coverage-ratchet` disables it for one run.
 
 `requireIndex` defaults to `false`. When true, `check` warns if no index symbols were loaded and native extractors are the fallback. `docbind check --require-index` enables it for one run.
 

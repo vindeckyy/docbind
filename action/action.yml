@@ -27,7 +27,7 @@ runs:
         if [ "$COVERAGE_RATCHET" = "true" ]; then
           args+=(--coverage-ratchet)
         fi
-        npx --yes github:vindeckyy/docbind#v0.5.0 "${args[@]}"
+        npx --yes github:vindeckyy/docbind#v0.6.0 "${args[@]}"
     - uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
