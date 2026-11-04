@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { checkProject } from "../src/check.js";
 import { parseConfig } from "../src/config.js";
 import { extractScip, nameFromSymbol } from "../src/surface/scip.js";
-import { tempProject } from "./helpers.js";
+import { cli, tempProject } from "./helpers.js";
 
 function varint(value: number): Buffer {
   const bytes: number[] = [];
@@ -57,6 +57,56 @@ function fixture(root: string): string {
   writeFileSync(path, index);
   return path;
 }
+
+function signatureFixture(root: string): { path: string; symbol: ReturnType<typeof extractScip>["symbols"][number] } {
+  const symbol = "scip-typescript npm app 1.0 src/users.ts/getUser().";
+  const signature = "export function getUser(id: string): string";
+  const occurrence = Buffer.concat([packed(1, [0, 13, 20]), text(2, symbol), numberField(3, 1)]);
+  const info = Buffer.concat([
+    text(1, symbol),
+    numberField(5, 17),
+    text(6, "getUser"),
+    message(7, Buffer.concat([numberField(4, 23), text(5, signature)])),
+  ]);
+  const document = Buffer.concat([text(1, "src/users.ts"), message(2, occurrence), message(3, info)]);
+  const path = join(root, "signature.scip");
+  writeFileSync(path, message(2, document));
+  return { path, symbol: extractScip(root, path).symbols[0]! };
+}
+
+describe("SCIP signatures", () => {
+  it("parses signature_documentation into a contract shape", () => {
+    const root = tempProject({ "src/users.ts": "export const other = 1;\n" });
+    const { symbol } = signatureFixture(root);
+    expect(symbol.indexContract).toBe(true);
+    expect(symbol.shape.params).toEqual([
+      { name: "id", type: "string", optional: false, rest: false, hasDefault: false, kind: "positional" },
+    ]);
+    expect(symbol.shape.returnType).toBe("string");
+  });
+
+  it("checks inline contracts and satisfies --require-contracts", async () => {
+    const root = tempProject({
+      "package.json": JSON.stringify({ name: "app" }),
+      "src/users.ts": "export const other = 1;\n",
+      "docs/api.md": "placeholder\n",
+    });
+    const { path, symbol } = signatureFixture(root);
+    writeFileSync(
+      join(root, "docs/api.md"),
+      `<!-- docbind: symbol=src/users.ts#getUser contract=${symbol.shapeHash} -->\n\nCall \`getUser(id)\`.\n`,
+    );
+    expect((await cli(["check", "--index", path], root)).code).toBe(0);
+    expect((await cli(["check", "--index", path, "--require-contracts"], root)).code).toBe(0);
+    writeFileSync(
+      join(root, "docs/api.md"),
+      "<!-- docbind: symbol=src/users.ts#getUser contract=0000000000000000 -->\n\nCall `getUser(id)`.\n",
+    );
+    const drift = await cli(["check", "--index", path, "--json"], root);
+    expect(drift.code).toBe(1);
+    expect(JSON.parse(drift.stdout).findings[0].rule).toBe("L3-reshaped");
+  });
+});
 
 describe("SCIP ingestion", () => {
   it("decodes documents, definitions, and kinds", () => {
@@ -123,6 +173,26 @@ describe("SCIP edge cases", () => {
     expect(result.symbols).toHaveLength(2);
     expect(result.symbols[0]).toMatchObject({ name: "Client", kind: "class", line: 3 });
     expect(result.symbols[1]).toMatchObject({ name: "unpacked", line: 5 });
+  });
+
+  it("skips nameless, duplicate, and role-less definitions", () => {
+    const root = tempProject({ "src/users.ts": "export const other = 1;\n" });
+    const symbol = "scip-typescript npm app 1.0 src/users.ts/getUser().";
+    const definition = Buffer.concat([packed(1, [0, 0, 1]), text(2, symbol), numberField(3, 1)]);
+    const noRoles = Buffer.concat([packed(1, [1, 0, 1]), text(2, "scip-typescript npm app 1.0 src/users.ts/other().")]);
+    const nameless = Buffer.concat([packed(1, [2, 0, 1]), text(2, "scip-typescript npm app 1.0"), numberField(3, 1)]);
+    const document = Buffer.concat([
+      text(1, "src/users.ts"),
+      message(2, definition),
+      message(2, definition),
+      message(2, noRoles),
+      message(2, nameless),
+      message(3, Buffer.concat([text(1, symbol), numberField(5, 17)])),
+    ]);
+    const path = join(root, "dupes.scip");
+    writeFileSync(path, message(2, document));
+    const result = extractScip(root, path);
+    expect(result.symbols).toHaveLength(1);
   });
 
   it("parses descriptors and reports truncated indexes", () => {

@@ -108,7 +108,7 @@ function reshapedFinding(
 }
 
 function signatureFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
-  if (symbol.indexOnly || !anchor.signatureShape) return undefined;
+  if ((symbol.indexOnly && !symbol.indexContract) || !anchor.signatureShape) return undefined;
   const delta = compareShapeClaims(anchor.signatureShape, symbol.shape);
   if (!delta.breaking) return undefined;
   return makeFinding(
@@ -123,7 +123,7 @@ function signatureFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Fi
 }
 
 function inlineContractFinding(anchor: DocAnchor, symbol: Symbol, config: Config): Finding | undefined {
-  if (symbol.indexOnly) return undefined;
+  if (symbol.indexOnly && !symbol.indexContract) return undefined;
   if (!anchor.explicitContract || anchor.explicitContract === symbol.shapeHash) return undefined;
   return makeFinding(
     {
@@ -453,7 +453,8 @@ export function checkProject(root: string, config: Config, options: CheckProject
     if (anchor.adopted) adoptedCount += 1;
     else if (anchor.explicitSymbol) verifiedExplicit += 1;
     else inferredCount += 1;
-    if (index.byId.get(entry.symbolId)?.indexOnly) indexOnlyCount += 1;
+    const indexed = index.byId.get(entry.symbolId);
+    if (indexed?.indexOnly && !indexed.indexContract) indexOnlyCount += 1;
   }
   return {
     findings: finalized.sort((left, right) => {

@@ -4,6 +4,7 @@ This log records smoke-matrix and held-out numbers for docbind versions. It is n
 
 | Tool | Version | Corpus cases | Smoke mutations | Baseline findings | FP per 1k doc lines | Date |
 |---|---|---:|---:|---:|---:|---|
+| docbind | 0.7.0 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
 | docbind | 0.6.0 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
 | docbind | 0.5.0 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |
 | docbind | 0.4.0 | 16 | 13/13 | 0 | 0.000 | 2026-11-04 |

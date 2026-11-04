@@ -42,7 +42,9 @@ TypeScript and Python use dedicated parsers. Rust and Go use a shared lexer with
 
 Each extractor implements an internal `ExtractorPlugin` shape (`src/surface/plugins.ts`): id, API version, extensions, enable predicate, and `extract`. This is a refactoring seam, not a public plugin API. There is no compatibility promise and no dynamic loading. The golden snapshots in `test/golden/` pin one output per language; `conformance/cases/` pins end-to-end rule behavior.
 
-LSIF ingestion converts export monikers into symbols with file, line, name, and qualified name. It sets `indexOnly`, which skips shape comparison because LSIF carries no parameter or return contract.
+SCIP ingestion converts definitions into symbols. When `SymbolInformation.signature_documentation` is present, the signature text is parsed into `Shape` parameters and a return type, so contract checks run against the index. Symbols without a signature set `indexOnly` and skip shape comparison.
+
+LSIF ingestion converts export monikers into symbols with file, line, name, and qualified name. It always sets `indexOnly` because LSIF carries no parameter or return contract.
 
 ## Gates
 

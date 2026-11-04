@@ -118,6 +118,7 @@ export interface Symbol {
   contractFlags: ContractFlag[];
   packageExport?: boolean;
   indexOnly?: boolean;
+  indexContract?: boolean;
   goReexport?: { packageName: string; receiver?: string; name: string };
   goValue?: string;
   parentId?: string;

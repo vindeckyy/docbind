@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { hashText } from "../hash.js";
-import { shapeHash } from "../shape/canonical.js";
-import type { Symbol, SymbolKind } from "../types.js";
+import { canonicalShape, paramNamesHash, shapeHash } from "../shape/canonical.js";
+import { parseSignatureText } from "./signature.js";
+import type { Shape, Symbol, SymbolKind } from "../types.js";
 
 interface Field {
   number: number;
@@ -136,15 +136,19 @@ export function extractScip(root: string, path: string): ScipResult {
       const doc = readFields(document);
       const relativePath = strings(doc, 1)[0];
       if (!relativePath) continue;
-      const info = new Map<string, { kind: SymbolKind; displayName?: string }>();
+      const info = new Map<string, { kind: SymbolKind; displayName?: string; shape?: Shape; signature?: string }>();
       for (const symbolInfo of messages(doc, 3)) {
         const fields = readFields(symbolInfo);
         const id = strings(fields, 1)[0];
         if (!id) continue;
         const kindNumber = unsigned(fields, 5);
+        const kind = (kindNumber !== undefined ? KINDS[kindNumber] : undefined) ?? "function";
+        const signature = messages(fields, 7).map((signature) => strings(readFields(signature), 5)[0]).find(Boolean);
         info.set(id, {
-          kind: (kindNumber !== undefined ? KINDS[kindNumber] : undefined) ?? "function",
+          kind,
           displayName: strings(fields, 6)[0],
+          ...(signature ? { signature } : {}),
+          ...(signature ? { shape: parseSignatureText(signature, kind) } : {}),
         });
       }
       for (const occurrence of messages(doc, 2)) {
@@ -167,7 +171,8 @@ export function extractScip(root: string, path: string): ScipResult {
         const key = `${relativePath}\u0000${id}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        const shape = { kind };
+        const shape = metadata?.shape ?? { kind };
+        const indexContract = Boolean(metadata?.shape);
         symbols.push({
           id: `scip|${id}|${relativePath}`,
           name,
@@ -178,13 +183,14 @@ export function extractScip(root: string, path: string): ScipResult {
           qualifiedName: id,
           aliases: [],
           shape,
-          shapeText: JSON.stringify(shape),
+          shapeText: canonicalShape(shape),
           shapeHash: shapeHash(shape),
-          paramNamesHash: hashText(""),
+          paramNamesHash: paramNamesHash(shape.params),
           bodyHash: "",
           contractFlags: [],
           packageExport: true,
           indexOnly: true,
+          ...(indexContract ? { indexContract: true } : {}),
           line,
           filePath: relativePath,
         });

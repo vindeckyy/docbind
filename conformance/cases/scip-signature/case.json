@@ -1,0 +1,9 @@
+{
+  "lock": false,
+  "config": {
+    "languages": { "typescript": false, "python": false, "rust": false, "go": false, "rustdoc": false },
+    "indexes": ["index.scip"]
+  },
+  "baseline": [{ "rule": "L3-reshaped", "severity": "error" }],
+  "expect": [{ "rule": "L3-reshaped", "severity": "error" }]
+}

@@ -2,6 +2,21 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.7.0] - 2026-11-04
+
+### Added
+
+- SCIP `signature_documentation` is parsed into parameter and return shapes, so SCIP symbols can be contract-checked instead of existence-checked.
+- `--require-contracts` now fails only symbols without a usable shape: LSIF symbols and SCIP symbols with no signature.
+- Conformance case `scip-signature` covers a correct inline contract and a stale one.
+- 8/8 conformance cases pass.
+
+### Limits
+
+- Signature parsing is textual. Complex generics, overloads, and C-style pointer syntax may degrade to partial shapes.
+- LSIF remains existence-only because the format has no signature field.
+- npm publication, a second maintainer, and external reproduction remain blocked.
+
 ## [0.6.0] - 2026-11-04
 
 ### Changed
@@ -2077,3 +2092,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.4.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.4.0
 [0.5.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.5.0
 [0.6.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.6.0
+[0.7.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.7.0

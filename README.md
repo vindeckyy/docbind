@@ -133,7 +133,7 @@ Ignored by default: plain prose names without backticks, unlabeled fences, histo
 | Rust proc macros | opt-in rustdoc JSON | off |
 | Go | built-in lexer and declaration parser | off |
 | Java | built-in declaration parser | off (`javadoc`) |
-| Any language | LSIF or SCIP index (`--index <file>`) | off |
+| Any language | SCIP index with signatures, or LSIF existence | off |
 
 Go is opt-in. Set `"go": true` in `docbind.json`.
 
@@ -141,7 +141,7 @@ The rustdoc extractor is also opt-in. It runs `cargo +nightly rustdoc --output-f
 
 Rust and Go extraction is syntactic. No cargo build, proc macros, cgo, or generated bindings.
 
-LSIF and SCIP indexes provide binding-only symbols: existence and location, not parameter or return shapes. They are useful for languages and monorepos where a native extractor is unavailable. A stale index is a stale binding source. `.scip` files are decoded as protobuf; other index paths are read as LSIF JSON lines.
+SCIP indexes provide symbol identity **and** contracts when the index carries `signature_documentation`: parameters and return types are parsed into the same shape model as native extractors. SCIP symbols without a signature fall back to existence-only. LSIF is existence-only because it has no signature field. A stale index is a stale binding source. `.scip` files are decoded as protobuf; other index paths are read as LSIF JSON lines.
 
 Extractors share an internal registry (`src/surface/plugins.ts`) covered by golden snapshots and the conformance suite. It is not a public plugin API and carries no compatibility promise.
 
@@ -328,21 +328,21 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 - `docbind strip` removes annotation comments and leaves the surrounding prose intact, so the format has an exit path.
 - `docbind doctest` runs configured commands only with `--allow-exec` and turns failures into `D1-doctest` findings. pytest, mdbook, and typedoc examples are command entries, not built-in runners.
 - `docbind probe` requires both `--allow-exec` and `--allow-probes`. It runs configured calls in Docker with `--network none`, a read-only root, a read-only repo mount, and memory/CPU limits. Docker is an accidental-damage boundary, not a hostile-code sandbox. Never run probes on fork PRs.
-- SCIP and LSIF symbols are binding-only. When an index loads, `check` warns that contracts are not checked; `--require-contracts` turns that warning into exit 3.
+- SCIP signatures are parsed into contracts. Symbols without a signature, including all LSIF symbols, are binding-only; `check` warns and `--require-contracts` turns that gap into exit 3.
 - LSIF and SCIP indexes are consumed with `--index`. `--require-index` warns when no index symbols are available and native parsers are the fallback.
 - Single-file binaries are built with Bun for Linux, macOS, and Windows in the release workflow. Python extraction in a binary needs the `python/` directory beside it or `DOCBIND_PYTHON_WORKER`.
 - Golden extractor snapshots live in `test/golden/`.
 
 ## Gate results
 
-Measured on the 0.6.0 tree:
+Measured on the 0.7.0 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 423 passing |
-| Statements | 97.98% |
-| Branches | 95.03% |
-| Functions | 97.95% |
+| Tests | 430 passing |
+| Statements | 98.01% |
+| Branches | 95.07% |
+| Functions | 97.97% |
 | Lines | 98.78% |
 | Changed-line coverage, feature diff | 98.79% |
 | Structure gate | 94 of 94 checks |

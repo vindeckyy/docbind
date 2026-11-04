@@ -1,6 +1,6 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Contract drift detection for symbol references in docs. Not a documentation linter.",
   "type": "module",
   "bin": {
