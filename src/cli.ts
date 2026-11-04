@@ -12,6 +12,7 @@ import { applyAnnotations, suggestAnnotations } from "./adopt.js";
 import { describeLockDiff, diffLock } from "./lock/diff.js";
 import { migrateLock } from "./lock/migrate.js";
 import { runDoctests } from "./doctest.js";
+import { runProbes } from "./probe.js";
 import { formatHuman } from "./report/human.js";
 import { formatJson } from "./report/json.js";
 import { formatSarif } from "./report/sarif.js";
@@ -36,6 +37,7 @@ Usage:
   docbind adopt [--write] [--json] [--contract]
   docbind audit [--unbound] [--json]
   docbind doctest [--json]
+  docbind probe [--json]
   docbind stats
 
 Commands:
@@ -48,6 +50,7 @@ Commands:
   adopt     Propose explicit annotations for inferred bindings
   audit     Report binding coverage and unbound tokens
   doctest   Run configured doctest commands and report failures
+  probe     Run configured commands in a Docker sandbox
   stats     Print scan statistics`;
 
 function failure(io: CliIO, message: string): number {
@@ -373,6 +376,27 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
       for (const file of applied.changedFiles) io.stdout(`updated ${file}`);
       io.stdout(`inserted ${applied.inserted} annotations`);
       return 0;
+    }
+
+    if (command === "probe") {
+      if (!config.allowExec) {
+        io.stderr("error: probes execute project tooling; pass --allow-exec or set allowExec to true");
+        return 2;
+      }
+      if (config.probes.length === 0) {
+        io.stderr("error: no probes configured; add probes to docbind.json");
+        return 2;
+      }
+      const findings = runProbes(io.cwd, config);
+      if (option("json")) {
+        io.stdout(JSON.stringify(findings, null, 2));
+      } else {
+        for (const finding of findings) {
+          io.stdout(`${finding.doc.path}:${finding.doc.line} ${finding.severity} ${finding.rule} ${finding.message}`);
+        }
+        io.stdout(`${findings.length} probe finding${findings.length === 1 ? "" : "s"}`);
+      }
+      return findings.length > 0 ? 1 : 0;
     }
 
     if (command === "doctest") {

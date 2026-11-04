@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { runCli } from "../src/cli.js";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cli, tempProject } from "./helpers.js";
 
@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.2.5");
+    expect((await cli(["--version"], root)).stdout).toBe("0.2.6");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -170,6 +170,43 @@ describe("CLI check", () => {
     expect((await cli(["check"], root)).code).toBe(0);
     expect((await cli(["check", "--mode", "strict"], root)).code).toBe(1);
     expect((await cli(["check", "--mode", "gate"], root)).code).toBe(0);
+  });
+
+  it("requires allowExec and configured probes", async () => {
+    const root = tempProject({ "README.md": "# Docs\n" });
+    expect((await cli(["probe"], root)).code).toBe(2);
+    const configured = tempProject({
+      "README.md": "# Docs\n",
+      "docbind.json": JSON.stringify({ probes: [{ name: "p", image: "alpine", command: "true", args: [] }] }),
+    });
+    expect((await cli(["probe"], configured)).code).toBe(2);
+  });
+
+  it("maps docker probe failures through the CLI", async () => {
+    const root = tempProject({
+      "README.md": "# Docs\n",
+      "docbind.json": JSON.stringify({ probes: [{ name: "p", image: "alpine", command: "true", args: [] }] }),
+      "bin/docker": "#!/bin/sh\nexit 1\n",
+    });
+    chmodSync(join(root, "bin/docker"), 0o755);
+    const previous = process.env.PATH;
+    process.env.PATH = `${join(root, "bin")}:${previous ?? ""}`;
+    try {
+      const text = await cli(["probe", "--allow-exec"], root);
+      expect(text.code).toBe(1);
+      expect(text.stdout).toContain("1 probe finding");
+      const json = await cli(["probe", "--allow-exec", "--json"], root);
+      expect(json.code).toBe(1);
+      expect(JSON.parse(json.stdout)[0].rule).toBe("D2-probe");
+      writeFileSync(join(root, "bin/docker"), "#!/bin/sh\nexit 0\n");
+      chmodSync(join(root, "bin/docker"), 0o755);
+      const ok = await cli(["probe", "--allow-exec"], root);
+      expect(ok.code).toBe(0);
+      expect(ok.stdout).toContain("0 probe findings");
+      expect((await cli(["probe", "--allow-exec", "--json"], root)).stdout.trim()).toBe("[]");
+    } finally {
+      process.env.PATH = previous;
+    }
   });
 
   it("runs configured doctests only with allowExec", async () => {

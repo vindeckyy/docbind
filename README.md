@@ -105,6 +105,7 @@ The demo copies [`examples/basic`](examples/basic) to a temporary directory, ren
 | L4 | Symbol was renamed, with a conservative fix |
 | S1 | Symbol is deprecated and the doc does not say so, opt-in |
 | D1 | A configured doctest or example command failed, opt-in |
+| D2 | A configured behavior probe failed in a Docker sandbox, opt-in |
 
 Additive changes stay silent: a new optional parameter, an added overload, an optional field, a new enum variant, or a widened return union.
 
@@ -191,6 +192,7 @@ docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json] [--contract]
 docbind audit [--unbound] [--json]
 docbind doctest [--json]
+docbind probe [--json]
 docbind stats
 ```
 
@@ -244,7 +246,8 @@ The repository also ships a composite action in [`action/action.yml`](action/act
     "L3-reshaped": "error",
     "L4-renamed": "error",
     "S1-deprecated": "off",
-    "D1-doctest": "error"
+    "D1-doctest": "error",
+    "D2-probe": "error"
   },
   "maxFindings": 200,
   "minConfidence": 0.6,
@@ -255,7 +258,8 @@ The repository also ships a composite action in [`action/action.yml`](action/act
   "allowExec": false,
   "cache": true,
   "indexes": [],
-  "doctests": []
+  "doctests": [],
+  "probes": []
 }
 ```
 
@@ -304,22 +308,23 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 - `npm run conformance` runs a public, language-neutral suite. `npm run corpus:fixtures` is the mutation regression gate in CI.
 - `docbind lock --review` exits 3 when a lock change is not coupled to the corresponding doc line.
 - `docbind doctest` runs configured commands only with `--allow-exec` and turns failures into `D1-doctest` findings. pytest, mdbook, and typedoc examples are command entries, not built-in runners.
+- `docbind probe` runs configured calls in Docker with `--network none`, a read-only root, a read-only repo mount, and memory/CPU limits. Failures become `D2-probe` findings. It also requires `--allow-exec`.
 - LSIF and SCIP indexes are consumed with `--index`. `--require-index` warns when no index symbols are available and native parsers are the fallback.
 - Single-file binaries are built with Bun for Linux, macOS, and Windows in the release workflow. Python extraction in a binary needs the `python/` directory beside it or `DOCBIND_PYTHON_WORKER`.
 - Golden extractor snapshots live in `test/golden/`.
 
 ## Gate results
 
-Measured on the 0.2.5 tree:
+Measured on the 0.2.6 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 410 passing |
-| Statements | 98.04% |
-| Branches | 95.09% |
-| Functions | 97.89% |
-| Lines | 98.87% |
-| Changed-line coverage, feature diff | 98.87% |
+| Tests | 414 passing |
+| Statements | 98.02% |
+| Branches | 95.04% |
+| Functions | 97.91% |
+| Lines | 98.83% |
+| Changed-line coverage, feature diff | 98.84% |
 | Structure gate | 90 of 90 checks |
 | Docs build | `mkdocs build --strict` passes |
 

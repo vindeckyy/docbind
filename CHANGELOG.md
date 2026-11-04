@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.6] - 2026-11-04
+
+### Added
+
+- `docbind probe [--json]` runs configured commands in Docker with no network, a read-only root, a read-only repo mount, a non-root user, and memory/CPU caps. Failures become `D2-probe` findings.
+- `probes` configuration entries and `D2-probe` severity.
+- Vitest test timeout raised to 15 seconds to avoid git-fixture flakes under full parallel coverage.
+
+### Changed
+
+- README, configuration, usage, and threat-model docs cover probes and their limits.
+- 42 subtasks are closed; 5 remain open.
+
+### Limits
+
+- Real Docker container execution was not verified locally because the Docker daemon is unavailable. The command construction, sandbox flags, failure mapping, and allowExec gate are tested with an injected runner.
+- Probes are a process boundary, not a hardened multi-tenant sandbox.
+- npm publication, Docker image verification, a second maintainer, independent evaluation, and the 6-month case study remain open.
+
 ## [0.2.5] - 2026-11-04
 
 ### Added
@@ -1977,3 +1996,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.3]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.3
 [0.2.4]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.4
 [0.2.5]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.5
+[0.2.6]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.6

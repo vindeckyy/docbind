@@ -35,6 +35,7 @@ export const DEFAULT_CONFIG: Config = {
     "L4-renamed": "error",
     "S1-deprecated": "off",
     "D1-doctest": "error",
+    "D2-probe": "error",
   },
   maxFindings: 200,
   minConfidence: 0.6,
@@ -47,6 +48,7 @@ export const DEFAULT_CONFIG: Config = {
   cache: true,
   indexes: [],
   doctests: [],
+  probes: [],
   requireIndex: false,
 };
 
@@ -75,6 +77,7 @@ const rawConfigSchema = z
         "L4-renamed": severitySchema.optional(),
         "S1-deprecated": severitySchema.optional(),
         "D1-doctest": severitySchema.optional(),
+        "D2-probe": severitySchema.optional(),
       })
       .strict()
       .optional(),
@@ -88,6 +91,19 @@ const rawConfigSchema = z
     allowExec: z.boolean().optional(),
     cache: z.boolean().optional(),
     indexes: z.array(z.string()).optional(),
+    probes: z
+      .array(
+        z
+          .object({
+            name: z.string(),
+            image: z.string(),
+            command: z.string(),
+            args: z.array(z.string()),
+            docs: z.array(z.string()).optional(),
+          })
+          .strict(),
+      )
+      .optional(),
     requireIndex: z.boolean().optional(),
     doctests: z
       .array(
@@ -131,6 +147,7 @@ export function parseConfig(input: unknown): Config {
     cache: raw.cache ?? DEFAULT_CONFIG.cache,
     indexes: raw.indexes ?? DEFAULT_CONFIG.indexes,
     doctests: raw.doctests ?? DEFAULT_CONFIG.doctests,
+    probes: raw.probes ?? DEFAULT_CONFIG.probes,
     requireIndex: raw.requireIndex ?? DEFAULT_CONFIG.requireIndex,
   };
 }

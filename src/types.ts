@@ -201,7 +201,8 @@ export type Rule =
   | "L3-reshaped"
   | "L4-renamed"
   | "S1-deprecated"
-  | "D1-doctest";
+  | "D1-doctest"
+  | "D2-probe";
 
 export type Severity = "error" | "warning" | "note" | "off";
 
@@ -263,6 +264,14 @@ export interface DoctestCommand {
   docs?: string[];
 }
 
+export interface ProbeCommand {
+  name: string;
+  image: string;
+  command: string;
+  args: string[];
+  docs?: string[];
+}
+
 export interface LanguageConfig {
   typescript: boolean;
   python: boolean;
@@ -288,6 +297,7 @@ export interface Config {
   cache: boolean;
   indexes: string[];
   doctests: DoctestCommand[];
+  probes: ProbeCommand[];
   requireIndex: boolean;
 }
 
@@ -298,4 +308,5 @@ export const RULES: Rule[] = [
   "L4-renamed",
   "S1-deprecated",
   "D1-doctest",
+  "D2-probe",
 ];

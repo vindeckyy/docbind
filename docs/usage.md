@@ -14,6 +14,7 @@ docbind explain <doc>:<line>[:<column>]
 docbind adopt [--write] [--json]
 docbind audit [--unbound] [--json]
 docbind doctest [--json]
+docbind probe [--json]
 docbind stats
 ```
 
@@ -68,6 +69,29 @@ The path is project-relative. The part after `#` may be a bare name or a qualifi
 ```
 
 Failures become `D1-doctest` findings. The command is skipped without `--allow-exec` or `"allowExec": true`. Commands run in the project root with a 120-second timeout and a 16 MiB output cap.
+
+## Behavior probes
+
+`docbind probe` runs a command inside a container to check documented return values for pure functions:
+
+```json
+{
+  "allowExec": true,
+  "probes": [
+    {
+      "name": "getUser",
+      "image": "node:22-alpine",
+      "command": "node",
+      "args": ["-e", "import('./dist/users.js').then(m => { if (m.getUser('1').id !== '1') process.exit(1) })"],
+      "docs": ["docs/api.md"]
+    }
+  ]
+}
+```
+
+The container runs with `--network none`, a read-only root, a read-only mount of the repository, no extra capabilities, a 256 MiB memory cap, one CPU, and a 120-second timeout. Failures become `D2-probe` findings. The command is skipped without `--allow-exec`.
+
+This is a process boundary, not a hardened multi-tenant sandbox. Run it only on trusted repositories.
 
 ## CI
 

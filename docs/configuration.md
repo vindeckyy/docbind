@@ -19,7 +19,8 @@
     "L3-reshaped": "error",
     "L4-renamed": "error",
     "S1-deprecated": "off",
-    "D1-doctest": "error"
+    "D1-doctest": "error",
+    "D2-probe": "error"
   },
   "maxFindings": 200,
   "minConfidence": 0.6,
@@ -31,7 +32,8 @@
   "allowExec": false,
   "cache": true,
   "indexes": [],
-  "doctests": []
+  "doctests": [],
+  "probes": []
 }
 ```
 
@@ -51,7 +53,7 @@ Set `"docstrings": true` to scan Python module, class, and function docstrings. 
 
 `cache` defaults to `true` and stores extracted symbols in `.docbind-cache/`, keyed by engine version, extractor config, file paths, and file hashes. `--no-cache` disables it. Add `.docbind-cache/` to `.gitignore`.
 
-`indexes` lists LSIF or SCIP files, relative to the project root or absolute. Index symbols are binding-only: contract shape checks are skipped. `doctests` lists `{ name, command, args, docs }` entries; they run only through `docbind doctest` with `allowExec`. `docbind check --index` appends indexes for one run.
+`indexes` lists LSIF or SCIP files, relative to the project root or absolute. Index symbols are binding-only: contract shape checks are skipped. `doctests` lists `{ name, command, args, docs }` entries; they run only through `docbind doctest` with `allowExec`. `probes` lists `{ name, image, command, args, docs }` entries; they run only through `docbind probe` with `allowExec`, inside Docker with no network, a read-only root, and the repo mounted read-only at `/workspace`. `docbind check --index` appends indexes for one run.
 
 `requireIndex` defaults to `false`. When true, `check` warns if no index symbols were loaded and native extractors are the fallback. `docbind check --require-index` enables it for one run.
 

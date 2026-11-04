@@ -9,6 +9,7 @@
 - The Python extractor starts `python3` and runs a bundled worker that calls `ast.parse`. It never imports project modules.
 - Git commands run only for `--changed-only`, `--mode=strict`, and `--base`; they are read-only diffs.
 - `languages.rustdoc` is off by default. Enabling it requires `--allow-exec` or `"allowExec": true` because it invokes `cargo`.
+- `docbind probe` requires `--allow-exec` and Docker. It runs a configured command with no network, a read-only root, a read-only repo mount, a non-root user, memory and CPU caps, and a timeout. It is not a hardened multi-tenant sandbox.
 
 ## Assets
 
@@ -22,6 +23,7 @@
 | Risk | Mitigation |
 |---|---|
 | Build-script execution through Rust tooling | `cargo` is gated behind `allowExec`; without it, rustdoc extraction is skipped with a warning. |
+| Probe escape | Probes run only behind `allowExec` in Docker with no network, a read-only root and repo mount, non-root user, and resource limits. |
 | Parser denial of service | Parsers operate per file; malformed input increments `parseFailures` instead of retrying. |
 | Path traversal through docs or config globs | Paths are resolved relative to the project root; configuration cannot set an output path outside it. |
 | Hostile lock file | The lock is schema-validated with strict objects; `docbind migrate` rejects newer schemas and drops unknown fields. |
