@@ -887,6 +887,23 @@ describe("check pipeline", () => {
     expect(checkProject(root, disabled).pending).toEqual([]);
   });
 
+  it("binds explicit annotations exactly and reports missing symbols", () => {
+    const root = tempProject(
+      files(
+        userCode(),
+        "<!-- docbind: symbol=src/users.ts#getUser -->\n\nCall the method.\n",
+        { "src/other.ts": userCode() },
+      ),
+    );
+    const result = checkProject(root, parseConfig({}));
+    expect(result.findings).toEqual([]);
+    expect(result.pending[0]?.symbol.filePath).toBe("src/users.ts");
+    writeFileSync(join(root, "src/users.ts"), userCode("fetchUser"));
+    const missing = checkProject(root, parseConfig({}));
+    expect(missing.findings.some((finding) => finding.rule === "L1-broken")).toBe(true);
+    expect(missing.unbound.some((entry) => entry.anchor.explicitSymbol === "src/users.ts#getUser")).toBe(true);
+  });
+
   it("binds Go methods declared in another file", () => {
     const root = tempProject({
       "go.mod": "module example.com/app\n",

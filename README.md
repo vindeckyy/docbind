@@ -20,6 +20,14 @@ It binds symbol-shaped inline code to exported code symbols, stores the contract
 
 It is **not a documentation linter**. A green check means the references still resolve and the recorded contract shape did not break. It does not mean the prose is true. See [Scope and limits](docs/scope.md) before adopting it as a gate.
 
+Brand new docs can bind exactly with an inline annotation:
+
+```html
+<!-- docbind: symbol=src/users.ts#getUser -->
+```
+
+Explicit annotations skip confidence scoring and ambiguity. When the symbol disappears or moves, the check fails. Unannotated prose falls back to heuristic binding, which is advisory by nature.
+
 This is static analysis. It does not run project code, build the project, or generate docs.
 
 ```text
@@ -42,6 +50,7 @@ docs/api.md:77  error  L3  `createUser(name, email)` no longer accepts `email`
 - [Precision model](#precision-model)
 - [Install](#install)
 - [CLI](#cli)
+- [Audit coverage](#audit-coverage)
 - [CI](#ci)
 - [Configuration](#configuration)
 - [Development](#development)
@@ -169,6 +178,7 @@ docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed
 docbind lock [--check] [--refresh]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
+docbind audit [--unbound] [--json]
 docbind stats
 ```
 
@@ -179,7 +189,17 @@ docbind stats
 | 2 | config, IO, or parse failure that prevents a trustworthy run |
 | 3 | lock is out of date |
 
-`check` is read-only. `lock` updates the baseline. `fix` rewrites safe renames and moved paths only.
+`check` is read-only. `lock` updates the baseline. `lock --check` fails when the lock is not derivable from the current docs. `fix` rewrites safe renames and moved paths only.
+
+## Audit coverage
+
+`docbind audit --unbound` reports binding coverage and every unbound token with its reason. Unbound tokens are silent by default, so this is the audit path for false-negative risk:
+
+```sh
+docbind audit --json --unbound
+```
+
+Coverage is `bound / anchors`. It is not a claim that bound sentences are correct.
 
 ## CI
 
@@ -256,15 +276,15 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 
 ## Gate results
 
-Measured on the 0.1.94 tree:
+Measured on the 0.1.95 tree:
 
 | Gate | Result |
 |---|---|
-| Tests | 355 passing |
-| Statements | 98.66% |
-| Branches | 96.09% |
+| Tests | 362 passing |
+| Statements | 98.67% |
+| Branches | 96.01% |
 | Functions | 99.08% |
-| Lines | 99.26% |
+| Lines | 99.27% |
 | Changed-line coverage, feature diff | 99.27% |
 | Structure gate | 83 of 83 checks |
 | Docs build | `mkdocs build --strict` passes |

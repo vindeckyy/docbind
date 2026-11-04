@@ -8,6 +8,18 @@ A passing check proves only this: every bound anchor still resolves, and the ref
 
 Do not treat `docbind` as a documentation linter. It does not read claims, evaluate examples, compare output, or judge whether an explanation matches runtime behavior.
 
+## Explicit bindings are the sound mode
+
+Inline annotations make binding exact:
+
+```html
+<!-- docbind: symbol=src/users.ts#getUser -->
+```
+
+The resolver matches the project-relative file and name directly. Confidence scores, veto rules, ambiguity checks, and prose context do not apply. If the symbol is missing or duplicated in that file, the check fails instead of guessing.
+
+Unannotated references still use heuristic binding. That path is useful for adoption, but it is not the sound mode. `docbind audit --unbound` lists every token that stayed silent.
+
 ## Silence is deliberate, and it has a cost
 
 Binding is conservative. Ambiguous names, uncertain imports, unusual doc formatting, and names that only look like code stay unbound. Unbound anchors produce no finding. That keeps false positives low, but it also means the gate misses drift the resolver could not bind.
@@ -28,7 +40,7 @@ The corpus publishes unbound counts next to bound counts. Those numbers are the 
 - Lock merge conflicts need the same care as code conflicts.
 - The schema is versioned, but stateful formats still carry long-term maintenance risk.
 
-Use `docbind lock --check` in CI to detect a stale lock without writing it. Commit lock changes in the same review as the doc change or the contract change that caused them.
+Use `docbind lock --check` in CI to fail when the lock is not derivable from the current docs. That makes the lock a cache of the docs, not authority over them. The command does not rewrite the lock. Commit lock changes in the same review as the doc change or the contract change that caused them.
 
 ## Heuristics are fragile
 

@@ -8,6 +8,7 @@ docbind check [--json] [--sarif <file>] [--github] [--all] [--strict] [--changed
 docbind lock [--check] [--refresh]
 docbind fix [--write]
 docbind explain <doc>:<line>[:<column>]
+docbind audit [--unbound] [--json]
 docbind stats
 ```
 
@@ -18,6 +19,14 @@ docbind init
 docbind lock
 docbind check
 ```
+
+Explicit binding:
+
+```html
+<!-- docbind: symbol=src/users.ts#getUser -->
+```
+
+The path is project-relative. The part after `#` may be a bare name or a qualified member. Explicit bindings skip confidence scoring; if the symbol is missing or the name is ambiguous within that file, the check fails.
 
 `init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only. `lock --check` verifies that the committed lock is current without writing it; use it in CI to catch stale locks.
 

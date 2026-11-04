@@ -19,6 +19,7 @@ const finding: Finding = {
 const result: CheckResult = {
   findings: [finding, { ...finding, id: "warn", rule: "S1-deprecated", severity: "warning" }],
   pending: [],
+  unbound: [],
   stats: {
     docsScanned: 1,
     codeFilesScanned: 2,

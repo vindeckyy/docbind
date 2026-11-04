@@ -26,9 +26,9 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/rst-fixture (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/python-asciidoc (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
-| local/java-javadoc (local) | Java | 1 | 41 | 41 | 0 | 100.0% | 0 | 46 | 46 | 0 | 0 |
+| local/java-javadoc (local) | Java | 1 | 42 | 42 | 0 | 100.0% | 0 | 46 | 46 | 0 | 0 |
 
-Overall: 841 of 3408 anchors bound, or 24.7%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
+Overall: 842 of 3409 anchors bound, or 24.7%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 

@@ -23,6 +23,28 @@ describe("context", () => {
   });
 });
 
+describe("explicit annotations", () => {
+  it("parses docbind symbol comments", () => {
+    const text = "<!-- docbind: symbol=src/users.ts#getUser -->\n\nCall the method.\n";
+    const anchors = parseDoc("docs/api.md", text).anchors;
+    expect(anchors).toHaveLength(1);
+    expect(anchors[0]?.token).toBe("getUser");
+    expect(anchors[0]?.surface).toBe("explicitRef");
+    expect(anchors[0]?.explicitSymbol).toBe("src/users.ts#getUser");
+  });
+
+  it("handles hashless and empty symbols", () => {
+    const anchors = parseDoc("docs/api.md", "<!-- docbind: symbol=getUser -->\n<!-- docbind: symbol=# -->\n").anchors;
+    expect(anchors).toHaveLength(1);
+    expect(anchors[0]?.token).toBe("getUser");
+    expect(anchors[0]?.explicitSymbol).toBe("getUser");
+  });
+
+  it("ignores ordinary HTML comments", () => {
+    expect(parseDoc("docs/api.md", "<!-- note -->\n").anchors).toEqual([]);
+  });
+});
+
 describe("anchors", () => {
   it("assigns occurrence indexes and dedupes identical positions", () => {
     const base = {

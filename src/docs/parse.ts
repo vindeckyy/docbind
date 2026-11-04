@@ -58,6 +58,33 @@ function walk(
   state: WalkState,
   blockText: string,
 ): void {
+  if (node.type === "html") {
+    const value = (node as { value: string }).value;
+    const match = /docbind:\s*symbol=([^\s>]+)/u.exec(value);
+    if (match?.[1]) {
+      const raw = match[1];
+      const hash = raw.lastIndexOf("#");
+      const token = (hash >= 0 ? raw.slice(hash + 1) : raw).trim();
+      if (token.length > 0) {
+        const start = nodePosition(node);
+        state.anchors.push({
+          docPath,
+          line: start.line,
+          column: start.column,
+          length: token.length,
+          token,
+          occurrence: 0,
+          surface: "explicitRef",
+          contextFp: contextFingerprint([context.heading, blockText], token),
+          importTable: {},
+          localDecls: [],
+          fragment: false,
+          explicitSymbol: raw,
+        });
+      }
+    }
+    return;
+  }
   if (node.type === "heading") {
     const heading = node as Heading;
     const previous = context.inHeading;

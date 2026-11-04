@@ -2,6 +2,28 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.95] - 2026-11-04
+
+### Added
+
+- Explicit binding annotations in Markdown: `<!-- docbind: symbol=path#Name -->`.
+- Explicit bindings skip confidence scoring, vetoes, and ambiguity; a missing or duplicate symbol fails as `L1-broken`.
+- `docbind audit [--unbound] [--json]` reports binding coverage and every unbound token with its reason.
+- Corpus Java fixture adds an explicit annotation for `helper`; anchors 41 to 42, all bound.
+
+### Changed
+
+- Scope docs now describe explicit binding as the sound mode and audit as the false-negative path.
+- README gate table refreshed: 362 tests, 98.67% statements, 96.01% branches, 99.27% lines.
+
+### Limits
+
+- Explicit annotations are parsed from Markdown HTML comments only; RST, AsciiDoc, and Javadoc comments have no annotation form yet.
+- No `adopt` command generates annotations yet.
+- Heuristic mode remains the default for unannotated docs.
+- No SCIP/LSIF ingestion, no second maintainer, no independent evaluation, no npm publication.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.94] - 2026-11-04
 
 ### Fixed
@@ -1760,3 +1782,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.92]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.92
 [0.1.93]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.93
 [0.1.94]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.94
+[0.1.95]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.95

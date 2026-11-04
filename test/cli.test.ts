@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.1.94");
+    expect((await cli(["--version"], root)).stdout).toBe("0.1.95");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -110,6 +110,28 @@ describe("CLI check", () => {
     writeFileSync(join(root, "src/users.ts"), code("get_user"));
     expect((await cli(["check"], root)).code).toBe(0);
     expect((await cli(["check", "--strict"], root)).code).toBe(1);
+  });
+
+  it("reports binding coverage and unbound tokens", async () => {
+    const root = project("Call `getUser(id)` and `ghost()` in prose.\n");
+    const audit = await cli(["audit", "--json", "--unbound"], root);
+    expect(audit.code).toBe(0);
+    const parsed = JSON.parse(audit.stdout) as {
+      anchors: number;
+      bound: number;
+      unbound: number;
+      coverage: number;
+      tokens: Array<{ token: string; reason: string }>;
+    };
+    expect(parsed.anchors).toBe(2);
+    expect(parsed.bound).toBe(1);
+    expect(parsed.unbound).toBe(1);
+    expect(parsed.coverage).toBe(0.5);
+    expect(parsed.tokens.map((token) => token.token)).toContain("ghost()");
+    const text = await cli(["audit", "--unbound"], root);
+    expect(text.code).toBe(0);
+    expect(text.stdout).toContain("binding coverage: 1/2");
+    expect(text.stdout).toContain("ghost()");
   });
 
   it("reports invalid config", async () => {

@@ -29,6 +29,7 @@ Usage:
   docbind lock [--check] [--refresh]
   docbind fix [--write]
   docbind explain <doc>:<line>[:<column>]
+  docbind audit [--unbound] [--json]
   docbind stats
 
 Commands:
@@ -37,6 +38,7 @@ Commands:
   lock      Rebuild docbind.lock.json
   fix       Rewrite safe renames and moved paths
   explain   Show why a token did or did not bind
+  audit     Report binding coverage and unbound tokens
   stats     Print scan statistics`;
 
 function failure(io: CliIO, message: string): number {
@@ -94,6 +96,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         check: { type: "boolean" },
         refresh: { type: "boolean" },
         write: { type: "boolean" },
+        unbound: { type: "boolean" },
       },
     });
   } catch (error) {
@@ -218,6 +221,37 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
           ...(match[3] ? { column: Number(match[3]) } : {}),
         }),
       );
+      return 0;
+    }
+
+    if (command === "audit") {
+      const result = checkProject(io.cwd, config);
+      const coverage = result.stats.anchors === 0 ? 0 : result.stats.bound / result.stats.anchors;
+      if (option("json")) {
+        io.stdout(JSON.stringify({
+          anchors: result.stats.anchors,
+          bound: result.stats.bound,
+          unbound: result.stats.unbound,
+          coverage,
+          tokens: option("unbound")
+            ? result.unbound.map((entry) => ({
+                path: entry.anchor.docPath,
+                line: entry.anchor.line,
+                column: entry.anchor.column,
+                token: entry.anchor.token,
+                reason: entry.reason,
+              }))
+            : undefined,
+        }, null, 2));
+        return 0;
+      }
+      io.stdout(`binding coverage: ${result.stats.bound}/${result.stats.anchors} (${(coverage * 100).toFixed(1)}%)`);
+      io.stdout(`unbound: ${result.stats.unbound}`);
+      if (option("unbound")) {
+        for (const entry of result.unbound) {
+          io.stdout(`${entry.anchor.docPath}:${entry.anchor.line}:${entry.anchor.column} ${entry.anchor.token} (${entry.reason})`);
+        }
+      }
       return 0;
     }
 

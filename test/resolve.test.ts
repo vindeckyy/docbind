@@ -166,6 +166,28 @@ describe("module matching", () => {
   });
 });
 
+describe("explicit bindings", () => {
+  it("binds the exact file and name without confidence scoring", () => {
+    const getUser = symbol("getUser", { filePath: "src/users.ts" });
+    const other = symbol("getUser", { filePath: "src/other.ts", id: "other" });
+    const index = buildIndex([getUser, other]);
+    const explicit = anchor("getUser", { explicitSymbol: "src/users.ts#getUser" });
+    const result = scoreCandidates(explicit, index, { threshold: 0.99 });
+    expect(result.reason).toBe("bound");
+    expect(result.binding?.symbol.id).toBe(getUser.id);
+    expect(result.binding?.evidence).toContain("explicit annotation");
+  });
+
+  it("stays unbound for a wrong file or ambiguous name", () => {
+    const index = buildIndex([
+      symbol("getUser", { filePath: "src/users.ts" }),
+      symbol("getUser", { filePath: "src/other.ts", id: "other" }),
+    ]);
+    expect(scoreCandidates(anchor("getUser", { explicitSymbol: "src/missing.ts#getUser" }), index).reason).toBe("unbound");
+    expect(scoreCandidates(anchor("getUser", { explicitSymbol: "#getUser" }), index).reason).toBe("unbound");
+  });
+});
+
 describe("indexing and scoring", () => {
   it("indexes names, aliases and qualified forms", () => {
     const index = buildIndex([symbol("getUser", { aliases: ["fetchUser", "users.fetchUser"] })]);

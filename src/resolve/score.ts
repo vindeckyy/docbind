@@ -162,6 +162,25 @@ export function scoreCandidates(
   index: SymbolIndex,
   options: ScoreOptions = {},
 ): ResolveResult {
+  if (anchor.explicitSymbol) {
+    const hash = anchor.explicitSymbol.lastIndexOf("#");
+    const file = (hash >= 0 ? anchor.explicitSymbol.slice(0, hash) : "")
+      .replace(/^\\.\//u, "")
+      .replace(/\\/gu, "/");
+    const name = (hash >= 0 ? anchor.explicitSymbol.slice(hash + 1) : anchor.explicitSymbol).trim();
+    const matches = [...index.byId.values()].filter((symbol) => {
+      const byName = symbol.name === name || symbol.qualifiedName.endsWith(`.${name}`);
+      if (!byName) return false;
+      return file.length === 0 || symbol.filePath.replace(/^\\.\//u, "").replace(/\\/gu, "/") === file;
+    });
+    if (matches.length !== 1) return { candidates: [], reason: "unbound" };
+    const symbol = matches[0] as Symbol;
+    return {
+      binding: { anchor, symbol, score: 1, evidence: ["explicit annotation"] },
+      candidates: [{ symbol, score: 1, evidence: ["explicit annotation"] }],
+      reason: "bound",
+    };
+  }
   const info = parseToken(anchor.token);
   const base = info.base;
   const veto = vetoReason(anchor.token, anchor);

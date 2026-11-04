@@ -219,6 +219,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
   const repeated = repeatedTokens(anchors);
   const findings: Finding[] = [];
   const pending: Binding[] = [];
+  const unbound: Array<{ anchor: DocAnchor; reason: string }> = [];
   const retained: LockEntry[] = [];
   const freshTombstones: Tombstone[] = [];
   const referenced = new Set<string>();
@@ -311,11 +312,14 @@ export function checkProject(root: string, config: Config, options: CheckProject
         pending.push(resolved.binding);
         referenced.add(resolved.binding.symbol.id);
       } else {
+        unbound.push({ anchor, reason: resolved.reason });
         const finding = makeFinding(
           {
             rule: "L1-broken",
             anchor,
-            message: `${anchor.token} does not resolve to an exported symbol`,
+            message: anchor.explicitSymbol
+              ? `${anchor.token} does not match a symbol in ${anchor.explicitSymbol.split("#")[0]}`
+              : `${anchor.token} does not resolve to an exported symbol`,
           },
           config,
         );
@@ -366,7 +370,10 @@ export function checkProject(root: string, config: Config, options: CheckProject
       repeated: repeated.has(base),
       threshold: config.minConfidence,
     });
-    if (!resolved.binding) continue;
+    if (!resolved.binding) {
+      unbound.push({ anchor, reason: resolved.reason });
+      continue;
+    }
     if (anchor.surface === "signatureFence") {
       const signature = signatureFinding(anchor, resolved.binding.symbol, config);
       if (signature) {
@@ -390,6 +397,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
       return left.doc.line - right.doc.line;
     }),
     pending,
+    unbound,
     stats: {
       docsScanned: parsedDocs.docsScanned,
       codeFilesScanned: surface.filesScanned,

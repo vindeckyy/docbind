@@ -152,6 +152,7 @@ export interface DocAnchor {
   hints?: string[];
   fragment: boolean;
   signatureShape?: Shape;
+  explicitSymbol?: string;
 }
 
 export interface LockEntry {
@@ -244,6 +245,7 @@ export interface ProjectStats {
 export interface CheckResult {
   findings: Finding[];
   pending: Binding[];
+  unbound: Array<{ anchor: DocAnchor; reason: string }>;
   stats: ProjectStats;
   lock: LockFile;
 }
