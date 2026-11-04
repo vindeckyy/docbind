@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.92] - 2026-11-03
+
+### Added
+
+- String literals and constants support `.equalsIgnoreCase(text)` and `.compareTo(text)`.
+- `equalsIgnoreCase` compares lowercased text.
+- `compareTo` returns the first differing UTF-16 code-unit difference, or the length difference when one string is a prefix.
+- Corpus adds `Marker.order()` with default `"abc".compareTo("abd")`; editing `abd` to `abb` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 117 to 118; `java-javadoc-fixture` runs 46 mutations with 41 anchors, all hitting with zero collateral.
+- Branch coverage rose to 96.09%; line coverage stays at 99.26%.
+
+### Limits
+
+- Seventeen String methods evaluate; other APIs stay unresolved.
+- Case-insensitive comparison uses JavaScript lowercasing, not a specific Java locale.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.91] - 2026-11-03
 
 ### Added
@@ -1714,3 +1734,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.89]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.89
 [0.1.90]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.90
 [0.1.91]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.91
+[0.1.92]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.92

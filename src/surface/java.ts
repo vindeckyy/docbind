@@ -416,6 +416,21 @@ function applyStringMethod(
     if (argument.value < 0 || argument.value >= text.length) return undefined;
     return { value: text.charAt(argument.value), integral: false };
   }
+  if (name === "equalsIgnoreCase" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    return { value: text.toLowerCase() === argument.value.toLowerCase(), integral: false };
+  }
+  if (name === "compareTo" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    if (typeof argument.value !== "string") return undefined;
+    const length = Math.min(text.length, argument.value.length);
+    for (let index = 0; index < length; index += 1) {
+      const difference = text.charCodeAt(index) - argument.value.charCodeAt(index);
+      if (difference !== 0) return { value: difference, integral: true, width: "int" };
+    }
+    return { value: text.length - argument.value.length, integral: true, width: "int" };
+  }
   if (name === "contains" && args.length === 1) {
     const argument = args[0] as EvaluatedConstant;
     if (typeof argument.value !== "string") return undefined;

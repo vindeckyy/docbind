@@ -173,6 +173,14 @@
       "to": "zzz",
       "symbol": "hasDoc",
       "expectedRule": "L3-reshaped"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "method": "order",
+      "from": "abd",
+      "to": "abb",
+      "symbol": "order",
+      "expectedRule": "L3-reshaped"
     }
   ],
   "constantMutations": [
