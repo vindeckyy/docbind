@@ -2,6 +2,21 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.5.0] - 2026-11-04
+
+### Changed
+
+- **Coverage ratchet is automatic.** Once `.docbind-coverage.json` exists, every `check` fails on regression; `--no-coverage-ratchet` opts out for one run.
+- **Real-drift history expanded.** `npm run historical` checks symbols removed by real commits with unchanged doc lines across six repositories and twelve months: 14 of 21 detected, 7 misses published.
+- **`--require-contracts`** fails when any bound anchor relies on a binding-only SCIP/LSIF symbol.
+- **GitHub Action enforces coverage by default.** `require-coverage` defaults to `0.8` and `coverage-ratchet` is wired to the check.
+- Install pin moved to `v0.5.0` in the action and installation docs.
+
+### Limits
+
+- Real-drift history has 21 expected removals. It is a spot check, not a powered benchmark.
+- Third-party mutation generation, npm publication, a second maintainer, and external reproduction remain open.
+
 ## [0.4.0] - 2026-11-04
 
 ### Changed
@@ -2047,3 +2062,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.2.7]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.7
 [0.3.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.3.0
 [0.4.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.4.0
+[0.5.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.5.0

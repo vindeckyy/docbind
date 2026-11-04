@@ -18,6 +18,7 @@ nav:
   - Evidence log: leaderboard.md
   - Held-out evaluation: evaluation.md
   - Case study: case-study.md
+  - Real-drift history: historical.md
   - Conformance: conformance.md
   - Precision: precision.md
   - Performance: performance.md

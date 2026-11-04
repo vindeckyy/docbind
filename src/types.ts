@@ -257,7 +257,13 @@ export interface CheckResult {
   pending: Binding[];
   unbound: Array<{ anchor: DocAnchor; reason: string }>;
   warnings: string[];
-  coverage: { verifiedExplicit: number; adopted: number; inferred: number; annotationCoverage: number };
+  coverage: {
+    verifiedExplicit: number;
+    adopted: number;
+    inferred: number;
+    indexOnly: number;
+    annotationCoverage: number;
+  };
   stats: ProjectStats;
   lock: LockFile;
 }
@@ -301,6 +307,7 @@ export interface Config {
   allowExec: boolean;
   cache: boolean;
   minCoverage: number;
+  requireContracts: boolean;
   indexes: string[];
   doctests: DoctestCommand[];
   probes: ProbeCommand[];

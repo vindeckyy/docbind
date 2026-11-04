@@ -446,12 +446,14 @@ export function checkProject(root: string, config: Config, options: CheckProject
   let verifiedExplicit = 0;
   let adoptedCount = 0;
   let inferredCount = 0;
+  let indexOnlyCount = 0;
   for (const entry of nextLock.anchors) {
     const anchor = anchorByKey.get(anchorKey(entry));
     if (!anchor) continue;
     if (anchor.adopted) adoptedCount += 1;
     else if (anchor.explicitSymbol) verifiedExplicit += 1;
     else inferredCount += 1;
+    if (index.byId.get(entry.symbolId)?.indexOnly) indexOnlyCount += 1;
   }
   return {
     findings: finalized.sort((left, right) => {
@@ -465,6 +467,7 @@ export function checkProject(root: string, config: Config, options: CheckProject
       verifiedExplicit,
       adopted: adoptedCount,
       inferred: inferredCount,
+      indexOnly: indexOnlyCount,
       annotationCoverage: anchors.length === 0 ? 0 : verifiedExplicit / anchors.length,
     },
     stats: {

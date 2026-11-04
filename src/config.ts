@@ -47,6 +47,7 @@ export const DEFAULT_CONFIG: Config = {
   allowExec: false,
   cache: true,
   minCoverage: 0,
+  requireContracts: false,
   indexes: [],
   doctests: [],
   probes: [],
@@ -92,6 +93,7 @@ const rawConfigSchema = z
     allowExec: z.boolean().optional(),
     cache: z.boolean().optional(),
     minCoverage: z.number().min(0).max(1).optional(),
+    requireContracts: z.boolean().optional(),
     indexes: z.array(z.string()).optional(),
     probes: z
       .array(
@@ -148,6 +150,7 @@ export function parseConfig(input: unknown): Config {
     allowExec: raw.allowExec ?? DEFAULT_CONFIG.allowExec,
     cache: raw.cache ?? DEFAULT_CONFIG.cache,
     minCoverage: raw.minCoverage ?? DEFAULT_CONFIG.minCoverage,
+    requireContracts: raw.requireContracts ?? DEFAULT_CONFIG.requireContracts,
     indexes: raw.indexes ?? DEFAULT_CONFIG.indexes,
     doctests: raw.doctests ?? DEFAULT_CONFIG.doctests,
     probes: raw.probes ?? DEFAULT_CONFIG.probes,

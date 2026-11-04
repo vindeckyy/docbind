@@ -64,6 +64,7 @@ export const REQUIRED_FILES = [
   "docs/leaderboard.md",
   "docs/evaluation.md",
   "docs/case-study.md",
+  "docs/historical.md",
   "docs/threat-model.md",
   "docs/rfc.md",
   "docs/governance.md",
@@ -214,7 +215,7 @@ export function checkStructure(root: string, threshold = 95): StructResult {
   );
   add(
     "action:check",
-    read(root, "action/action.yml").includes("docbind check"),
+    read(root, "action/action.yml").includes("check --sarif"),
     "composite action runs check",
   );
 

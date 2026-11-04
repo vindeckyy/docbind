@@ -38,7 +38,7 @@ docbind check --coverage-ratchet
 docbind check --write-coverage   # update the ratchet baseline once
 ```
 
-`--require-coverage` fails with exit 3 below the threshold. `--coverage-ratchet` reads `.docbind-coverage.json` and fails when verified coverage regresses. `audit --examples` counts fenced examples and names docs that no configured doctest covers. The threshold counts only human-asserted annotations, not adopted or inferred bindings.
+`--require-coverage` fails with exit 3 below the threshold. Once `.docbind-coverage.json` exists, every `check` ratchets against it automatically; `--no-coverage-ratchet` opts out for one run. `audit --examples` counts fenced examples and names docs that no configured doctest covers. The threshold counts only human-asserted annotations, not adopted or inferred bindings.
 
 This is static analysis. It does not run project code, build the project, or generate docs.
 
@@ -325,24 +325,24 @@ Architecture notes live in [docs/architecture.md](docs/architecture.md). Contrib
 - `docbind strip` removes annotation comments and leaves the surrounding prose intact, so the format has an exit path.
 - `docbind doctest` runs configured commands only with `--allow-exec` and turns failures into `D1-doctest` findings. pytest, mdbook, and typedoc examples are command entries, not built-in runners.
 - `docbind probe` requires both `--allow-exec` and `--allow-probes`. It runs configured calls in Docker with `--network none`, a read-only root, a read-only repo mount, and memory/CPU limits. Docker is an accidental-damage boundary, not a hostile-code sandbox. Never run probes on fork PRs.
-- SCIP and LSIF symbols are binding-only. When an index loads, `check` warns that contracts are not checked for those symbols.
+- SCIP and LSIF symbols are binding-only. When an index loads, `check` warns that contracts are not checked; `--require-contracts` turns that warning into exit 3.
 - LSIF and SCIP indexes are consumed with `--index`. `--require-index` warns when no index symbols are available and native parsers are the fallback.
 - Single-file binaries are built with Bun for Linux, macOS, and Windows in the release workflow. Python extraction in a binary needs the `python/` directory beside it or `DOCBIND_PYTHON_WORKER`.
 - Golden extractor snapshots live in `test/golden/`.
 
 ## Gate results
 
-Measured on the 0.4.0 tree:
+Measured on the 0.5.0 tree:
 
 | Gate | Result |
 |---|---|
 | Tests | 422 passing |
 | Statements | 97.98% |
-| Branches | 95.02% |
+| Branches | 95.03% |
 | Functions | 97.95% |
 | Lines | 98.78% |
 | Changed-line coverage, feature diff | 98.79% |
-| Structure gate | 93 of 93 checks |
+| Structure gate | 94 of 94 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes. Runtime measurements are in [docs/performance.md](docs/performance.md).

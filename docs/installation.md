@@ -5,7 +5,7 @@
 The repository is the distribution channel until the npm package is publishable:
 
 ```sh
-npx --yes github:vindeckyy/docbind#v0.4.0 --version
+npx --yes github:vindeckyy/docbind#v0.5.0 --version
 npx --yes github:vindeckyy/docbind init
 npx --yes github:vindeckyy/docbind check
 ```
@@ -49,6 +49,6 @@ sha256sum -c SHA256SUMS
 gh attestation verify docbind-linux-x64 --repo vindeckyy/docbind
 ```
 
-Pin the git install to a tag or commit (`github:vindeckyy/docbind#v0.4.0`). An unpinned GitHub URL is not a registry package and bypasses registry integrity controls.
+Pin the git install to a tag or commit (`github:vindeckyy/docbind#v0.5.0`). An unpinned GitHub URL is not a registry package and bypasses registry integrity controls.
 
 The binary bundles TypeScript, Rust, Go, and Java extraction. Python extraction still needs `python/docbind_extract.py` beside the binary or `DOCBIND_PYTHON_WORKER` pointing at it, because the worker is a separate Python file. The binary does not replace the npm path for Python-only projects.

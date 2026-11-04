@@ -127,8 +127,9 @@ function coverageGate(
   const coverage = result.coverage.annotationCoverage;
   const required = Math.max(options.required ?? 0, config.minCoverage);
   const path = join(io.cwd, ".docbind-coverage.json");
+  const ratchet = options.ratchet || existsSync(path);
   let baseline: number | undefined;
-  if (options.ratchet) {
+  if (ratchet) {
     try {
       baseline = (JSON.parse(readFileSync(path, "utf8")) as { coverage?: number }).coverage;
     } catch {
@@ -146,7 +147,7 @@ function coverageGate(
     io.stderr(`coverage: verified annotation coverage ${(coverage * 100).toFixed(1)}% is below required ${(required * 100).toFixed(1)}%`);
     return 3;
   }
-  if (options.ratchet) {
+  if (ratchet) {
     if (baseline === undefined) {
       io.stderr("coverage: no .docbind-coverage.json baseline; run check --write-coverage first");
       return 3;
@@ -194,6 +195,8 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
         "require-index": { type: "boolean" },
         "require-coverage": { type: "string" },
         "coverage-ratchet": { type: "boolean" },
+        "no-coverage-ratchet": { type: "boolean" },
+        "require-contracts": { type: "boolean" },
         "write-coverage": { type: "boolean" },
         "allow-probes": { type: "boolean" },
         adopted: { type: "boolean" },
@@ -313,6 +316,10 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
       }
       const exit = findingsExit(findings, option("strict"));
       if (exit !== 0) return exit;
+      if ((config.requireContracts || option("require-contracts")) && result.coverage.indexOnly > 0) {
+        io.stderr(`contracts: ${result.coverage.indexOnly} bound anchors use binding-only index symbols; native extractors or explicit contracts are required`);
+        return 3;
+      }
       const required = stringOption("require-coverage");
       const requiredValue = required === undefined ? undefined : Number(required);
       if (requiredValue !== undefined && (!Number.isFinite(requiredValue) || requiredValue < 0 || requiredValue > 1)) {
@@ -321,7 +328,7 @@ export async function runCli(argv: string[], partialIO: Partial<CliIO> = {}): Pr
       }
       return coverageGate(result, config, io, {
         ...(requiredValue !== undefined ? { required: requiredValue } : {}),
-        ratchet: option("coverage-ratchet"),
+        ratchet: option("coverage-ratchet") && !option("no-coverage-ratchet"),
         write: option("write-coverage"),
       });
     }

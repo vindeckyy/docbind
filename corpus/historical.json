@@ -1,0 +1,538 @@
+{
+  "generated": "2026-11-04",
+  "results": [
+    {
+      "name": "click",
+      "url": "https://github.com/pallets/click.git",
+      "intervals": [
+        {
+          "from": "6c894ebd8c63cc481e40cb0ca8745a5996b9f410",
+          "to": "cdab890e57a30a9f437b88ce9652f7bfce980c1f",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "cdab890e57a30a9f437b88ce9652f7bfce980c1f",
+          "to": "5590ef46e3c88261a76937836b1b0dd2822c27a2",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "5590ef46e3c88261a76937836b1b0dd2822c27a2",
+          "to": "ae46cfd6bc997804893adc799589248eadcdbc29",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "ae46cfd6bc997804893adc799589248eadcdbc29",
+          "to": "a1a5e8e2b86ceaf9a0dba56c26978a6c4fdb111f",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "a1a5e8e2b86ceaf9a0dba56c26978a6c4fdb111f",
+          "to": "fed9049f7a07550d560a91b30c5b0b3e17d54981",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "fed9049f7a07550d560a91b30c5b0b3e17d54981",
+          "to": "cd9bdd96a9dcc8e4ecabd45b5c244dbc70034484",
+          "expected": 2,
+          "detected": 1,
+          "missed": 1,
+          "misses": [
+            {
+              "docPath": "docs/parameter-types.md",
+              "line": 90,
+              "token": "clamp",
+              "symbol": "click.src.click.types.NumberRangeInfoDict.clamp"
+            }
+          ]
+        },
+        {
+          "from": "cd9bdd96a9dcc8e4ecabd45b5c244dbc70034484",
+          "to": "6ec99f89261b32f8a50848786eca055e1967659f",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "6ec99f89261b32f8a50848786eca055e1967659f",
+          "to": "047adef258fc25566163ffc3efd14effc0ef7352",
+          "expected": 1,
+          "detected": 1,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "047adef258fc25566163ffc3efd14effc0ef7352",
+          "to": "cb43e055741b2416bf3ec46b5f84b140cca23e18",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "cb43e055741b2416bf3ec46b5f84b140cca23e18",
+          "to": "9f0bcdf0d868edfc71435cd0aac2dcc08cf94828",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "9f0bcdf0d868edfc71435cd0aac2dcc08cf94828",
+          "to": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        }
+      ],
+      "expected": 3,
+      "detected": 2
+    },
+    {
+      "name": "chalk",
+      "url": "https://github.com/chalk/chalk.git",
+      "intervals": [
+        {
+          "from": "51557784b829c87ff8d138206598764f2eb957b1",
+          "to": "aa06bb5ac3f14df9fda8cfb54274dfc165ddfdef",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "aa06bb5ac3f14df9fda8cfb54274dfc165ddfdef",
+          "to": "661317e6f91fe7c90306c2c48ea9354562ee9146",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "661317e6f91fe7c90306c2c48ea9354562ee9146",
+          "to": "47fc05abd46171b235e24174cd2dba83d25bf037",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "47fc05abd46171b235e24174cd2dba83d25bf037",
+          "to": "72110019e147683f60e13fa0ff5c14a0c27cd9fe",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        }
+      ],
+      "expected": 0,
+      "detected": 0
+    },
+    {
+      "name": "starlette",
+      "url": "https://github.com/encode/starlette.git",
+      "intervals": [
+        {
+          "from": "49d4de92867cb38a781069701ad57cecab4a1a36",
+          "to": "3f75ee971cb81a8041183f442f6e1bb4e34518b3",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "3f75ee971cb81a8041183f442f6e1bb4e34518b3",
+          "to": "958a5b4f2319220e9a297307bfe58e693d76ab1b",
+          "expected": 7,
+          "detected": 4,
+          "missed": 3,
+          "misses": [
+            {
+              "docPath": "docs/middleware.md",
+              "line": 787,
+              "token": "middleware",
+              "symbol": "starlette.starlette.applications.Starlette.middleware"
+            },
+            {
+              "docPath": "docs/routing.md",
+              "line": 225,
+              "token": "Router.route",
+              "symbol": "starlette.starlette.routing.Router.route"
+            },
+            {
+              "docPath": "docs/routing.md",
+              "line": 224,
+              "token": "Router.route",
+              "symbol": "starlette.starlette.routing.Router.route"
+            }
+          ]
+        },
+        {
+          "from": "958a5b4f2319220e9a297307bfe58e693d76ab1b",
+          "to": "fd53a8f20bb1560190868359fa39cf07fb776f42",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "fd53a8f20bb1560190868359fa39cf07fb776f42",
+          "to": "edcc79eb6df0319c25aeeae77378a0220facf181",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "edcc79eb6df0319c25aeeae77378a0220facf181",
+          "to": "b7eb3d28389fa827ff4e4a331bc70a2d134c62a1",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "b7eb3d28389fa827ff4e4a331bc70a2d134c62a1",
+          "to": "e636c77b15d903ab3ff3968cd43aee1887dd1e48",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "e636c77b15d903ab3ff3968cd43aee1887dd1e48",
+          "to": "de970d7b3facb853eb7ad077decbf3d94f2aab6c",
+          "expected": 2,
+          "detected": 2,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "de970d7b3facb853eb7ad077decbf3d94f2aab6c",
+          "to": "5174d4c8358a6f06aa8056bafd14c2272dab8dd1",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "5174d4c8358a6f06aa8056bafd14c2272dab8dd1",
+          "to": "39fd0ffac25593fce39466320c9a666957ce8b8c",
+          "expected": 9,
+          "detected": 6,
+          "missed": 3,
+          "misses": [
+            {
+              "docPath": "docs/testclient.md",
+              "line": 69,
+              "token": "TestClient.post",
+              "symbol": "starlette.starlette.testclient.TestClient.post"
+            },
+            {
+              "docPath": "docs/testclient.md",
+              "line": 32,
+              "token": "TestClient.get",
+              "symbol": "starlette.starlette.testclient.TestClient.get"
+            },
+            {
+              "docPath": "docs/testclient.md",
+              "line": 50,
+              "token": "TestClient.get",
+              "symbol": "starlette.starlette.testclient.TestClient.get"
+            }
+          ]
+        },
+        {
+          "from": "39fd0ffac25593fce39466320c9a666957ce8b8c",
+          "to": "63c5760d8a672cee96e1e523d84bfa1c77d9ee4c",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "63c5760d8a672cee96e1e523d84bfa1c77d9ee4c",
+          "to": "78f36e92243a893dfa9c8ac8216d5534b59af1d8",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        }
+      ],
+      "expected": 18,
+      "detected": 12
+    },
+    {
+      "name": "express",
+      "url": "https://github.com/expressjs/express.git",
+      "intervals": [
+        {
+          "from": "ed0ba3f1dc905d6b62eabf23bd383abcae4901ba",
+          "to": "c2fb76e99f7379b706a5510b4b2dd08a1b710b7b",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "c2fb76e99f7379b706a5510b4b2dd08a1b710b7b",
+          "to": "66404b347a1690c0b783f47a8cf04a37caea8de5",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "66404b347a1690c0b783f47a8cf04a37caea8de5",
+          "to": "6c4249feec8ab40631817c8e7001baf2ed022224",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "6c4249feec8ab40631817c8e7001baf2ed022224",
+          "to": "e5099198b292a565f8583d70caf12d7afed3607f",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "e5099198b292a565f8583d70caf12d7afed3607f",
+          "to": "6340c1eaaedc0ddcae8be8df2cdb1d2e961cbf2f",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "6340c1eaaedc0ddcae8be8df2cdb1d2e961cbf2f",
+          "to": "dae209ae6559c29cfca2a1f4414c51d89ea643d5",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "dae209ae6559c29cfca2a1f4414c51d89ea643d5",
+          "to": "18e5985b8a9d5e8423db0a9121f22bdaecd5b120",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "18e5985b8a9d5e8423db0a9121f22bdaecd5b120",
+          "to": "a3714473feb3d2908add734d340e7755fd85e0a3",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "a3714473feb3d2908add734d340e7755fd85e0a3",
+          "to": "023767fe9872e029271df1418f73401bff20ff40",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "023767fe9872e029271df1418f73401bff20ff40",
+          "to": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+          "to": "1c6f1b0fe4000977b9a7b4f34097e4d527dd9824",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        }
+      ],
+      "expected": 0,
+      "detected": 0
+    },
+    {
+      "name": "got",
+      "url": "https://github.com/sindresorhus/got.git",
+      "intervals": [
+        {
+          "from": "388df48648e7c06a17237fa817ec08cef540d7da",
+          "to": "de19b463b1875847f955a53d2f5b0a539ed0ded3",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "de19b463b1875847f955a53d2f5b0a539ed0ded3",
+          "to": "fb909e904b04de3b742e2df0a37673e4ac7e918f",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "fb909e904b04de3b742e2df0a37673e4ac7e918f",
+          "to": "dc2656b8d0bebae853b8e1284502ca0135e404c3",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "dc2656b8d0bebae853b8e1284502ca0135e404c3",
+          "to": "e9489c1729a56711a18aa49d11c1ed596dfef451",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "e9489c1729a56711a18aa49d11c1ed596dfef451",
+          "to": "a5b76bffb33d5fa8b0d1393cce410b88e7c2b848",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "a5b76bffb33d5fa8b0d1393cce410b88e7c2b848",
+          "to": "66ca4e025622e1dd71f4e4f13aa6e1b79d61b069",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "66ca4e025622e1dd71f4e4f13aa6e1b79d61b069",
+          "to": "e3924aa1e53a6ca3eb93a43618ce532442a89b40",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "e3924aa1e53a6ca3eb93a43618ce532442a89b40",
+          "to": "75b10179ef0fe5b095cdcaf6204ff1065af6bd00",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "75b10179ef0fe5b095cdcaf6204ff1065af6bd00",
+          "to": "cdf25b04a36b3dc0e4b5094e8d1a97b60eb468f1",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "cdf25b04a36b3dc0e4b5094e8d1a97b60eb468f1",
+          "to": "6b5aafc1cd538998728be6f45c65b0f80bae01b2",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        }
+      ],
+      "expected": 0,
+      "detected": 0
+    },
+    {
+      "name": "chi",
+      "url": "https://github.com/go-chi/chi.git",
+      "intervals": [
+        {
+          "from": "de0d16e6d23092aeef0b6e78f146799369160651",
+          "to": "6eb35881c0e438ffb663ddbad3a61babaa5e5d8a",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "6eb35881c0e438ffb663ddbad3a61babaa5e5d8a",
+          "to": "a54874f0e2f12647a19e82ee70dfa8185014100c",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "a54874f0e2f12647a19e82ee70dfa8185014100c",
+          "to": "3b171578ca44dfd75ca3c5cbddc7b44c600a7b49",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "3b171578ca44dfd75ca3c5cbddc7b44c600a7b49",
+          "to": "3b50c7cc35ff25f384202409733c3332c150e0ec",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "3b50c7cc35ff25f384202409733c3332c150e0ec",
+          "to": "8b258c7bb28f97a5f2a856ff7ef962578fec9215",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "8b258c7bb28f97a5f2a856ff7ef962578fec9215",
+          "to": "ae6be7469132cf471ca099d8c7bda4010c4ff7b2",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "ae6be7469132cf471ca099d8c7bda4010c4ff7b2",
+          "to": "167e1e3bd039d060696b99c8da4e876ae04f42c1",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        },
+        {
+          "from": "167e1e3bd039d060696b99c8da4e876ae04f42c1",
+          "to": "9f8adb1aabaa8a91180a821111d3f8e668d1c0bf",
+          "expected": 0,
+          "detected": 0,
+          "missed": 0,
+          "misses": []
+        }
+      ],
+      "expected": 0,
+      "detected": 0
+    }
+  ]
+}

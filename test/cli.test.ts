@@ -24,7 +24,7 @@ async function lock(root: string): Promise<void> {
 describe("CLI basics", () => {
   it("prints version and help", async () => {
     const root = tempProject({});
-    expect((await cli(["--version"], root)).stdout).toBe("0.4.0");
+    expect((await cli(["--version"], root)).stdout).toBe("0.5.0");
     expect((await cli(["--help"], root)).code).toBe(0);
     expect((await cli([], root)).code).toBe(2);
     expect((await cli(["check", "--help"], root)).code).toBe(0);
@@ -256,6 +256,8 @@ describe("CLI check", () => {
     expect((await cli(["check"], root)).code).toBe(1);
     const indexed = await cli(["check", "--index", index], root);
     expect(indexed.code).toBe(0);
+    expect((await cli(["check", "--index", index, "--require-contracts"], root)).code).toBe(3);
+    expect((await cli(["check", "--require-contracts"], project())).code).toBe(0);
   });
 
   it("migrates legacy locks and reports them", async () => {
@@ -337,7 +339,7 @@ describe("CLI check", () => {
     expect((await cli(["check", "--write-coverage"], root)).code).toBe(0);
     expect((await cli(["check", "--coverage-ratchet"], root)).code).toBe(0);
     writeFileSync(join(root, "docs/api.md"), "Call `getUser(id)` and `ghost()`.\n");
-    expect((await cli(["check", "--coverage-ratchet"], root)).code).toBe(3);
+    expect((await cli(["check"], root)).code).toBe(3);
     expect((await cli(["check", "--require-coverage", "loud"], root)).code).toBe(2);
     writeFileSync(join(root, "docbind.json"), JSON.stringify({ minCoverage: 1 }));
     expect((await cli(["check"], root)).code).toBe(3);

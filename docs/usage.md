@@ -45,7 +45,7 @@ The path is project-relative. The part after `#` may be a bare name or a qualifi
 
 `docbind adopt` proposes annotations marked `adopted confidence=<score>`. They bind but stay advisory until a human removes the `adopted` tag. `docbind strip` removes annotations entirely for migration out.
 
-`docbind check --require-coverage 0.8` fails with exit 3 below 80% verified annotation coverage. `--coverage-ratchet` compares against `.docbind-coverage.json`; `--write-coverage` updates the baseline. Coverage counts only human-asserted annotations, not adopted or inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent. `--contract` includes the current shape hash for lock-free checks.
+The first-party GitHub Action defaults `require-coverage` to `0.8`, so a repo with few human-asserted annotations fails CI unless it explicitly opts out. `docbind check --require-coverage 0.8` applies the same gate locally. `--write-coverage` creates `.docbind-coverage.json`; after that every `check` ratchets against it automatically. `--no-coverage-ratchet` skips the comparison for one run. Coverage counts only human-asserted annotations, not adopted or inferred bindings. `--write` inserts them above the anchored lines; re-running is idempotent. `--contract` includes the current shape hash for lock-free checks.
 
 `docbind check --no-lock` reads inline `contract=` assertions and ignores `docbind.lock.json`. The annotation must include the contract for reshape detection:
 

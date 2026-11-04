@@ -56,7 +56,9 @@ Set `"docstrings": true` to scan Python module, class, and function docstrings. 
 
 `indexes` lists LSIF or SCIP files, relative to the project root or absolute. Index symbols are binding-only: contract shape checks are skipped. `doctests` lists `{ name, command, args, docs }` entries; they run only through `docbind doctest` with `allowExec`. `probes` lists `{ name, image, command, args, docs }` entries; they run only through `docbind probe` with `allowExec`, inside Docker with no network, a read-only root, and the repo mounted read-only at `/workspace`. `docbind check --index` appends indexes for one run.
 
-`minCoverage` defaults to `0`. A value above zero makes `check` fail with exit 3 when verified annotation coverage is lower. CLI `--require-coverage` overrides it for one run; `--coverage-ratchet` compares against `.docbind-coverage.json`.
+`requireContracts` defaults to `false`. When true, `check` exits 3 if any bound anchor uses a binding-only SCIP/LSIF symbol without a native extractor shape. `--require-contracts` enables it for one run.
+
+`minCoverage` defaults to `0`. A value above zero makes `check` fail with exit 3 when verified annotation coverage is lower. CLI `--require-coverage` overrides it for one run. A committed `.docbind-coverage.json` enables the ratchet automatically; `--no-coverage-ratchet` disables it for one run.
 
 `requireIndex` defaults to `false`. When true, `check` warns if no index symbols were loaded and native extractors are the fallback. `docbind check --require-index` enables it for one run.
 

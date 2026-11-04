@@ -1,6 +1,6 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Contract drift detection for symbol references in docs. Not a documentation linter.",
   "type": "module",
   "bin": {
@@ -31,7 +31,8 @@
     "perf": "tsx scripts/perf.ts",
     "binaries": "tsx scripts/build-binaries.ts",
     "evaluate": "tsx scripts/evaluate.ts",
-    "case-study": "tsx scripts/case-study.ts"
+    "case-study": "tsx scripts/case-study.ts",
+    "historical": "tsx scripts/historical.ts"
   },
   "dependencies": {
     "ignore": "^7.0.14",
