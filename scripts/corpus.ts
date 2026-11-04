@@ -69,11 +69,20 @@ interface CorpusEntry {
     symbol: string;
     expectedRule?: string;
   }>;
+  classMutations?: Array<{
+    file: string;
+    find: string;
+    replace: string;
+    symbol: string;
+    class: "signature" | "return" | "move" | "visibility" | "kind";
+    expectedRule?: string;
+  }>;
 }
 
 interface MutationResult {
   symbol: string;
-  kind?: "rename" | "value" | "annotation" | "enum" | "default" | "constant";
+  kind?: "rename" | "value" | "annotation" | "enum" | "default" | "constant" | "class";
+  mutationClass?: string;
   expectedRule?: string;
   rule?: string;
   hit: boolean;
@@ -89,6 +98,8 @@ interface RepoReport {
   commit: string;
   nameOnlyFalsePositives: number;
   docs: number;
+  docLines: number;
+  falsePositivePerKLine: number;
   anchors: number;
   bound: number;
   unbound: number;
@@ -421,6 +432,13 @@ for (const entry of selected) {
   }
 
   const baseline = checkProject(checkout, config);
+  const docLines = discoverDocs(checkout, config).reduce((sum, doc) => {
+    try {
+      return sum + readFileSync(join(checkout, doc), "utf8").split(/\r?\n/u).length;
+    } catch {
+      return sum;
+    }
+  }, 0);
   const lock = readLock(checkout);
   const surface = extractSurface(checkout, discoverCode(checkout, config), config);
   const byId = new Map(surface.symbols.map((symbol) => [symbol.id, symbol]));
@@ -650,6 +668,37 @@ for (const entry of selected) {
     }
   }
 
+  for (const classMutation of entry.classMutations ?? []) {
+    const path = join(".", classMutation.file);
+    const original = readFileSync(path, "utf8");
+    if (!original.includes(classMutation.find)) {
+      throw new Error(`${entry.name}: class mutation target not found: ${classMutation.class} ${classMutation.find}`);
+    }
+    writeFileSync(path, original.replace(classMutation.find, classMutation.replace));
+    try {
+      const findings = findingsFor(checkout, config);
+      const relatedFindings = findings.filter((finding) => finding.message.includes(classMutation.symbol));
+      const collateralFindings = findings.filter((finding) => !relatedFindings.includes(finding));
+      const ruleMatched = classMutation.expectedRule
+        ? relatedFindings.some((finding) => finding.rule === classMutation.expectedRule)
+        : relatedFindings.length > 0;
+      mutations.push({
+        symbol: classMutation.symbol,
+        kind: "class",
+        mutationClass: classMutation.class,
+        ...(classMutation.expectedRule ? { expectedRule: classMutation.expectedRule } : {}),
+        rule: relatedFindings[0]?.rule,
+        hit: ruleMatched,
+        findings: findings.length,
+        relatedRules: [...new Set(relatedFindings.map((finding) => finding.rule))],
+        collateral: collateralFindings.length,
+        collateralRules: [...new Set(collateralFindings.map((finding) => finding.rule))],
+      });
+    } finally {
+      writeFileSync(path, original);
+    }
+  }
+
   const anchors = baseline.stats.anchors;
   report.push({
     name: entry.name,
@@ -657,6 +706,8 @@ for (const entry of selected) {
     commit: entry.commit,
     nameOnlyFalsePositives,
     docs: baseline.stats.docsScanned,
+    docLines,
+    falsePositivePerKLine: docLines === 0 ? 0 : (baseline.findings.length / docLines) * 1000,
     anchors,
     bound: baseline.stats.bound,
     unbound: baseline.stats.unbound,

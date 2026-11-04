@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.2.1] - 2026-11-04
+
+### Added
+
+- Corpus mutation classes: signature, return type, visibility, move, and symbol kind.
+- `npm run recall` prints per-language and per-class recall plus false positives per 1k doc lines.
+- `docs/recall.md` publishes a 13/13 class matrix with explicit limits.
+- `corpus/report.json` records doc line counts and baseline findings per 1k lines.
+
+### Changed
+
+- Corpus: 16 cases, 846/3413 anchors bound, 2567 unbound, 133/133 mutations, 0 baseline.
+- Local sweep: 124/125 bound; full corpus: 863 at 0.40–0.50, 846 at 0.60.
+
+### Limits
+
+- One mutation per language/class cell; this is a smoke matrix, not a statistical benchmark.
+- TypeScript and Rust have no class mutations; external repos use rename/value only.
+- npm, SCIP, binaries, and independent evaluation remain open.
+
 ## [0.2.0] - 2026-11-04
 
 ### Added
@@ -1873,3 +1893,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.98]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.98
 [0.1.99]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.99
 [0.2.0]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.0
+[0.2.1]: https://github.com/vindeckyy/docbind/releases/tag/v0.2.1

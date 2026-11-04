@@ -153,7 +153,37 @@
       "rust": false,
       "go": true
     },
-    "mutations": 28
+    "mutations": 28,
+    "classMutations": [
+      {
+        "file": "viper.go",
+        "find": "func (v *Viper) Get(key string) any {",
+        "replace": "func (v *Viper) Get(key string, extra int) any {",
+        "symbol": "Get",
+        "class": "signature"
+      },
+      {
+        "file": "remote.go",
+        "find": "func ReadRemoteConfig() error {",
+        "replace": "func ReadRemoteConfig() string {",
+        "symbol": "ReadRemoteConfig",
+        "class": "return"
+      },
+      {
+        "file": "remote.go",
+        "find": "func ReadRemoteConfig() error {",
+        "replace": "func readRemoteConfig() error {",
+        "symbol": "ReadRemoteConfig",
+        "class": "visibility"
+      },
+      {
+        "file": "viper.go",
+        "find": "type Viper struct{}",
+        "replace": "type Viper interface{}",
+        "symbol": "Viper",
+        "class": "kind"
+      }
+    ]
   },
   {
     "name": "go-cycle-fixture",
@@ -207,7 +237,37 @@
       "rust": false,
       "go": false
     },
-    "mutations": 6
+    "mutations": 6,
+    "classMutations": [
+      {
+        "file": "pyfields/models.py",
+        "find": "def get_response() -> Response:",
+        "replace": "def get_response(timeout: int) -> Response:",
+        "symbol": "get_response",
+        "class": "signature"
+      },
+      {
+        "file": "pyfields/models.py",
+        "find": "def get_response() -> Response:",
+        "replace": "def get_response() -> Request:",
+        "symbol": "get_response",
+        "class": "return"
+      },
+      {
+        "file": "pyfields/models.py",
+        "find": "def get_response() -> Response:",
+        "replace": "def _get_response() -> Response:",
+        "symbol": "get_response",
+        "class": "visibility"
+      },
+      {
+        "file": "pyfields/models.py",
+        "find": "class Response:",
+        "replace": "class ResponseData:",
+        "symbol": "Response",
+        "class": "move"
+      }
+    ]
   },
   {
     "name": "rst-fixture",
@@ -495,6 +555,43 @@
         "to": "other",
         "symbol": "sharedPrefix",
         "expectedRule": "L3-reshaped"
+      }
+    ],
+    "classMutations": [
+      {
+        "file": "src/main/java/example/Client.java",
+        "find": "public void helper() {}",
+        "replace": "public void helper(int extra) {}",
+        "symbol": "helper",
+        "class": "signature"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "find": "public void legacy() {}",
+        "replace": "public int legacy() { return 0; }",
+        "symbol": "legacy",
+        "class": "return"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "find": "public void helper() {}",
+        "replace": "private void helper() {}",
+        "symbol": "helper",
+        "class": "visibility"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "find": "class Other {",
+        "replace": "interface Other {",
+        "symbol": "Other",
+        "class": "kind"
+      },
+      {
+        "file": "src/main/java/example/Client.java",
+        "find": "class Other {",
+        "replace": "class OtherRenamed {",
+        "symbol": "Other",
+        "class": "move"
       }
     ]
   },

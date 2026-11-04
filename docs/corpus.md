@@ -19,17 +19,17 @@ Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/
 | local/macro-crate (local) | Rust | 1 | 11 | 11 | 0 | 100.0% | 0 | 9 | 9 | 0 | 0 |
 | dtolnay/thiserror | Rust | 1 | 162 | 23 | 139 | 14.2% | 0 | 2 | 2 | 0 | 0 |
 | local/proc-macro-crate (local) | Rust | 1 | 3 | 3 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
-| local/go-package (local) | Go | 1 | 45 | 45 | 0 | 100.0% | 0 | 28 | 28 | 0 | 0 |
+| local/go-package (local) | Go | 1 | 45 | 45 | 0 | 100.0% | 0 | 32 | 32 | 0 | 0 |
 | local/go-cycle (local) | Go | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/thiserror-derived (local) | Rust | 1 | 1 | 1 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
-| local/python-fields (local) | Python | 1 | 9 | 8 | 1 | 88.9% | 0 | 5 | 5 | 0 | 0 |
+| local/python-fields (local) | Python | 1 | 10 | 9 | 1 | 90.0% | 0 | 10 | 10 | 0 | 0 |
 | local/rst-fixture (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
 | local/python-docstrings (local) | Python | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
 | local/python-asciidoc (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
-| local/java-javadoc (local) | Java | 1 | 42 | 42 | 0 | 100.0% | 0 | 46 | 46 | 0 | 0 |
+| local/java-javadoc (local) | Java | 1 | 43 | 43 | 0 | 100.0% | 0 | 51 | 51 | 0 | 0 |
 | local/java-nolock (local) | Java | 1 | 2 | 2 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
 
-Overall: 844 of 3411 anchors bound, or 24.7%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
+Overall: 846 of 3413 anchors bound, or 24.8%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -117,6 +117,10 @@ Python fences then gained local type inference. Source return annotations feed a
 ## No-lock mode
 
 `java-nolock-fixture` uses a Markdown annotation with an inline contract hash and `"lock": false`. It binds 2 of 2 anchors and detects the one mutation without reading lock assertions. The lock is still generated for mutation selection, but `check` ignores it in this mode.
+
+## Mutation classes
+
+Signature, return-type, visibility, move, and symbol-kind mutations are run on the local Java, Python, and Go fixtures. The per-language recall matrix and false-positive rate are published in [Recall](recall.md). External repositories still use rename and value mutations only.
 
 ## How the corpus was selected
 

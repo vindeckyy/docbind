@@ -13,5 +13,35 @@
     "rust": false,
     "go": false
   },
-  "mutations": 6
+  "mutations": 6,
+  "classMutations": [
+    {
+      "file": "pyfields/models.py",
+      "find": "def get(self, url: str) -> Response:",
+      "replace": "def get(self, url: str, timeout: int) -> Response:",
+      "symbol": "get",
+      "class": "signature"
+    },
+    {
+      "file": "pyfields/models.py",
+      "find": "def get(self, url: str) -> Response:",
+      "replace": "def get(self, url: str) -> Request:",
+      "symbol": "get",
+      "class": "return"
+    },
+    {
+      "file": "pyfields/models.py",
+      "find": "def get_response() -> Response:",
+      "replace": "def _get_response() -> Response:",
+      "symbol": "get_response",
+      "class": "visibility"
+    },
+    {
+      "file": "pyfields/models.py",
+      "find": "class Response:",
+      "replace": "class ResponseData:",
+      "symbol": "Response",
+      "class": "move"
+    }
+  ]
 }

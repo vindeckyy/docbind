@@ -13,5 +13,35 @@
     "rust": false,
     "go": true
   },
-  "mutations": 28
+  "mutations": 28,
+  "classMutations": [
+    {
+      "file": "alias.go",
+      "find": "func Wrap(value int) int {",
+      "replace": "func Wrap(value int, extra int) int {",
+      "symbol": "Wrap",
+      "class": "signature"
+    },
+    {
+      "file": "alias.go",
+      "find": "func Wrap(value int) int {",
+      "replace": "func Wrap(value int) error {",
+      "symbol": "Wrap",
+      "class": "return"
+    },
+    {
+      "file": "alias.go",
+      "find": "func Wrap(value int) int {",
+      "replace": "func wrap(value int) int {",
+      "symbol": "Wrap",
+      "class": "visibility"
+    },
+    {
+      "file": "viper.go",
+      "find": "type Viper struct{}",
+      "replace": "type Viper interface{}",
+      "symbol": "Viper",
+      "class": "kind"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T13:19:20.699Z",
+  "generatedAt": "2026-11-04T13:28:02.128Z",
   "report": [
     {
       "name": "slugify",
@@ -7,6 +7,8 @@
       "commit": "6df9e8fb3397d1f55bd9aaf005ef67ccf0a7aaff",
       "nameOnlyFalsePositives": 30,
       "docs": 1,
+      "docLines": 317,
+      "falsePositivePerKLine": 0,
       "anchors": 58,
       "bound": 28,
       "unbound": 30,
@@ -49,6 +51,8 @@
       "commit": "87c8571326d60b90391d0555c9675b5ac6f044b1",
       "nameOnlyFalsePositives": 64,
       "docs": 1,
+      "docLines": 180,
+      "falsePositivePerKLine": 0,
       "anchors": 79,
       "bound": 14,
       "unbound": 65,
@@ -102,6 +106,8 @@
       "commit": "528f7416c4b56a4948673984b190bf8713f0c3c4",
       "nameOnlyFalsePositives": 150,
       "docs": 2,
+      "docLines": 833,
+      "falsePositivePerKLine": 0,
       "anchors": 167,
       "bound": 94,
       "unbound": 73,
@@ -210,6 +216,8 @@
       "commit": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
       "nameOnlyFalsePositives": 2446,
       "docs": 23,
+      "docLines": 3871,
+      "falsePositivePerKLine": 0,
       "anchors": 2818,
       "bound": 559,
       "unbound": 2259,
@@ -265,6 +273,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 5,
       "docs": 1,
+      "docLines": 22,
+      "falsePositivePerKLine": 0,
       "anchors": 11,
       "bound": 11,
       "unbound": 0,
@@ -384,6 +394,8 @@
       "commit": "3b29f0107e7900860c7a061c069958569eb458e7",
       "nameOnlyFalsePositives": 121,
       "docs": 1,
+      "docLines": 237,
+      "falsePositivePerKLine": 0,
       "anchors": 162,
       "bound": 23,
       "unbound": 139,
@@ -426,6 +438,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 2,
       "docs": 1,
+      "docLines": 8,
+      "falsePositivePerKLine": 0,
       "anchors": 3,
       "bound": 3,
       "unbound": 0,
@@ -457,6 +471,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 33,
       "docs": 1,
+      "docLines": 99,
+      "falsePositivePerKLine": 0,
       "anchors": 45,
       "bound": 45,
       "unbound": 0,
@@ -777,9 +793,61 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "Get",
+          "kind": "class",
+          "mutationClass": "signature",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "ReadRemoteConfig",
+          "kind": "class",
+          "mutationClass": "return",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "ReadRemoteConfig",
+          "kind": "class",
+          "mutationClass": "visibility",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Viper",
+          "kind": "class",
+          "mutationClass": "kind",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 28,
+      "hits": 32,
       "misses": 0,
       "collateral": 0
     },
@@ -789,6 +857,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 2,
       "docs": 1,
+      "docLines": 4,
+      "falsePositivePerKLine": 0,
       "anchors": 2,
       "bound": 2,
       "unbound": 0,
@@ -831,6 +901,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 1,
       "docs": 1,
+      "docLines": 4,
+      "falsePositivePerKLine": 0,
       "anchors": 1,
       "bound": 1,
       "unbound": 0,
@@ -862,10 +934,12 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 5,
       "docs": 1,
-      "anchors": 9,
-      "bound": 8,
+      "docLines": 20,
+      "falsePositivePerKLine": 0,
+      "anchors": 10,
+      "bound": 9,
       "unbound": 1,
-      "bindRate": 0.8888888888888888,
+      "bindRate": 0.9,
       "baselineFindings": 0,
       "baselineRules": [],
       "docEditFindings": 0,
@@ -895,10 +969,11 @@
         },
         {
           "symbol": "request",
-          "rule": "L1-broken",
+          "rule": "L3-reshaped",
           "hit": true,
-          "findings": 1,
+          "findings": 2,
           "relatedRules": [
+            "L3-reshaped",
             "L1-broken"
           ],
           "collateral": 0,
@@ -925,9 +1000,72 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "Response",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "get_response",
+          "kind": "class",
+          "mutationClass": "signature",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "get_response",
+          "kind": "class",
+          "mutationClass": "return",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "get_response",
+          "kind": "class",
+          "mutationClass": "visibility",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Response",
+          "kind": "class",
+          "mutationClass": "move",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 5,
+      "hits": 10,
       "misses": 0,
       "collateral": 0
     },
@@ -937,6 +1075,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 4,
       "docs": 1,
+      "docLines": 11,
+      "falsePositivePerKLine": 0,
       "anchors": 5,
       "bound": 5,
       "unbound": 0,
@@ -992,6 +1132,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
+      "docLines": 4,
+      "falsePositivePerKLine": 0,
       "anchors": 2,
       "bound": 2,
       "unbound": 0,
@@ -1034,6 +1176,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
+      "docLines": 11,
+      "falsePositivePerKLine": 0,
       "anchors": 5,
       "bound": 5,
       "unbound": 0,
@@ -1089,8 +1233,10 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
-      "anchors": 42,
-      "bound": 42,
+      "docLines": 6,
+      "falsePositivePerKLine": 0,
+      "anchors": 43,
+      "bound": 43,
       "unbound": 0,
       "bindRate": 1,
       "baselineFindings": 0,
@@ -1103,6 +1249,17 @@
           "rule": "L4-renamed",
           "hit": true,
           "findings": 2,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Other",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
           "relatedRules": [
             "L4-renamed"
           ],
@@ -1298,17 +1455,6 @@
         },
         {
           "symbol": "command",
-          "rule": "L4-renamed",
-          "hit": true,
-          "findings": 1,
-          "relatedRules": [
-            "L4-renamed"
-          ],
-          "collateral": 0,
-          "collateralRules": []
-        },
-        {
-          "symbol": "flag",
           "rule": "L4-renamed",
           "hit": true,
           "findings": 1,
@@ -1655,9 +1801,74 @@
           ],
           "collateral": 0,
           "collateralRules": []
+        },
+        {
+          "symbol": "helper",
+          "kind": "class",
+          "mutationClass": "signature",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "legacy",
+          "kind": "class",
+          "mutationClass": "return",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "helper",
+          "kind": "class",
+          "mutationClass": "visibility",
+          "rule": "L3-reshaped",
+          "hit": true,
+          "findings": 2,
+          "relatedRules": [
+            "L3-reshaped"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Other",
+          "kind": "class",
+          "mutationClass": "kind",
+          "rule": "L1-broken",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L1-broken"
+          ],
+          "collateral": 0,
+          "collateralRules": []
+        },
+        {
+          "symbol": "Other",
+          "kind": "class",
+          "mutationClass": "move",
+          "rule": "L4-renamed",
+          "hit": true,
+          "findings": 1,
+          "relatedRules": [
+            "L4-renamed"
+          ],
+          "collateral": 0,
+          "collateralRules": []
         }
       ],
-      "hits": 46,
+      "hits": 51,
       "misses": 0,
       "collateral": 0
     },
@@ -1667,6 +1878,8 @@
       "commit": "fixture-v1",
       "nameOnlyFalsePositives": 0,
       "docs": 1,
+      "docLines": 4,
+      "falsePositivePerKLine": 0,
       "anchors": 2,
       "bound": 2,
       "unbound": 0,

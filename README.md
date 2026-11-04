@@ -253,7 +253,7 @@ npm run corpus -- --only slugify
 npm run corpus -- --refresh
 ```
 
-The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and ten local fixtures produce zero baseline findings, zero doc-edit findings, and 119 of 119 seeded mutation hits with no collateral findings. Bind rates are published per case in [docs/corpus.md](docs/corpus.md).
+The latest snapshot is in [corpus/report.json](corpus/report.json). Five pinned repositories and ten local fixtures produce zero baseline findings, zero doc-edit findings, and 133 of 133 seeded mutation hits with no collateral findings. Bind rates are published per case in [docs/corpus.md](docs/corpus.md).
 
 Local fixtures run in CI with `npm run corpus:fixtures`, which fails on baseline findings, doc-edit noise, missed mutations, or collateral findings. External repositories stay manual because they need network access.
 

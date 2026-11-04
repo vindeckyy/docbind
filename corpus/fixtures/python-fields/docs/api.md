@@ -1,3 +1,5 @@
+<!-- docbind: symbol=pyfields/models.py#Response -->
+
 # API
 
 ```python

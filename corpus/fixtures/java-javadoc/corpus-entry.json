@@ -232,5 +232,42 @@
       "symbol": "sharedPrefix",
       "expectedRule": "L3-reshaped"
     }
+  ],
+  "classMutations": [
+    {
+      "file": "src/main/java/example/Client.java",
+      "find": "public void helper() {}",
+      "replace": "public void helper(int extra) {}",
+      "symbol": "helper",
+      "class": "signature"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "find": "public void legacy() {}",
+      "replace": "public int legacy() { return 0; }",
+      "symbol": "legacy",
+      "class": "return"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "find": "public void helper() {}",
+      "replace": "private void helper() {}",
+      "symbol": "helper",
+      "class": "visibility"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "find": "class Other {",
+      "replace": "interface Other {",
+      "symbol": "Other",
+      "class": "kind"
+    },
+    {
+      "file": "src/main/java/example/Client.java",
+      "find": "class Other {",
+      "replace": "class OtherRenamed {",
+      "symbol": "Other",
+      "class": "move"
+    }
   ]
 }
