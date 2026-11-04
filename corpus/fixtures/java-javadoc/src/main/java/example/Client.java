@@ -76,7 +76,7 @@ class Internal {
  * {@link Marker#fromConstant()}, {@link Marker#fromShared()}, {@link Marker#arithmetic()},
  * {@link Marker#intDiv()}, {@link Marker#halfConstant()}, {@link Marker#widened()},
  * {@link Marker#castDiv()}, {@link Marker#flags()}, {@link Marker#wide()},
- * {@link Marker#maxDefault()}, and {@link Marker#rounded()}.
+ * {@link Marker#maxDefault()}, {@link Marker#rounded()}, and {@link Marker#root()}.
  */
 public @interface Marker {
     String value() default "default";
@@ -108,6 +108,8 @@ public @interface Marker {
     int maxDefault() default Math.max(3, 7);
 
     int rounded() default (int) Math.round(3.6);
+
+    double root() default Math.sqrt(16);
 }
 
 class Constants {

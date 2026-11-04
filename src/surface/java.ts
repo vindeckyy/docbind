@@ -293,6 +293,23 @@ function applyMath(name: string, args: EvaluatedConstant[]): EvaluatedConstant |
       ...(argument.width ? { width: argument.width } : {}),
     };
   }
+  if (name === "Math.sqrt" && args.length === 1) {
+    const argument = args[0] as EvaluatedConstant;
+    const numeric =
+      typeof argument.value === "number" ? argument.value : Number(toBigInt(argument.value) as bigint);
+    if (!Number.isFinite(numeric) || numeric < 0) return undefined;
+    return { value: Math.sqrt(numeric), integral: false };
+  }
+  if (name === "Math.pow" && args.length === 2) {
+    const [base, exponent] = args as [EvaluatedConstant, EvaluatedConstant];
+    const baseNumber = typeof base.value === "number" ? base.value : Number(toBigInt(base.value) as bigint);
+    const exponentNumber =
+      typeof exponent.value === "number" ? exponent.value : Number(toBigInt(exponent.value) as bigint);
+    /* v8 ignore next */
+    if (!Number.isFinite(baseNumber) || !Number.isFinite(exponentNumber)) return undefined;
+    const result = Math.pow(baseNumber, exponentNumber);
+    return Number.isFinite(result) ? { value: result, integral: false } : undefined;
+  }
   if ((name === "Math.round" || name === "Math.floor" || name === "Math.ceil") && args.length === 1) {
     const argument = args[0] as EvaluatedConstant;
     if (argument.integral) {

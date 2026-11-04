@@ -425,6 +425,16 @@ describe("Java surface", () => {
         "    int mathRoundBad() default Math.round();",
         "    long mathRoundLong() default Math.round(1L << 40);",
         "    int mathRoundString() default Math.round(\"x\");",
+        "    double mathSqrt() default Math.sqrt(9);",
+        "    double mathSqrtFrac() default Math.sqrt(2);",
+        "    double mathPow() default Math.pow(2, 10);",
+        "    double mathPowNeg() default Math.pow(2, -1);",
+        "    int mathSqrtNeg() default (int) Math.sqrt(-1);",
+        "    double mathPowHuge() default Math.pow(10, 400);",
+        "    double mathPowBad() default Math.pow(2);",
+        "    double mathSqrtBad() default Math.sqrt(1, 2);",
+        "    double mathSqrtLong() default Math.sqrt(1L << 62);",
+        "    double mathPowLong() default Math.pow(1L << 62, 1);",
         "    int bitsAnd() default 6 & 3;",
         "    int bitsOr() default 4 | 1;",
         "    int bitsXor() default 6 ^ 3;",
@@ -541,7 +551,17 @@ describe("Java surface", () => {
     expect(result.symbols.find((symbol) => symbol.name === "mathCeil")?.shape.evaluatedDefault).toBe(4);
     expect(result.symbols.find((symbol) => symbol.name === "mathFloorInt")?.shape.evaluatedDefault).toBe(5);
     expect(result.symbols.find((symbol) => symbol.name === "mathRoundLong")?.shape.evaluatedDefault).toBe(1099511627776);
-    for (const name of ["mathBad", "mathUnknown", "mathOpen", "mathEmpty", "mathAbsBad", "mathString", "mathNoComma", "mathRoundBad", "mathRoundString"]) {
+    expect(result.symbols.find((symbol) => symbol.name === "mathSqrt")?.shape.evaluatedDefault).toBe(3);
+    expect(result.symbols.find((symbol) => symbol.name === "mathSqrtFrac")?.shape.evaluatedDefault).toBe(Math.sqrt(2));
+    expect(result.symbols.find((symbol) => symbol.name === "mathPow")?.shape.evaluatedDefault).toBe(1024);
+    expect(result.symbols.find((symbol) => symbol.name === "mathPowNeg")?.shape.evaluatedDefault).toBe(0.5);
+    expect(result.symbols.find((symbol) => symbol.name === "mathSqrtLong")?.shape.evaluatedDefault).toBe(2147483648);
+    expect(result.symbols.find((symbol) => symbol.name === "mathPowLong")?.shape.evaluatedDefault).toBe(4611686018427388000);
+    expect(result.symbols.find((symbol) => symbol.name === "mathUnknown")?.shape.evaluatedDefault).toBe(8);
+    for (const name of ["mathSqrtNeg", "mathPowHuge", "mathPowBad", "mathSqrtBad"]) {
+      expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
+    }
+    for (const name of ["mathBad", "mathOpen", "mathEmpty", "mathAbsBad", "mathString", "mathNoComma", "mathRoundBad", "mathRoundString"]) {
       expect(result.symbols.find((symbol) => symbol.name === name)?.shape.evaluatedDefault).toBeUndefined();
     }
     for (const name of ["castString", "mulMissing", "floatDivZero", "castEmpty"]) {

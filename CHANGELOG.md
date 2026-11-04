@@ -2,6 +2,27 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.83] - 2026-11-03
+
+### Added
+
+- Java default expressions evaluate `Math.sqrt` and `Math.pow`.
+- `Math.pow` takes exactly two numeric arguments and returns a floating value.
+- `Math.sqrt` rejects negative and non-finite results.
+- Integral long arguments convert through BigInt before the floating operation.
+- Corpus adds `Marker.root()` with default `Math.sqrt(16)`; editing `16` to `25` must produce `L3-reshaped`.
+
+### Changed
+
+- Corpus mutations: 108 to 109; `java-javadoc-fixture` runs 37 mutations with 32 anchors, all hitting with zero collateral.
+- Branch coverage stays at 95.88%; line coverage at 99.26%.
+
+### Limits
+
+- Other `Math` methods, user methods, and constructors stay unevaluated.
+- Float and double arithmetic remains JavaScript number arithmetic.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.82] - 2026-11-03
 
 ### Added
@@ -1521,3 +1542,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.80]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.80
 [0.1.81]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.81
 [0.1.82]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.82
+[0.1.83]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.83
