@@ -58,6 +58,7 @@ export const REQUIRED_FILES = [
   "corpus/README.md",
   "corpus/report.json",
   "docs/corpus.md",
+  "docs/scope.md",
   "docs/precision.md",
   "docs/performance.md",
   "docs/demo.md",

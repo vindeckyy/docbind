@@ -9,6 +9,7 @@ nav:
   - Usage: usage.md
   - Configuration: configuration.md
   - Architecture: architecture.md
+  - Scope and limits: scope.md
   - Corpus: corpus.md
   - Precision: precision.md
   - Performance: performance.md

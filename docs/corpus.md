@@ -10,25 +10,25 @@
 
 Latest snapshot: [corpus/report.json](https://github.com/vindeckyy/docbind/blob/main/corpus/report.json)
 
-| Repository | Language | Docs | Anchors | Bound | Bind rate | Baseline findings | Mutations | Hits | Misses | Collateral |
-|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 48.3% | 0 | 2 | 2 | 0 | 0 |
-| dtolnay/anyhow | Rust | 1 | 79 | 14 | 17.7% | 0 | 3 | 3 | 0 | 0 |
-| spf13/viper | Go | 2 | 167 | 94 | 56.3% | 0 | 8 | 8 | 0 | 0 |
-| encode/httpx | Python | 23 | 2818 | 559 | 19.8% | 0 | 3 | 3 | 0 | 0 |
-| local/macro-crate (local) | Rust | 1 | 11 | 11 | 100.0% | 0 | 9 | 9 | 0 | 0 |
-| dtolnay/thiserror | Rust | 1 | 162 | 23 | 14.2% | 0 | 2 | 2 | 0 | 0 |
-| local/proc-macro-crate (local) | Rust | 1 | 3 | 3 | 100.0% | 0 | 1 | 1 | 0 | 0 |
-| local/go-package (local) | Go | 1 | 45 | 45 | 100.0% | 0 | 28 | 28 | 0 | 0 |
-| local/go-cycle (local) | Go | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
-| local/thiserror-derived (local) | Rust | 1 | 1 | 1 | 100.0% | 0 | 1 | 1 | 0 | 0 |
-| local/python-fields (local) | Python | 1 | 9 | 8 | 88.9% | 0 | 5 | 5 | 0 | 0 |
-| local/rst-fixture (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
-| local/python-docstrings (local) | Python | 1 | 2 | 2 | 100.0% | 0 | 2 | 2 | 0 | 0 |
-| local/python-asciidoc (local) | Python | 1 | 5 | 5 | 100.0% | 0 | 3 | 3 | 0 | 0 |
-| local/java-javadoc (local) | Java | 1 | 41 | 41 | 100.0% | 0 | 46 | 46 | 0 | 0 |
+| Repository | Language | Docs | Anchors | Bound | Unbound | Bind rate | Baseline findings | Mutations | Hits | Misses | Collateral |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| sindresorhus/slugify | TypeScript | 1 | 58 | 28 | 30 | 48.3% | 0 | 2 | 2 | 0 | 0 |
+| dtolnay/anyhow | Rust | 1 | 79 | 14 | 65 | 17.7% | 0 | 3 | 3 | 0 | 0 |
+| spf13/viper | Go | 2 | 167 | 94 | 73 | 56.3% | 0 | 8 | 8 | 0 | 0 |
+| encode/httpx | Python | 23 | 2818 | 559 | 2259 | 19.8% | 0 | 3 | 3 | 0 | 0 |
+| local/macro-crate (local) | Rust | 1 | 11 | 11 | 0 | 100.0% | 0 | 9 | 9 | 0 | 0 |
+| dtolnay/thiserror | Rust | 1 | 162 | 23 | 139 | 14.2% | 0 | 2 | 2 | 0 | 0 |
+| local/proc-macro-crate (local) | Rust | 1 | 3 | 3 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
+| local/go-package (local) | Go | 1 | 45 | 45 | 0 | 100.0% | 0 | 28 | 28 | 0 | 0 |
+| local/go-cycle (local) | Go | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
+| local/thiserror-derived (local) | Rust | 1 | 1 | 1 | 0 | 100.0% | 0 | 1 | 1 | 0 | 0 |
+| local/python-fields (local) | Python | 1 | 9 | 8 | 1 | 88.9% | 0 | 5 | 5 | 0 | 0 |
+| local/rst-fixture (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
+| local/python-docstrings (local) | Python | 1 | 2 | 2 | 0 | 100.0% | 0 | 2 | 2 | 0 | 0 |
+| local/python-asciidoc (local) | Python | 1 | 5 | 5 | 0 | 100.0% | 0 | 3 | 3 | 0 | 0 |
+| local/java-javadoc (local) | Java | 1 | 41 | 41 | 0 | 100.0% | 0 | 46 | 46 | 0 | 0 |
 
-Overall: 820 of 3387 anchors bound, or 24.2%. The rate is deliberately conservative; unbound anchors include prose that only looks like a symbol, standard-library types, and calls the inference cannot type yet.
+Overall: 841 of 3408 anchors bound, or 24.7%; 2567 anchors are unbound. The rate is deliberately conservative. Unbound anchors include prose that only looks like a symbol, standard-library types, uncertain imports, and calls the inference cannot type yet. **Unbound anchors produce no findings: they are a known false-negative surface, not evidence that the prose is correct.**
 
 Editing the first anchored doc line produced zero findings in all cases. The three-way diff correctly treated the sentence change as a new claim and re-bound it to unchanged code.
 
@@ -112,6 +112,12 @@ The first viper run bound 0 of 382 anchors. Go docs write `viper.SetConfigName`,
 The first httpx run bound 34 of 2541 anchors. Class-qualified calls such as `Response.json()` were vetoed as file paths, and package-qualified names such as `httpx.Client` had no aliases. Exempting class-qualified calls from the path veto and adding package and class aliases raised httpx to 65 bound anchors.
 
 Python fences then gained local type inference. Source return annotations feed a type map, so `response = client.get(...)` resolves through `Client.get -> Response` and `response.json()` becomes `Response.json`. Annotations, `with ... as` blocks, REPL prompts, and `pycon` fences are handled. Dotted chains stay whole instead of splitting into unrelated identifiers. This raised httpx to 379 bound anchors on 2972 anchors with zero baseline findings.
+
+## How the corpus was selected
+
+The five external repositories were chosen by hand: small-to-medium TypeScript, Rust, Go, and Python projects with hand-written docs and stable pinned commits. They are not a random sample. Local fixtures exist to exercise features that external repositories do not cover deterministically.
+
+This is reproducible evidence, not independent evaluation. The maintainers chose every case and wrote every mutation. Read [Scope and limits](scope.md#evidence-boundaries) before treating the numbers as transferable.
 
 ## Limits
 

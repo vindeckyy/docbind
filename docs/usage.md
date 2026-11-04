@@ -19,7 +19,7 @@ docbind lock
 docbind check
 ```
 
-`init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only.
+`init` writes `docbind.json` and an empty lock. `lock` records every binding that passes the confidence threshold. `check` is read-only. `lock --check` verifies that the committed lock is current without writing it; use it in CI to catch stale locks.
 
 ## CI
 

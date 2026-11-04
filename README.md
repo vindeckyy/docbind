@@ -4,12 +4,12 @@
 
 <h1 align="center">docbind</h1>
 
-<p align="center">Catch stale symbol references in markdown and reStructuredText.</p>
+<p align="center">Contract drift detection for symbol references in docs.</p>
 
 <p align="center">
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/vindeckyy/docbind/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/vindeckyy/docbind/actions/workflows/docs.yml/badge.svg"></a>
-  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.32%25-brightgreen">
+  <img alt="Line coverage" src="https://img.shields.io/badge/lines-99.26%25-brightgreen">
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D22.12-339933?logo=node.js&logoColor=white">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -17,6 +17,8 @@
 Docs name symbols. Code renames them. `docbind` reports the mismatch.
 
 It binds symbol-shaped inline code to exported code symbols, stores the contract shape in `docbind.lock.json`, and reports only cases where the code changed and the sentence did not.
+
+It is **not a documentation linter**. A green check means the references still resolve and the recorded contract shape did not break. It does not mean the prose is true. See [Scope and limits](docs/scope.md) before adopting it as a gate.
 
 This is static analysis. It does not run project code, build the project, or generate docs.
 
@@ -36,6 +38,7 @@ docs/api.md:77  error  L3  `createUser(name, email)` no longer accepts `email`
 - [Demo](#demo)
 - [What it checks](#what-it-checks)
 - [Supported languages](#supported-languages)
+- [Scope and limits](docs/scope.md)
 - [Precision model](#precision-model)
 - [Install](#install)
 - [CLI](#cli)
@@ -136,7 +139,15 @@ It does not execute anything. Examples are parsed, never run. Example-output dri
 
 ## Install
 
-The `docbind` npm name is held by an unrelated package. Install from source for now.
+The `docbind` npm name is held by an unrelated package. A scoped package is reserved but unpublished. Zero-clone install from GitHub:
+
+```sh
+npx --yes github:vindeckyy/docbind --version
+npx --yes github:vindeckyy/docbind init
+npx --yes github:vindeckyy/docbind check
+```
+
+From source:
 
 ```sh
 git clone https://github.com/vindeckyy/docbind.git
@@ -144,8 +155,6 @@ cd docbind
 npm ci
 npm run build
 npm link
-docbind init
-docbind check
 ```
 
 Commit `docbind.lock.json`. Run `docbind lock` after changing docs.
@@ -254,10 +263,10 @@ Measured on the 0.1.92 tree:
 | Tests | 355 passing |
 | Statements | 98.64% |
 | Branches | 96.09% |
-| Functions | 99.0% |
-| Lines | 99.25% |
-| Changed-line coverage, feature diff | 99.31% |
-| Structure gate | 82 of 82 checks |
+| Functions | 99.08% |
+| Lines | 99.26% |
+| Changed-line coverage, feature diff | 99.27% |
+| Structure gate | 83 of 83 checks |
 | Docs build | `mkdocs build --strict` passes |
 
 These are repository gates, not benchmark claims. They will change as the code changes. Runtime measurements are in [docs/performance.md](docs/performance.md).

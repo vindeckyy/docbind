@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [0.1.93] - 2026-11-04
+
+### Changed
+
+- Repositioned the project as **contract drift detection**, explicitly not a documentation linter.
+- Added `docs/scope.md` covering contract-vs-correctness, false negatives, lock governance, heuristic fragility, static-analysis limits, uneven language support, distribution, evidence boundaries, and when not to use the tool.
+- Corpus rows now publish unbound anchor counts; overall 841 of 3408 bound, 2567 unbound, with the false-negative surface stated explicitly.
+- `docs/corpus.md` now states how repositories were selected and that the evaluation is self-selected, not independent.
+- README and docs index lead with the scope limit; `lock --check` is documented for stale-lock CI checks.
+- Install docs lead with zero-clone GitHub invocation while npm publication is blocked.
+
+### Limits
+
+- No independent evaluation on repositories the maintainers did not choose.
+- No recall measurement for anchors that never bound.
+- The unscoped npm package remains unavailable.
+
 ## [0.1.92] - 2026-11-03
 
 ### Added
@@ -1735,3 +1752,4 @@ All notable changes are recorded here. The format follows Keep a Changelog and t
 [0.1.90]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.90
 [0.1.91]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.91
 [0.1.92]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.92
+[0.1.93]: https://github.com/vindeckyy/docbind/releases/tag/v0.1.93

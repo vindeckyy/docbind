@@ -1,7 +1,7 @@
 {
   "name": "@vindeckyy/docbind",
-  "version": "0.1.92",
-  "description": "Static analysis for stale symbol references in markdown and reStructuredText. Supports TypeScript, JavaScript, Python, Rust, and Go.",
+  "version": "0.1.93",
+  "description": "Contract drift detection for symbol references in docs. Not a documentation linter.",
   "type": "module",
   "bin": {
     "docbind": "./dist/main.js"

@@ -1,10 +1,12 @@
 # docbind
 
-Symbol-level documentation staleness detection for markdown and reStructuredText.
+Contract drift detection for symbol references in docs.
 
 `docbind` binds symbol-shaped inline code in markdown and reStructuredText to exported code symbols. It stores the claim, then reports when the code contract changes and the sentence does not.
 
 This is static analysis. No build, no project code execution, no network.
+
+It is not a documentation linter. A passing check does not mean the prose is true. Read [Scope and limits](scope.md) first.
 
 ## Quick start
 

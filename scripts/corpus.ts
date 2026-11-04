@@ -90,6 +90,7 @@ interface RepoReport {
   docs: number;
   anchors: number;
   bound: number;
+  unbound: number;
   bindRate: number;
   baselineFindings: number;
   baselineRules: string[];
@@ -655,6 +656,7 @@ for (const entry of selected) {
     docs: baseline.stats.docsScanned,
     anchors,
     bound: baseline.stats.bound,
+    unbound: baseline.stats.unbound,
     bindRate: anchors === 0 ? 0 : baseline.stats.bound / anchors,
     baselineFindings: baseline.findings.length,
     baselineRules: [...new Set(baseline.findings.map((finding) => finding.rule))],
